@@ -45,7 +45,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222318.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222333.png">
 <meta property="article:published_time" content="2022-11-30T14:11:12.000Z">
-<meta property="article:modified_time" content="2022-11-30T14:27:52.851Z">
+<meta property="article:modified_time" content="2022-11-30T14:29:49.767Z">
 <meta property="article:author" content="Crazyoo">
 <meta property="article:tag" content="CSRF 网络安全">
 <meta name="twitter:card" content="summary">
@@ -208,7 +208,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2022-11-30 22:11:12 / Modified: 22:27:52" itemprop="dateCreated datePublished" datetime="2022-11-30T22:11:12+08:00">2022-11-30</time>
+              <time title="Created: 2022-11-30 22:11:12 / Modified: 22:29:49" itemprop="dateCreated datePublished" datetime="2022-11-30T22:11:12+08:00">2022-11-30</time>
             </span>
 
           
@@ -233,12 +233,12 @@
 <p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221450.png"></p>
 <p>在合法用户进行登录利用该工具进行抓取http报文，可以分别得到上图所示的POST报文和GET报文</p>
 <p>在POST报文中，有elgg_token,elgg_ts,username和password等参数，而在GET报文中没有参数显示。</p>
-<h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站<a target="_blank" rel="noopener" href="http://www.attacker32.com.假设你是samy,描述你如何构建网页的内容,以便当alice/">www.attacker32.com。假设你是Samy，描述你如何构建网页的内容，以便当Alice</a> 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p>
+<h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站 <a target="_blank" rel="noopener" href="http://www.attacker32.com/">www.attacker32.com</a>  。假设你是Samy，描述你如何构建网页的内容，以便当Alice 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p>
 <p>实现思路：</p>
 <p>通过抓获合法添加好友过程中得到的报文，观察其中的参数结构，然后通过修改其参数，构建网页的内容</p>
 <p>实现步骤：</p>
 <p>首先登录到Samy的用户界面后，合法的把Alice添加为好友，在该过程中利用插件工具进行抓获http报文如下：</p>
-<p>可以看到其url请求为”<a target="_blank" rel="noopener" href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D%E5%BC%80%E5%A4%B4%EF%BC%8C%E8%AF%A556%E4%B8%BAAlice%E7%9A%84guid">http://www.seed-server.com/action/friends/add?friend=56”开头，该56为Alice的guid</a></p>
+<p>可以看到其url请求为 ”<a target="_blank" rel="noopener" href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D">http://www.seed-server.com/action/friends/add?friend=56”</a> 开头，该56为Alice的guid</p>
 <p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221545.png"></p>
 <p>因此我们想要让Alice添加Samy为好友的话，需要把friend后的参数修改为Samy的guid。而Samy的guid可以在合法登录到Samy的用户界面后，通过网页的源码得到，如下：</p>
 <p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221601.png"></p>
@@ -273,7 +273,7 @@
 <p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222100.png"></p>
 <p>由于return注释掉后，会执行validate函数，提取出请求中的两个参数__token 和__ts，但是由于在此前构造请求时没有补充这两个参数，因而会报错，并且攻击会失败</p>
 <h3 id="2-5-Task-5：测试同站Cookie-方法"><a href="#2-5-Task-5：测试同站Cookie-方法" class="headerlink" title="2.5 Task 5：测试同站Cookie 方法"></a>2.5 Task 5：测试同站Cookie 方法</h3><p>当访问该网站时，浏览器上会设置三个cookie，分别是：cookie-normal、cookie-lax 和cookie-strict。正如其名称所示，第一个cookie 只是一个普通的cookie，第二个和第三个cookie 是两种不同类型的同站cookie（Lax 和Strict）。我们设计了两组实验来观察当发送HTTP 请求时，哪些cookie 会被附加到服务器上。通常情况下，属于服务器的所有cookie 都将被附加到请求中，除了同站cookie。</p>
-<p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到<a target="_blank" rel="noopener" href="http://www.example32.com/showcookies.php%EF%BC%8C%E8%BF%99%E4%B8%AA%E9%93%BE%E6%8E%A5%E5%8F%AA%E6%98%AF%E6%98%BE%E7%A4%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8F%91%E9%80%81%E7%9A%84cookies%E3%80%82%E9%80%9A%E8%BF%87%E8%A7%82%E5%AF%9F%E6%98%BE%E7%A4%BA%E7%9A%84%E7%BB%93%E6%9E%9C%EF%BC%8C%E4%BD%A0%E5%8F%AF%E4%BB%A5%E7%9F%A5%E9%81%93%E5%93%AA%E4%BA%9Bcookie">www.example32.com/showcookies.php，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie</a> 会被浏览器发送。请完成以下要求：</p>
+<p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到 <a target="_blank" rel="noopener" href="http://www.example32.com/showcookies.php">www.example32.com/showcookies.php</a> ，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie 会被浏览器发送。请完成以下要求：</p>
 <p>• 请描述你所看到的情况，并解释为什么在某些情况下不发送一些cookie。</p>
 <p>在同站请求的三种情况下，三个cookie都被发送</p>
 <p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222143.png"></p>
@@ -290,7 +290,7 @@
 <p>从中可以得知strict值将阻止浏览器在所有跨网站浏览上下文中将 cookie 发送到目标站点，即使遵循常规链接也是如此。而 Lax 值为希望在用户从外部链接到达后维护用户登录会话的网站提供了安全性和可用性之间的合理平衡，因此在get请求中会发送而在post请求中为了防御CSRF而不会被发送。</p>
 <p>• 根据你的理解，请描述同站cookies 如何帮助服务器检测一个请求是跨站还是同站请求。</p>
 <p>只需要检查该请求中的Strict值是否还在，即可知道该请求是跨站还是同站请求，因为在同站请求中，三个值都会保留而跨站请求中Strict值都不会被发送。</p>
-<p>• 请描述你将如何使用同站cookie 机制来帮助Elgg 防御CSRF 攻击。只需要描述思路，无需实现。</p>
+<p>• 请描述你将如何使用同站cookie机制来帮助Elgg防御CSRF攻击。只需要描述思路，无需实现。</p>
 <p>利用同站cookie和token一同使用，利用strit值进行检查是否为跨站请求。在服务端产生同步token，为用户的每一次会话请求都进行验证。并且token不应该用cookies进行传送，而是作为响应缓存的一部分，比如HTML或者JSON响应。</p>
 
     </div>
