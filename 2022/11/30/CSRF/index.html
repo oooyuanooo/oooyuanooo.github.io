@@ -17,13 +17,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"preload":false,"CDN":null,"trigger":"auto","top_n_per_article":1,"unescape":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"preload":false,"CDN":null,"trigger":"auto","top_n_per_article":1,"unescape":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="一.实验目的本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。 在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Cross-Site Request Forgery Attack Lab">
-<meta property="og:url" content="http://example.com/2022/11/30/CSRF/index.html">
+<meta property="og:url" content="https://www.mrdothing.com/2022/11/30/CSRF/index.html">
 <meta property="og:site_name" content="Mr.Dothing">
 <meta property="og:description" content="一.实验目的本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。 在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg">
 <meta property="og:locale" content="en_US">
@@ -51,7 +51,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221440.png">
 
-<link rel="canonical" href="http://example.com/2022/11/30/CSRF/">
+<link rel="canonical" href="https://www.mrdothing.com/2022/11/30/CSRF/">
 
 
 <script id="page-configurations">
@@ -118,6 +118,7 @@
       <h1 class="site-title">Mr.Dothing</h1>
       <span class="logo-line-after"><i></i></span>
     </a>
+      <p class="site-subtitle" itemprop="description">da</p>
   </div>
 
   <div class="site-nav-right">
@@ -184,7 +185,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/11/30/CSRF/">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/30/CSRF/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
