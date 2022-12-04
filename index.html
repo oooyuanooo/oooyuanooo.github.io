@@ -1,39 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-    <meta charset="utf-8">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-    
-
-    <!-- 渲染优化 -->
-    <meta name="renderer" content="webkit">
-    <meta name="force-rendering" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    <meta name="HandheldFriendly" content="True" >
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-    <!--icon-->
-
-    
-    
-    
-    
-    
+<link rel="stylesheet" href="/css/main.css">
 
 
-    <!-- meta -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
 
-<title>Mr.Dothing</title>
-
-
-
-
-
-    <!-- OpenGraph -->
- 
-    <meta name="description" content="You get what you get.">
+  <meta name="description" content="You get what you get.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mr.Dothing">
 <meta property="og:url" content="https://www.mrdothing.com/index.html">
@@ -41,229 +28,797 @@
 <meta property="og:description" content="You get what you get.">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="Crazyoo">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 
+<link rel="canonical" href="https://www.mrdothing.com/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : true,
+    isPost : false,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
 
     
-<link rel="stylesheet" href="/css/style/main.css">
- 
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content index posts-expand">
+            
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/30/CSRF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/11/30/CSRF/" class="post-title-link" itemprop="url">Cross-Site Request Forgery Attack Lab</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2022-11-30 22:11:12 / Modified: 22:38:36" itemprop="dateCreated datePublished" datetime="2022-11-30T22:11:12+08:00">2022-11-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
 
     
     
     
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
+<p>在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg 中有针对CSRF 的防御措施，但为了达到本实验的目的，我们已经将这些防御措施关闭。本实验覆盖以下主题:</p>
+<p>1. 跨站请求伪造攻击</p>
+<p>2. CSRF 对抗措施：秘密令牌（secret token）和同站cookie（same-site cookie）</p>
+<p>3. HTTP GET 和POST 请求</p>
+<p>4. JavaScript 和Ajax</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：观察HTTP-请求"><a href="#2-1-Task-1：观察HTTP-请求" class="headerlink" title="2.1 Task 1：观察HTTP 请求"></a>2.1 Task 1：观察HTTP 请求</h3><p>在跨站请求伪造攻击中，我们需要伪造HTTP 请求。因此，我们需要知道一个合法的HTTP 请求是什么样子的，以及它使用什么参数等。为此，我们可以使用一个名为”HTTP Header Live” 的火狐浏览器插件。本任务的目标是熟悉这个工具。指导中给出了如何使用这个工具的说明(§ 5.1)。请使用这个工具在Elgg 中捕获一个HTTP GET 请求和一个HTTP POST 请求。请在你的报告中指出这些请求中所使用的参数。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221440.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221450.png"></p>
+<p>在合法用户进行登录利用该工具进行抓取http报文，可以分别得到上图所示的POST报文和GET报文</p>
+<p>在POST报文中，有elgg_token,elgg_ts,username和password等参数，而在GET报文中没有参数显示。</p>
+<h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站 <a target="_blank" rel="noopener" href="http://www.attacker32.com/">www.attacker32.com</a>  。假设你是Samy，描述你如何构建网页的内容，以便当Alice 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p>
+<p>实现思路：</p>
+<p>通过抓获合法添加好友过程中得到的报文，观察其中的参数结构，然后通过修改其参数，构建网页的内容</p>
+<p>实现步骤：</p>
+<p>首先登录到Samy的用户界面后，合法的把Alice添加为好友，在该过程中利用插件工具进行抓获http报文如下：</p>
+<p>可以看到其url请求为 ”<a target="_blank" rel="noopener" href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D">http://www.seed-server.com/action/friends/add?friend=56”</a> 开头，该56为Alice的guid</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221545.png"></p>
+<p>因此我们想要让Alice添加Samy为好友的话，需要把friend后的参数修改为Samy的guid。而Samy的guid可以在合法登录到Samy的用户界面后，通过网页的源码得到，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221601.png"></p>
+<p>最后根据得到的gid构造img上所附带的链接，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221614.png"></p>
+<p>攻击实现如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221635.png"></p>
+<p>在攻击页面中，点击链接后，刷新Alice的好友页面，就可以观察到Samy被成功添加为Alice的好友。</p>
+<h3 id="2-3-Task-3：使用POST-请求的CSRF-攻击"><a href="#2-3-Task-3：使用POST-请求的CSRF-攻击" class="headerlink" title="2.3 Task 3：使用POST 请求的CSRF 攻击"></a>2.3 Task 3：使用POST 请求的CSRF 攻击</h3><p>在把自己加入Alice 的朋友名单后，Samy 想进行更多的攻击。他想让Alice 在她的个人资料中写上”Samy is my Hero”，使得所有人都能够看到。当然，Alice 不喜欢Samy，更不用说把这个声明写进她的个人资料中。Samy 计划使用CSRF 攻击来实现这一目标，也就是这个Task 的目标。</p>
+<p>实现思路：</p>
+<p>同上一个任务中的方法，在合法用户修改个人资料的过程中，利用插件截获http报文后，根据报文中的参数进行修改攻击页面中的内容，即可实现攻击。</p>
+<p>实现步骤：</p>
+<p>首先在Samy的用户页面中，进行修改自己的个人资料，把个人描述修改为“Samy is my hero.”在提交过程中，利用插件进行捕获http报文，得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221711.png"></p>
+<p>可以看到该链接的网址以及报文中的参数内容，然后根据得到的报文对攻击网页的源码进行修改，即修改网页文件中的field中的参数以及p.action的内容。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221846.png"></p>
+<p>修改后，进入该攻击页面，即可成功修改Alice的个人资料如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221906.png"></p>
+<p>问题回答：</p>
+<p>问题1：如何获取Alice的guid？</p>
+<p>答：在上一个任务中，通过Samy在自己的用户页面添加Alice为好友的过程中，截获http报文，即可得到Alice的guid。</p>
+<p>问题2：如果Boby 想向任何访问他的恶意网页的人发动攻击。在这种情况下，他事先不知道谁在访问该网页。那么他还能发动CSRF 攻击来修改受害者的Elgg 资料吗？请解释原因。</p>
+<p>答：不可以。因为在攻击过程中需要知道受害者的guid并且预先设置好，如果是未知用户访问的话是不能够及时构造的。</p>
+<h3 id="2-4-Task-4：开启Elgg-的防御措施"><a href="#2-4-Task-4：开启Elgg-的防御措施" class="headerlink" title="2.4 Task 4：开启Elgg 的防御措施"></a>2.4 Task 4：开启Elgg 的防御措施</h3><p>开启防御措施要打开防御措施，首先要进入Elgg 容器的&#x2F;var&#x2F;www&#x2F;elgg&#x2F;vendor&#x2F;elgg&#x2F;elgg&#x2F;engine&#x2F;classes&#x2F;Elgg&#x2F;Security 文件夹，从Csrf.php 中删除return 语句。你可以使用一个内置在容器中的简单编辑器，名为nano 。在做了修改之后再次重复之前的攻击，看看你的攻击是否会成功。请指出捕获的HTTP 请求中的秘密令牌，并解释为什么攻击者为什么不能在CSRF 攻击中发送这些秘密令牌；是什么阻止了他们从网页上发现秘密令牌？</p>
+<p>实现步骤：</p>
+<p>首先在容器中修改文件内容，讲return语句注释掉，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221957.png"></p>
+<p>然后重新进行攻击，可以观察到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222034.png"></p>
+<p>可以发现两次攻击都无法成功，网页会报错”form is missing __token or __ts fields”</p>
+<p>捕获的http请求中的token如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222100.png"></p>
+<p>由于return注释掉后，会执行validate函数，提取出请求中的两个参数__token 和__ts，但是由于在此前构造请求时没有补充这两个参数，因而会报错，并且攻击会失败</p>
+<h3 id="2-5-Task-5：测试同站Cookie-方法"><a href="#2-5-Task-5：测试同站Cookie-方法" class="headerlink" title="2.5 Task 5：测试同站Cookie 方法"></a>2.5 Task 5：测试同站Cookie 方法</h3><p>当访问该网站时，浏览器上会设置三个cookie，分别是：cookie-normal、cookie-lax 和cookie-strict。正如其名称所示，第一个cookie 只是一个普通的cookie，第二个和第三个cookie 是两种不同类型的同站cookie（Lax 和Strict）。我们设计了两组实验来观察当发送HTTP 请求时，哪些cookie 会被附加到服务器上。通常情况下，属于服务器的所有cookie 都将被附加到请求中，除了同站cookie。</p>
+<p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到 <a target="_blank" rel="noopener" href="http://www.example32.com/showcookies.php">www.example32.com/showcookies.php</a> ，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie 会被浏览器发送。请完成以下要求：</p>
+<p>• 请描述你所看到的情况，并解释为什么在某些情况下不发送一些cookie。</p>
+<p>在同站请求的三种情况下，三个cookie都被发送</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222143.png"></p>
+<p>在跨站请求的情况下：</p>
+<p>Sending Get Request (link)：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222157.png"></p>
+<p>Sending Get Request (form)：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222254.png"></p>
+<p>Sending Post Request (form)：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222318.png"></p>
+<p>通过观察，可以得知，在跨站请求中，strict值都会阻止浏览器发送cookie到目标站点，而lax值则只有在post请求中才会被阻止发送。解释如下：</p>
+<p>查阅RFC文档中的<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7">samesite</a>部分可以得到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222333.png"></p>
+<p>从中可以得知strict值将阻止浏览器在所有跨网站浏览上下文中将 cookie 发送到目标站点，即使遵循常规链接也是如此。而 Lax 值为希望在用户从外部链接到达后维护用户登录会话的网站提供了安全性和可用性之间的合理平衡，因此在get请求中会发送而在post请求中为了防御CSRF而不会被发送。</p>
+<p>• 根据你的理解，请描述同站cookies 如何帮助服务器检测一个请求是跨站还是同站请求。</p>
+<p>只需要检查该请求中的Strict值是否还在，即可知道该请求是跨站还是同站请求，因为在同站请求中，三个值都会保留而跨站请求中Strict值都不会被发送。</p>
+<p>• 请描述你将如何使用同站cookie机制来帮助Elgg防御CSRF攻击。只需要描述思路，无需实现。</p>
+<p>利用同站cookie和token一同使用，利用strit值进行检查是否为跨站请求。在服务端产生同步token，为用户的每一次会话请求都进行验证。并且token不应该用cookies进行传送，而是作为响应缓存的一部分，比如HTML或者JSON响应。</p>
+
+      
+    </div>
 
     
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
-     
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/30/buffer_overflow/">
 
-    <!-- custom head -->
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
 
-<meta name="generator" content="Hexo 6.3.0"></head>
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/11/30/buffer_overflow/" class="post-title-link" itemprop="url">Buffer Overflow Attack Lab (Set-UID Version)</a>
+        </h2>
 
-    <body>
-        <div id="app" tabindex="-1">
-            <header class="header">
-    <div class="header__left">
-        <a href="/" class="button">
-            <span class="logo__text">Demo</span>
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2022-11-30 20:58:40 / Modified: 22:36:44" itemprop="dateCreated datePublished" datetime="2022-11-30T20:58:40+08:00">2022-11-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
+<p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p>
+<ol>
+<li>缓冲区溢出漏洞与攻击</li>
+<li>堆栈布局</li>
+<li>地址随机化，不可执行栈以及 StackGuard</li>
+<li>Shellcode (32-bit and 64-bit)</li>
+<li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li>
+</ol>
+<h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p>
+<p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p>
+<h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p>
+<h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p>
+<p>运行结果如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p>
+<p>解释说明：</p>
+<ul>
+<li><p>Shellcode 填写：</p>
+<p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p>
+</li>
+<li><p>Start 填写：</p>
+<p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p>
+</li>
+<li><p>Ret（返回地址）填写：</p>
+<p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p>
+<p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p>
+<p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p>
+<ul>
+<li><p>Offset 填写（64bit 程序同理）：</p>
+<p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p>
+<p>bof 函数的具体执行步骤，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p>
+<p>在调用strcpy 函数时加入断点：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p>
+<p>计算offset：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p>
+<p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p>
+</li>
+</ul>
+<h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p>
+<p>解释说明：</p>
+<p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p>
+<p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p>
+<h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p>
+<p>解释说明：</p>
+<p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p>
+<p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p>
+<h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p>
+<p>解释说明：</p>
+<p>填写方法同上一次任务，未遇到新的挑战。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p>
+<h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p>
+<p>运行结果：</p>
+<p>​	下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p>
+<p>​	下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p>
+<p>解释说明：</p>
+<p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p>
+<p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p>
+<p>运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p>
+<p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p>
+<h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p>
+<p>运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p>
+<p>解释说明：</p>
+<p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p>
+<p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p>
+<p>攻击结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p>
+<h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul>
+<li><p>打开 StackGuard 保护机制</p>
+<p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p>
+<p>运行结果如下：</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p>
+<p>​		解释说明：</p>
+<p>​		在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p>
+<p>​		原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p>
+<ul>
+<li><p>打开不可执行栈保护机制</p>
+<p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p>
+<p>运行结果如下：</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p>
+<p>​		解释说明：</p>
+<p>​		在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/11/Scripts/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/11/11/Scripts/" class="post-title-link" itemprop="url">Scripts</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2022-11-11 22:13:27 / Modified: 22:40:23" itemprop="dateCreated datePublished" datetime="2022-11-11T22:13:27+08:00">2022-11-11</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
+<h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p>
+<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p>
+<p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p>
+<h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p>
+<h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p>
+<p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p>
+<p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p>
+<p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p>
+<p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p>
+<h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p>
+<p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p>
+<p>条件操作码：对条件进行判断，产生一个布尔结果。</p>
+<h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure>
+<p>计算2+3的和并且判断其是否等于5</p>
+<p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p>
+<h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p>
+<p>锁定脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<p>解锁脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure>
+
+
+<p>组合后的验证脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/10/hello-world/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/11/10/hello-world/" class="post-title-link" itemprop="url">hello</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-11-10 19:08:57" itemprop="dateCreated datePublished" datetime="2022-11-10T19:08:57+08:00">2022-11-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-30 23:09:11" itemprop="dateModified" datetime="2022-11-30T23:09:11+08:00">2022-11-30</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
     </div>
-    <div class="header__right">
-        
-            <div class="navbar__menus">
-                
-                    <a href="/" class="navbar-menu button">首页</a>
-                
-                    <a href="/tags/" class="navbar-menu button">标签</a>
-                
-                    <a href="/archives/" class="navbar-menu button">归档</a>
-                
-                    <a href="/friends/" class="navbar-menu button">友链</a>
-                
-                    <a href="/page/" class="navbar-menu button">Page</a>
-                
-            </div>
-        
-        
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
         
 
         
-        
 
-        
-            <a class="dropdown-icon button" id="btn-dropdown" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width='24' height='24' fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" d="M3.314,4.8h13.372c0.41,0,0.743-0.333,0.743-0.743c0-0.41-0.333-0.743-0.743-0.743H3.314c-0.41,0-0.743,0.333-0.743,0.743C2.571,4.467,2.904,4.8,3.314,4.8z M16.686,15.2H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,15.2,16.686,15.2z M16.686,9.257H3.314c-0.41,0-0.743,0.333-0.743,0.743s0.333,0.743,0.743,0.743h13.372c0.41,0,0.743-0.333,0.743-0.743S17.096,9.257,16.686,9.257z"></path></svg></a>
-            <div class="dropdown-menus" id="dropdown-menus">
-                
-                    <a href="/" class="dropdown-menu button">首页</a>
-                
-                    <a href="/tags/" class="dropdown-menu button">标签</a>
-                
-                    <a href="/archives/" class="dropdown-menu button">归档</a>
-                
-                    <a href="/friends/" class="dropdown-menu button">友链</a>
-                
-                    <a href="/page/" class="dropdown-menu button">Page</a>
-                
-            </div>
-        
-    </div>
-</header>
-
-
-    <div class="cover">
-        <div class="cover__logo">
-            
-                <h1>Demo</h1>
-            
-        </div>
-        
-        
-            <div class="cover__intro">
-                <p>Hi, nice to meet you!</p>
- 
-            </div>
-        
-    </div>
-
-            <main class="main">
-    
-    <div class="post-list">
-        
-            
-                <div class='post-entry content-card'>
-                    <div class="post-entry__header"></div>
-<div class="post-entry__content">
-    <h2 class="post-entry__title">
-        Cross-Site Request Forgery Attack Lab
-    </h2>
-    
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
 </div>
-<div class="post-entry__meta">
-    <a href="/archives/2022/11/" class="post-meta__date button">2022-11-30</a>
-    
-    <span class="separate-dot"></span><a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" class="button">软件安全</a>
 
- 
-</div>
-<div class="post-entry__tags"><a href="/tags/seedlab2-0/" class="post-tags__link button"># seedlab2.0</a></div> 
-<a href="/2022/11/30/CSRF/" class="post-entry__link">Cross-Site Request Forgery Attack Lab</a>
-                </div>
-            
-                <div class='post-entry content-card'>
-                    <div class="post-entry__header"></div>
-<div class="post-entry__content">
-    <h2 class="post-entry__title">
-        Buffer Overflow Attack Lab (Set-UID Version)
-    </h2>
-    
-</div>
-<div class="post-entry__meta">
-    <a href="/archives/2022/11/" class="post-meta__date button">2022-11-30</a>
-    
-    <span class="separate-dot"></span><a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" class="button">软件安全</a>
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
 
- 
-</div>
-<div class="post-entry__tags"><a href="/tags/seedlab2-0/" class="post-tags__link button"># seedlab2.0</a></div> 
-<a href="/2022/11/30/buffer_overflow/" class="post-entry__link">Buffer Overflow Attack Lab (Set-UID Version)</a>
-                </div>
-            
-                <div class='post-entry content-card'>
-                    <div class="post-entry__header"></div>
-<div class="post-entry__content">
-    <h2 class="post-entry__title">
-        Scripts
-    </h2>
-    
-</div>
-<div class="post-entry__meta">
-    <a href="/archives/2022/11/" class="post-meta__date button">2022-11-11</a>
-    
- 
-</div>
-<div class="post-entry__tags"></div> 
-<a href="/2022/11/11/Scripts/" class="post-entry__link">Scripts</a>
-                </div>
-            
-                <div class='post-entry content-card'>
-                    <div class="post-entry__header"></div>
-<div class="post-entry__content">
-    <h2 class="post-entry__title">
-        hello
-    </h2>
-    
-</div>
-<div class="post-entry__meta">
-    <a href="/archives/2022/11/" class="post-meta__date button">2022-11-10</a>
-    
- 
-</div>
-<div class="post-entry__tags"></div> 
-<a href="/2022/11/10/hello-world/" class="post-entry__link">hello</a>
-                </div>
-            
         
-    </div>
-    
-
-
-</main>
-
-            <footer class="footer">
-    
-    
-
-
-    
-     
- 
-
- 
-    
-        
-        <p class="footer-copyright">
-            Copyright © 2022 <a href="/">Mr.Dothing</a>
-        </p>
-    
-    
-    <p>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme - <a href="https://github.com/ChrAlpha/hexo-theme-cards" target="_blank">Cards</a></p>
-</footer>
-
-        </div>
-         
-
- 
-
- 
-
- 
-
- 
-
-
-
- 
-
-
-
- 
-
-
-    
- 
-
- 
-
- 
-
- 
-
- 
-
- 
 
 
 
 
-    </body>
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
 </html>
