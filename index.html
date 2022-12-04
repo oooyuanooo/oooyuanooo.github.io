@@ -193,7 +193,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:14:31" itemprop="dateModified" datetime="2022-12-04T19:14:31+08:00">2022-12-04</time>
+                <time title="Modified: 2022-12-04 19:25:04" itemprop="dateModified" datetime="2022-12-04T19:25:04+08:00">2022-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -216,79 +216,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <span id="more"></span>
-
-<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
-<p>在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg 中有针对CSRF 的防御措施，但为了达到本实验的目的，我们已经将这些防御措施关闭。本实验覆盖以下主题:</p>
-<p>1. 跨站请求伪造攻击</p>
-<p>2. CSRF 对抗措施：秘密令牌（secret token）和同站cookie（same-site cookie）</p>
-<p>3. HTTP GET 和POST 请求</p>
-<p>4. JavaScript 和Ajax</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：观察HTTP-请求"><a href="#2-1-Task-1：观察HTTP-请求" class="headerlink" title="2.1 Task 1：观察HTTP 请求"></a>2.1 Task 1：观察HTTP 请求</h3><p>在跨站请求伪造攻击中，我们需要伪造HTTP 请求。因此，我们需要知道一个合法的HTTP 请求是什么样子的，以及它使用什么参数等。为此，我们可以使用一个名为”HTTP Header Live” 的火狐浏览器插件。本任务的目标是熟悉这个工具。指导中给出了如何使用这个工具的说明(§ 5.1)。请使用这个工具在Elgg 中捕获一个HTTP GET 请求和一个HTTP POST 请求。请在你的报告中指出这些请求中所使用的参数。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221440.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221450.png"></p>
-<p>在合法用户进行登录利用该工具进行抓取http报文，可以分别得到上图所示的POST报文和GET报文</p>
-<p>在POST报文中，有elgg_token,elgg_ts,username和password等参数，而在GET报文中没有参数显示。</p>
-<h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站 <a target="_blank" rel="noopener" href="http://www.attacker32.com/">www.attacker32.com</a>  。假设你是Samy，描述你如何构建网页的内容，以便当Alice 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p>
-<p>实现思路：</p>
-<p>通过抓获合法添加好友过程中得到的报文，观察其中的参数结构，然后通过修改其参数，构建网页的内容</p>
-<p>实现步骤：</p>
-<p>首先登录到Samy的用户界面后，合法的把Alice添加为好友，在该过程中利用插件工具进行抓获http报文如下：</p>
-<p>可以看到其url请求为 ”<a target="_blank" rel="noopener" href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D">http://www.seed-server.com/action/friends/add?friend=56”</a> 开头，该56为Alice的guid</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221545.png"></p>
-<p>因此我们想要让Alice添加Samy为好友的话，需要把friend后的参数修改为Samy的guid。而Samy的guid可以在合法登录到Samy的用户界面后，通过网页的源码得到，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221601.png"></p>
-<p>最后根据得到的gid构造img上所附带的链接，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221614.png"></p>
-<p>攻击实现如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221635.png"></p>
-<p>在攻击页面中，点击链接后，刷新Alice的好友页面，就可以观察到Samy被成功添加为Alice的好友。</p>
-<h3 id="2-3-Task-3：使用POST-请求的CSRF-攻击"><a href="#2-3-Task-3：使用POST-请求的CSRF-攻击" class="headerlink" title="2.3 Task 3：使用POST 请求的CSRF 攻击"></a>2.3 Task 3：使用POST 请求的CSRF 攻击</h3><p>在把自己加入Alice 的朋友名单后，Samy 想进行更多的攻击。他想让Alice 在她的个人资料中写上”Samy is my Hero”，使得所有人都能够看到。当然，Alice 不喜欢Samy，更不用说把这个声明写进她的个人资料中。Samy 计划使用CSRF 攻击来实现这一目标，也就是这个Task 的目标。</p>
-<p>实现思路：</p>
-<p>同上一个任务中的方法，在合法用户修改个人资料的过程中，利用插件截获http报文后，根据报文中的参数进行修改攻击页面中的内容，即可实现攻击。</p>
-<p>实现步骤：</p>
-<p>首先在Samy的用户页面中，进行修改自己的个人资料，把个人描述修改为“Samy is my hero.”在提交过程中，利用插件进行捕获http报文，得到如下结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221711.png"></p>
-<p>可以看到该链接的网址以及报文中的参数内容，然后根据得到的报文对攻击网页的源码进行修改，即修改网页文件中的field中的参数以及p.action的内容。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221846.png"></p>
-<p>修改后，进入该攻击页面，即可成功修改Alice的个人资料如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221906.png"></p>
-<p>问题回答：</p>
-<p>问题1：如何获取Alice的guid？</p>
-<p>答：在上一个任务中，通过Samy在自己的用户页面添加Alice为好友的过程中，截获http报文，即可得到Alice的guid。</p>
-<p>问题2：如果Boby 想向任何访问他的恶意网页的人发动攻击。在这种情况下，他事先不知道谁在访问该网页。那么他还能发动CSRF 攻击来修改受害者的Elgg 资料吗？请解释原因。</p>
-<p>答：不可以。因为在攻击过程中需要知道受害者的guid并且预先设置好，如果是未知用户访问的话是不能够及时构造的。</p>
-<h3 id="2-4-Task-4：开启Elgg-的防御措施"><a href="#2-4-Task-4：开启Elgg-的防御措施" class="headerlink" title="2.4 Task 4：开启Elgg 的防御措施"></a>2.4 Task 4：开启Elgg 的防御措施</h3><p>开启防御措施要打开防御措施，首先要进入Elgg 容器的&#x2F;var&#x2F;www&#x2F;elgg&#x2F;vendor&#x2F;elgg&#x2F;elgg&#x2F;engine&#x2F;classes&#x2F;Elgg&#x2F;Security 文件夹，从Csrf.php 中删除return 语句。你可以使用一个内置在容器中的简单编辑器，名为nano 。在做了修改之后再次重复之前的攻击，看看你的攻击是否会成功。请指出捕获的HTTP 请求中的秘密令牌，并解释为什么攻击者为什么不能在CSRF 攻击中发送这些秘密令牌；是什么阻止了他们从网页上发现秘密令牌？</p>
-<p>实现步骤：</p>
-<p>首先在容器中修改文件内容，讲return语句注释掉，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221957.png"></p>
-<p>然后重新进行攻击，可以观察到如下结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222034.png"></p>
-<p>可以发现两次攻击都无法成功，网页会报错”form is missing __token or __ts fields”</p>
-<p>捕获的http请求中的token如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222100.png"></p>
-<p>由于return注释掉后，会执行validate函数，提取出请求中的两个参数__token 和__ts，但是由于在此前构造请求时没有补充这两个参数，因而会报错，并且攻击会失败</p>
-<h3 id="2-5-Task-5：测试同站Cookie-方法"><a href="#2-5-Task-5：测试同站Cookie-方法" class="headerlink" title="2.5 Task 5：测试同站Cookie 方法"></a>2.5 Task 5：测试同站Cookie 方法</h3><p>当访问该网站时，浏览器上会设置三个cookie，分别是：cookie-normal、cookie-lax 和cookie-strict。正如其名称所示，第一个cookie 只是一个普通的cookie，第二个和第三个cookie 是两种不同类型的同站cookie（Lax 和Strict）。我们设计了两组实验来观察当发送HTTP 请求时，哪些cookie 会被附加到服务器上。通常情况下，属于服务器的所有cookie 都将被附加到请求中，除了同站cookie。</p>
-<p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到 <a target="_blank" rel="noopener" href="http://www.example32.com/showcookies.php">www.example32.com/showcookies.php</a> ，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie 会被浏览器发送。请完成以下要求：</p>
-<p>• 请描述你所看到的情况，并解释为什么在某些情况下不发送一些cookie。</p>
-<p>在同站请求的三种情况下，三个cookie都被发送</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222143.png"></p>
-<p>在跨站请求的情况下：</p>
-<p>Sending Get Request (link)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222157.png"></p>
-<p>Sending Get Request (form)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222254.png"></p>
-<p>Sending Post Request (form)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222318.png"></p>
-<p>通过观察，可以得知，在跨站请求中，strict值都会阻止浏览器发送cookie到目标站点，而lax值则只有在post请求中才会被阻止发送。解释如下：</p>
-<p>查阅RFC文档中的<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7">samesite</a>部分可以得到如下内容：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222333.png"></p>
-<p>从中可以得知strict值将阻止浏览器在所有跨网站浏览上下文中将 cookie 发送到目标站点，即使遵循常规链接也是如此。而 Lax 值为希望在用户从外部链接到达后维护用户登录会话的网站提供了安全性和可用性之间的合理平衡，因此在get请求中会发送而在post请求中为了防御CSRF而不会被发送。</p>
-<p>• 根据你的理解，请描述同站cookies 如何帮助服务器检测一个请求是跨站还是同站请求。</p>
-<p>只需要检查该请求中的Strict值是否还在，即可知道该请求是跨站还是同站请求，因为在同站请求中，三个值都会保留而跨站请求中Strict值都不会被发送。</p>
-<p>• 请描述你将如何使用同站cookie机制来帮助Elgg防御CSRF攻击。只需要描述思路，无需实现。</p>
-<p>利用同站cookie和token一同使用，利用strit值进行检查是否为跨站请求。在服务端产生同步token，为用户的每一次会话请求都进行验证。并且token不应该用cookies进行传送，而是作为响应缓存的一部分，比如HTML或者JSON响应。</p>
-
+          <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/11/30/CSRF/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -338,7 +274,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:24:46" itemprop="dateModified" datetime="2022-12-04T19:24:46+08:00">2022-12-04</time>
+                <time title="Modified: 2022-12-04 19:25:01" itemprop="dateModified" datetime="2022-12-04T19:25:01+08:00">2022-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -419,7 +355,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:14:28" itemprop="dateModified" datetime="2022-12-04T19:14:28+08:00">2022-12-04</time>
+                <time title="Modified: 2022-12-04 19:25:02" itemprop="dateModified" datetime="2022-12-04T19:25:02+08:00">2022-12-04</time>
               </span>
 
           
@@ -433,47 +369,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <span id="more"></span>
-<h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
-<h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p>
-<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p>
-<p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p>
-<h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p>
-<h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p>
-<p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p>
-<p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p>
-<p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p>
-<p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p>
-<h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p>
-<p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p>
-<p>条件操作码：对条件进行判断，产生一个布尔结果。</p>
-<h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure>
-<p>计算2+3的和并且判断其是否等于5</p>
-<p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p>
-<h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p>
-<p>锁定脚本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>解锁脚本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure>
-
-
-<p>组合后的验证脚本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          <h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/11/11/Scripts/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
