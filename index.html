@@ -338,7 +338,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:14:32" itemprop="dateModified" datetime="2022-12-04T19:14:32+08:00">2022-12-04</time>
+                <time title="Modified: 2022-12-04 19:24:46" itemprop="dateModified" datetime="2022-12-04T19:24:46+08:00">2022-12-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -361,119 +361,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <span id="more"></span>
-<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
-<p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p>
-<ol>
-<li>缓冲区溢出漏洞与攻击</li>
-<li>堆栈布局</li>
-<li>地址随机化，不可执行栈以及 StackGuard</li>
-<li>Shellcode (32-bit and 64-bit)</li>
-<li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li>
-</ol>
-<h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p>
-<p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p>
-<h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p>
-<h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p>
-<p>运行结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p>
-<p>解释说明：</p>
-<ul>
-<li><p>Shellcode 填写：</p>
-<p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p>
-</li>
-<li><p>Start 填写：</p>
-<p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p>
-</li>
-<li><p>Ret（返回地址）填写：</p>
-<p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p>
-<p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p>
-<p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p>
-<ul>
-<li><p>Offset 填写（64bit 程序同理）：</p>
-<p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p>
-<p>bof 函数的具体执行步骤，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p>
-<p>在调用strcpy 函数时加入断点：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p>
-<p>计算offset：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p>
-<p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p>
-</li>
-</ul>
-<h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p>
-<p>解释说明：</p>
-<p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p>
-<p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p>
-<h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p>
-<p>解释说明：</p>
-<p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p>
-<p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p>
-<h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p>
-<p>解释说明：</p>
-<p>填写方法同上一次任务，未遇到新的挑战。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p>
-<h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p>
-<p>运行结果：</p>
-<p>​	下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p>
-<p>​	下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p>
-<p>解释说明：</p>
-<p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p>
-<p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p>
-<p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p>
-<h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p>
-<p>解释说明：</p>
-<p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p>
-<p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p>
-<p>攻击结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p>
-<h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul>
-<li><p>打开 StackGuard 保护机制</p>
-<p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p>
-<p>​		原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p>
-<ul>
-<li><p>打开不可执行栈保护机制</p>
-<p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>
-
+          <h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/11/30/buffer_overflow/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
