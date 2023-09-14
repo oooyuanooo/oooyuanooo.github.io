@@ -269,4 +269,83 @@
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
   </entry>
+  <entry>
+    <title>条件竞争漏洞</title>
+    <url>/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/</url>
+    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。</p>
+<p>本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限的方案。除了攻击方法外，还将引导学生了解几种可用于对抗竞争条件攻击的保护方案。学生需要评估这些方案是否有效，并解释原因。本实验涵盖以下主题：</p>
+<p>1. 竞争条件漏洞</p>
+<p>2. 粘滞符号链接保护</p>
+<p>3. 最小权限原则</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：选择目标"><a href="#2-1-Task-1：选择目标" class="headerlink" title="2.1 Task 1：选择目标"></a>2.1 Task 1：选择目标</h3><p>我们希望利用程序中的竞争条件漏洞。我们选择以普通用户无法写入的口令文件&#x2F;etc&#x2F;passwd 为目标。通过利用该漏洞，我们希望向口令文件添加一条记录，目的是创建一个具有 root 权限的新用户账号.在该口令文件中，每个用户都有一个条目，该条目由七个字段组成并用冒号 (:) 分隔。root 用户的条目如下所示。</p>
+<table>
+<thead>
+<tr>
+<th>root: x :0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash</th>
+</tr>
+</thead>
+</table>
+<p>为了验证 magic 值口令是否有效，我们（作为超级用户）手动将以下条目添加到&#x2F;etc&#x2F;passwd文件的末尾。请在报告中说明你是否可以在不键入口令的情况下登录 test 账户，并检查你是否具有 root 权限。</p>
+<table>
+<thead>
+<tr>
+<th>test:U6aMy0wojraho:0:0:test:&#x2F;root:&#x2F;bin&#x2F;bash</th>
+</tr>
+</thead>
+</table>
+<p>利用gedit打开并修改&#x2F;etc&#x2F;passwd 文件，然后进行登录如下，证明具有root权限</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20230914090952.png"></p>
+<h3 id="2-2-Task-2：发起竞争条件攻击"><a href="#2-2-Task-2：发起竞争条件攻击" class="headerlink" title="2.2 Task 2：发起竞争条件攻击"></a>2.2 Task 2：发起竞争条件攻击</h3><p>此任务的目标是利用前面列出的易受攻击的 Set-UID 程序中的竞争条件漏洞。最终目标是获得 root权限。攻击的最关键步骤是使&#x2F;tmp&#x2F;XYZ 指向口令文件，该步骤必须发生在检查和使用之间的窗口内；即在易受攻击程序中的 access 和 fopen 调用之间。</p>
+<h4 id="Task-2-A：模拟一个缓慢的机器"><a href="#Task-2-A：模拟一个缓慢的机器" class="headerlink" title="Task 2.A：模拟一个缓慢的机器"></a>Task 2.A：模拟一个缓慢的机器</h4><p>假设机器非常慢，在 access() 和 fopen() 调用之间有一个 10 秒的时间窗口。通过此添加，vulp 程序（重新编译时)将暂停并将控制权交给操作系统 10 秒。我们的工作是手动执行一些操作，因此当程序在 10 秒后恢复时，该程序可以帮助你将 root 帐户添加到系统中。请演示如何实现这一点。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140912547.png"></p>
+<p>再漏洞程序中进行添加如上代码后，重新编译该程序，并按实验手册进行：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140913020.png"></p>
+<h4 id="Task-2-B：进行真实攻击"><a href="#Task-2-B：进行真实攻击" class="headerlink" title="Task 2.B：进行真实攻击"></a>Task 2.B：进行真实攻击</h4><p>在模拟攻击中，我们使用“ln-s”命令创建&#x2F;更改符号链接。现在我们需要在一个程序中进行。我们可以在 C 中使用 symlink() 来创建符号链接。由于 Linux 不允许在链接已经存在的情况下创建链接，因此我们需要先删除旧链接。下面的 C 代码片段显示了如何删除链接，然后使&#x2F;tmp&#x2F;XYZ 指向&#x2F;etc&#x2F;passwd。请编写你的攻击程序。如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140914093.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140915864.png"></p>
+<p>我们需要多次运行漏洞程序，因此编写一个程序来自动执行此过程。为了避免手动向漏洞程序 vulp 键入输入，我们可以使用输入重定向。也就是说，我们将输入保存在一个文件中，并要求 vulp 使用“vulp &lt; inputFile”从该文件获取输入。我们也可以使用 pipe（稍后将给出一个示例）。该攻击可能需要一段时间才能成功修改口令文件，因此我们需要一种方法来自动检测攻击是否成功。很多方法可以满足此要求；一种简单的方法是监控文件的时间戳。下面的 shell 脚本运行“ls -l”命令，该命令输出关于文件的几条信息，包括上次修改的时间。通过将命令的输出与之前生成的输出进行比较，我们可以判断文件是否已被修改。以下 shell 脚本循环执行易受攻击的程序（vulp），输入由 echo 命令（通过一个 pipe）提供。你需要决定实际输入的内容。如果攻击成功，即 passwd 被修改，则 shell 脚本将停止。本任务需要一定的耐心，通常你能够在 5 分钟内成功。</p>
+<p>执行攻击程序和脚本如下：</p>
+<p>在攻击过程中，可以观察到XYZ文件的符号链接一直在被修改，说明程序执行成功，等待一段时候后：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140916090.png"></p>
+<p>可以观察到攻击成功，可以以test用户身份登录并且验证root权限。</p>
+<h4 id="Task-2-C：一种改进的攻击方法"><a href="#Task-2-C：一种改进的攻击方法" class="headerlink" title="Task 2.C：一种改进的攻击方法"></a>Task 2.C：一种改进的攻击方法</h4><p>首先创建两个符号链接&#x2F;tmp&#x2F;XYZ 和&#x2F;tmp&#x2F;ABC，然后使用 renameat2 系统调用来原子地交换它们。这允许我们在不引入任何竞争条件的情况下更改&#x2F;tmp&#x2F;XYZ 指向的内容。请使用此新策略修改你的攻击策略，然后重试攻击。如果一切正确，你的攻击应该能够成功</p>
+<p>修改后的攻击程序如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918310.png"></p>
+<p>执行此攻击程序和脚本，结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918449.png"></p>
+<p>可以观察到攻击一次便成功，可以以test用户身份登录并且验证root权限。</p>
+<h3 id="2-3-Task-3：预防措施"><a href="#2-3-Task-3：预防措施" class="headerlink" title="2.3 Task 3：预防措施"></a>2.3 Task 3：预防措施</h3><h4 id="Task-3-A：应用最小权限原则"><a href="#Task-3-A：应用最小权限原则" class="headerlink" title="Task 3.A：应用最小权限原则"></a>Task 3.A：应用最小权限原则</h4><p>本实验中，漏洞程序的根本问题是违反了最小权限原则。程序员考虑到运行程序的用户可能权限过高，所以他&#x2F;她引入了 access() 来限制用户的能力。然而，这不是正确的方法。更好的方法是应用最小权限原则；也就是说，如果用户不需要某些特权，则该特权需要被禁用。</p>
+<p>我们可以使用 seteuid 系统调用暂时禁用 root 权限，然后在必要时启用它。请使用此方法修复程序中的漏洞，然后重复攻击。你能成功吗？请报告你的观察结果并提供解释。</p>
+<p>修改漏洞程序如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919935.png"></p>
+<p>重新对程序进行编译并且执行改进后的攻击程序和脚本，结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919341.png"></p>
+<p>发现攻击始终失败。解释如下：</p>
+<p>调用open()函数的时候，没有root权限，因而无法打开&#x2F;tmp&#x2F;XYZ指向的受的文件passwd。</p>
+<h4 id="Task-3-B：使用-Ubuntu-的内置方案"><a href="#Task-3-B：使用-Ubuntu-的内置方案" class="headerlink" title="Task 3.B：使用 Ubuntu 的内置方案"></a>Task 3.B：使用 Ubuntu 的内置方案</h4><p>Ubuntu 10.10 和更高版本附带了一个内置的防止竞争条件攻击的保护方案。在此任务中，你需要使用以下命令重新启用保护：</p>
+<table>
+<thead>
+<tr>
+<th>$ sudo sysctl -w fs.protected_symlinks&#x3D;1</th>
+</tr>
+</thead>
+</table>
+<p>执行该命令后，重新进行攻击，观察结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140920171.png"></p>
+<p>发现攻击失败，此时XYZ文件的所有者已经成为root。</p>
+<p>解释以下内容：</p>
+<p>1. 该保护方案是如何工作的？</p>
+<p>因为在这种情况下，XYZ文件的所有者是 root，tmp目录的所有者是 root，符号链接所有者是seed。 因而访问将被拒绝</p>
+<p>2. 这个方案有什么局限性？</p>
+<p>该机制仅适用于启用了粘滞位的目录，像 &#x2F;tmp 或 &#x2F;var&#x2F;tmp 这样的粘性位目录。 因此攻击者可以利用其他目录中的竞争条件并获得访问权限。</p>
+<h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p>
+<p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
+]]></content>
+      <categories>
+        <category>软件安全</category>
+      </categories>
+      <tags>
+        <tag>seedlab2.0</tag>
+      </tags>
+  </entry>
 </search>

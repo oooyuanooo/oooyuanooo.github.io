@@ -20,30 +20,45 @@
     var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="You get what you get.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Mr.Dothing">
-<meta property="og:url" content="https://www.mrdothing.com/index.html">
+  <meta name="description" content="一.实验目的本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。 本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限">
+<meta property="og:type" content="article">
+<meta property="og:title" content="条件竞争漏洞">
+<meta property="og:url" content="https://www.mrdothing.com/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/index.html">
 <meta property="og:site_name" content="Mr.Dothing">
-<meta property="og:description" content="You get what you get.">
+<meta property="og:description" content="一.实验目的本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。 本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20230914090952.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140912547.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140913020.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140914093.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140915864.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140916090.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918310.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918449.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919935.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919341.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140920171.png">
+<meta property="article:published_time" content="2023-09-14T01:20:43.097Z">
+<meta property="article:modified_time" content="2023-09-14T01:23:12.751Z">
 <meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20230914090952.png">
 
-<link rel="canonical" href="https://www.mrdothing.com/">
+<link rel="canonical" href="https://www.mrdothing.com/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Mr.Dothing</title>
+  <title>条件竞争漏洞 | Mr.Dothing</title>
   
 
 
@@ -156,9 +171,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
@@ -174,10 +190,9 @@
       <meta itemprop="name" content="Mr.Dothing">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/" class="post-title-link" itemprop="url">条件竞争漏洞</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          条件竞争漏洞
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -210,7 +225,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。</p>
+        <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。</p>
 <p>本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限的方案。除了攻击方法外，还将引导学生了解几种可用于对抗竞争条件攻击的保护方案。学生需要评估这些方案是否有效，并解释原因。本实验涵盖以下主题：</p>
 <p>1. 竞争条件漏洞</p>
 <p>2. 粘滞符号链接保护</p>
@@ -279,327 +294,33 @@
 <h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p>
 <p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/30/CSRF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Crazyoo">
-      <meta itemprop="description" content="You get what you get.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Mr.Dothing">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/11/30/CSRF/" class="post-title-link" itemprop="url">Cross-Site Request Forgery Attack Lab</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2022-11-30 22:11:12" itemprop="dateCreated datePublished" datetime="2022-11-30T22:11:12+08:00">2022-11-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:25:04" itemprop="dateModified" datetime="2022-12-04T19:25:04+08:00">2022-12-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/11/30/CSRF/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/30/buffer_overflow/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Crazyoo">
-      <meta itemprop="description" content="You get what you get.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Mr.Dothing">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/11/30/buffer_overflow/" class="post-title-link" itemprop="url">Buffer Overflow Attack Lab (Set-UID Version)</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2022-11-30 20:58:40" itemprop="dateCreated datePublished" datetime="2022-11-30T20:58:40+08:00">2022-11-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:25:01" itemprop="dateModified" datetime="2022-12-04T19:25:01+08:00">2022-12-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/11/30/buffer_overflow/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/30/CSRF/" rel="prev" title="Cross-Site Request Forgery Attack Lab">
+      <i class="fa fa-chevron-left"></i> Cross-Site Request Forgery Attack Lab
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/11/Scripts/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Crazyoo">
-      <meta itemprop="description" content="You get what you get.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Mr.Dothing">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/11/11/Scripts/" class="post-title-link" itemprop="url">Scripts</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2022-11-11 22:13:27" itemprop="dateCreated datePublished" datetime="2022-11-11T22:13:27+08:00">2022-11-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:25:02" itemprop="dateModified" datetime="2022-12-04T19:25:02+08:00">2022-12-04</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/11/11/Scripts/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/10/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Crazyoo">
-      <meta itemprop="description" content="You get what you get.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Mr.Dothing">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/11/10/hello-world/" class="post-title-link" itemprop="url">hello</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2022-11-10 19:08:57" itemprop="dateCreated datePublished" datetime="2022-11-10T19:08:57+08:00">2022-11-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-12-04 19:14:29" itemprop="dateModified" datetime="2022-12-04T19:14:29+08:00">2022-12-04</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/11/10/hello-world/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-
   
 
 
@@ -652,6 +373,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">一.实验目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E4%B8%8E%E7%BB%93%E6%9E%9C"><span class="nav-number">2.</span> <span class="nav-text">二.实验步骤与结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Task-1%EF%BC%9A%E9%80%89%E6%8B%A9%E7%9B%AE%E6%A0%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Task 1：选择目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Task-2%EF%BC%9A%E5%8F%91%E8%B5%B7%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Task 2：发起竞争条件攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-A%EF%BC%9A%E6%A8%A1%E6%8B%9F%E4%B8%80%E4%B8%AA%E7%BC%93%E6%85%A2%E7%9A%84%E6%9C%BA%E5%99%A8"><span class="nav-number">2.2.1.</span> <span class="nav-text">Task 2.A：模拟一个缓慢的机器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-B%EF%BC%9A%E8%BF%9B%E8%A1%8C%E7%9C%9F%E5%AE%9E%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.2.</span> <span class="nav-text">Task 2.B：进行真实攻击</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-C%EF%BC%9A%E4%B8%80%E7%A7%8D%E6%94%B9%E8%BF%9B%E7%9A%84%E6%94%BB%E5%87%BB%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.3.</span> <span class="nav-text">Task 2.C：一种改进的攻击方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Task-3%EF%BC%9A%E9%A2%84%E9%98%B2%E6%8E%AA%E6%96%BD"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Task 3：预防措施</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-A%EF%BC%9A%E5%BA%94%E7%94%A8%E6%9C%80%E5%B0%8F%E6%9D%83%E9%99%90%E5%8E%9F%E5%88%99"><span class="nav-number">2.3.1.</span> <span class="nav-text">Task 3.A：应用最小权限原则</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-B%EF%BC%9A%E4%BD%BF%E7%94%A8-Ubuntu-%E7%9A%84%E5%86%85%E7%BD%AE%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.2.</span> <span class="nav-text">Task 3.B：使用 Ubuntu 的内置方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E6%80%9D%E8%80%83%E9%A2%98"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 思考题</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
