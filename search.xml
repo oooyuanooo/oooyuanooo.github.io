@@ -128,6 +128,134 @@
 ]]></content>
   </entry>
   <entry>
+    <title>hello</title>
+    <url>/2022/11/10/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/2023/09/14/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E4%B8%8ESetuid%E5%AE%9E%E9%AA%8C/</url>
+    <content><![CDATA[<h1 id="环境变量与Setuid实验"><a href="#环境变量与Setuid实验" class="headerlink" title="环境变量与Setuid实验"></a><em>环境变量与Setuid实验</em></h1><p>实验时间 <em>2022</em> 年 <em>11</em> 月 <em>14</em> 日</p>
+<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让你理解环境变量是如何影响程序和系统的行为的。环境变量是存储在进程中的一系列动态命名的值，可以影响计算机上进程的行为方式。自从1979 年Unix 引入环境变量以来，大多数操作系统也开始采用环境变量。尽管环境变量会影响程序的行为，但是它是如何产生影响的，许多程序员并不真正理解。因此，如果一个程序利用了环境变量但是程序员不清楚它的运用，就可能会导致程序漏洞。</p>
+<p>在本实验中，你将理解环境变量是如何工作，子进程是如何继承父进程的环境变量的，以及环境变量如何影响系统&#x2F;程序的行为的。我们还会特别了解环境变量是如何影响Set-UID 特权程序的行为的。本实验涵盖以下主题:</p>
+<p>1. 环境变量</p>
+<p>2. Set-UID 程序</p>
+<p>3. 安全地调用外部程序</p>
+<p>4. 权限泄漏</p>
+<p>5. 动态装载器&#x2F;链接器</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：配置环境变量"><a href="#2-1-Task-1：配置环境变量" class="headerlink" title="2.1 Task 1：配置环境变量"></a>2.1 Task 1：配置环境变量</h3><p>本任务中，我们学习设置和删除环境变量的指令。我们用Bash 来完成。用户使用的默认的shell 设置在文件&#x2F;etc&#x2F;passwd 中（每一项的最后一个字段）。你可以用chsh 命令来修改shell 程序（本实验无需修改）。请完成以下任务：</p>
+<p>• 使用printenv 或者env 指令来打印环境变量。如果你对某个特定的环境变量感兴趣，比如PWD， 你可以用指令“printenv PWD”或者“env | grep PWD”。</p>
+<p>我们可以打印全部环境变量以及PWD如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140936255.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140937831.png"></p>
+<p>• 使用export 和unset 来设置或者取消环境变量。注意: 这两个指令不是单独的程序；它们是两个Bash 的内部指令（即，你不能在Bash 外调用它们噢）</p>
+<p>设置一个新的环境变量然后取消 MYENV，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942383.png"></p>
+<h3 id="2-2-Task-2-从父进程向子进程传递环境变量"><a href="#2-2-Task-2-从父进程向子进程传递环境变量" class="headerlink" title="2.2 Task 2: 从父进程向子进程传递环境变量"></a>2.2 Task 2: 从父进程向子进程传递环境变量</h3><p>本任务中，我们研究子进程是如何继承父进程的环境变量的。Unix 操作系统中，fork() 系统调用会复制发起调用的进程，创建一个新进程。新进程称作子进程，被复制的进程称作父进程。然而，有些东西是没有被子进程继承的（在命令行中输入指令man fork，可以查看fork() 的指南）。在本任务中，我们想要知道子进程是否继承了父进程的环境变量。</p>
+<p>Step1：编译并运行 myprintenv.c 文件，将输出保存到一个文件中</p>
+<p>Step2：注释掉子进程的语句，取消注释父进程printenv()语句，再次编译并运行代码，将结果保存在另一个文件中。</p>
+<p>两次的运行输出结果如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942584.png"></p>
+<p>Step3：使用diff命令比较两个文件的差异，描述你得出的结论。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943286.png"></p>
+<p>可以观察到两个文件只有文件名不同，其余环境变量均相同，说明在Linux中子进程继承了父进程除名字外的所有环境变量。</p>
+<h3 id="2-3-Task3：环境变量与execve"><a href="#2-3-Task3：环境变量与execve" class="headerlink" title="2.3 Task3：环境变量与execve()"></a>2.3 Task3：环境变量与execve()</h3><p>本任务中，我们研究通过execve() 运行一个新程序，环境变量是如何受影响的。函数execve() 调用系统调用来加载新命令并执行它；这个函数永远不会返回。没有创建新进程；相反，调用进程的代码段、数据段、bss 段和栈被加载的程序覆盖。本质上，execve() 在调用进程中运行了新程序。我们对环境变量发生了什么感兴趣；它们会被新程序自动继承吗？</p>
+<p>Step1：编译并运行给出程序，描述观察。如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943684.png"></p>
+<p>可以看到该程序编译运行后没有打印任何内容</p>
+<p>Step2：修改execve()的调用内容，重新编译并运行程序，描述观察。如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944354.png"></p>
+<p>可以观察到该程序会输出打印当前文件下的所有环境变量。</p>
+<p>Step3：请就新程序如何获得其环境变量得出你的结论。</p>
+<p>首先对execve()函数进行分析，可以得到其有三个参数如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944722.png"></p>
+<p>其中filename是一个二进制可执行文件，argv是调用程序执行的参数序列，也就是我们要调用程序所需要传入的参数，envp是参数序列作为新程序的环境。</p>
+<p>在第一步中，新程序的环境输入为NULL，表示终止符，并未输入键值对作为环境变量，因而其输出打印的结果为空，而在第二步中将environ作文新程序的环境输入，该指针变量指向包含所有环境变量的一个列表，因而将其赋予新进程即可以打印出当前所有的环境变量。</p>
+<h3 id="2-4-Task-4：环境变量和system"><a href="#2-4-Task-4：环境变量和system" class="headerlink" title="2.4 Task 4：环境变量和system()"></a>2.4 Task 4：环境变量和system()</h3><p>本任务中，我们研究通过system() 运行一个新程序，环境变量是如何受影响的。system() 也是用来执行一个命令的，但是和execve() 直接执行一个命令不同，system() 实际上执行“&#x2F;bin&#x2F;sh -c command”，即它先执行&#x2F;bin&#x2F;sh，然后让shell 执行这个command。</p>
+<p>如果你查阅system() 函数的实现，你会发现它使用execl() 来执行&#x2F;bin&#x2F;sh；execl() 调用execve()，并将环境变量数组传递给它。因此，使用system() 时，调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh。请编译并运行以下程序来验证这一点。</p>
+<p>首先对system函数进行分析，其用于执行shell（Linux&#x2F;Unix系统）命令，只有一个参数command，即命令名。调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh，运行结果如下图，会打印出当前的环境变量</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140945125.png"></p>
+<h3 id="2-5-Task-5：环境变量与Set-UID程序"><a href="#2-5-Task-5：环境变量与Set-UID程序" class="headerlink" title="2.5 Task 5：环境变量与Set-UID程序"></a>2.5 Task 5：环境变量与Set-UID程序</h3><p>Set-UID 是Unix 系统中重要的安全机制。当Set-UID 程序执行时，它将获得程序拥有者的权限。如果程序执行者是root，所有执行该程序的人都将以root 权限执行该程序。Set-UID 使得我们可以做许多有趣的事情，但是在执行Set-UID 程序时，会提高执行者的权限，这是有风险的。尽管Set-UID 的行为是由他们的程序逻辑所决定的，而不是用户决定的，用户却可以通过环境变量来修改Set-UID 的行为。为了理解Set-UID 程序是如何被影响的，我们首先弄清楚Set-UID 程序的环境变量是否由用户程序继承而来。</p>
+<p>Step1：编写所给出的程序，打印当前进程的所有环境变量。</p>
+<p>Step2：编译上述程序得到foo，将其所有者更改为root，并使其成为一个Set-UID程序</p>
+<p>Step3：在shell中设置给出的环境变量，这些环境变量是在普通用户的shell 进程中设置的。在你的shell 中运行第2 步中的Set-UID程序。在shell 中键入程序名后，shell 会fork 一个子进程，并使用子进程来运行该程序。请检查你在shell进程（父进程）中设置的所有环境变量是否都进入了Set-UID 子进程。描述你的观察。如果你有惊奇的发现，请描述它们。</p>
+<p>首先编写给出程序，并且将其设置为Set-UID程序，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946892.png"></p>
+<p>然后查看所给出变量是否存在，并且利用export命令设置环境变量如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946056.png"></p>
+<p>可以观察到在shell中本来只有PATH存在。</p>
+<p>在子进程中查看环境变量，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947096.png"></p>
+<p>可以看到PATH和MYENV环境变量被继承，而LD_LIBRARY_PATH并未被继承。</p>
+<h3 id="2-6-Task6：PATH环境变量和Set-UID程序"><a href="#2-6-Task6：PATH环境变量和Set-UID程序" class="headerlink" title="2.6 Task6：PATH环境变量和Set-UID程序"></a>2.6 Task6：PATH环境变量和Set-UID程序</h3><p>由于调用了shell 程序，在Set-UID 程序中调用system() 是非常危险的。这是因为shell 程序的实际行为会受到环境变量的影响，例如PATH 环境变量；这些环境变量由用户提供，可能是恶意的。通过更改这些变量，恶意用户可以控制Set-UID 程序的行为。</p>
+<p>利用所给出的程序实现攻击步骤如下所示：</p>
+<p>首先编写该程序，并且执行，发现该程序可以打印当前目录下的文件，结果如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947368.png"></p>
+<p>修改当前目录到PATH环境变量的首部，然后将&#x2F;bin&#x2F;cal文件复制到当前目录下，并且命名为ls，重新执行命令ls，可以发现其作用被修改。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948525.png"></p>
+<p>其次再将所编写的程序设置为Set-UID程序</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948908.png"></p>
+<p>重新执行task6程序，可以观察到其实在执行cal命令，原因在于PATH环境变量的首部被修改为了当前目录，而在调用system函数执行命令的时候，会在PATH环境变量中的目录按顺序进行查找是否有当前命令，因而可以实现攻击。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948220.png"></p>
+<p>如果不是将cal而是把zsh复制到当前目录中，便可以成功得到当前系统的超级用户特权如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949623.png"></p>
+<p>与此同时打印当前的id信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949871.png"></p>
+<p>可以观察到当前执行实在seed用户下的，并未以root权限运行，根据手册中的提示，关掉保护策略后，重复上述攻击，可以观察到结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949332.png"></p>
+<p>可以看到euid&#x3D;0，当前代码是以root程序运行的。</p>
+<h3 id="2-7-Task7：LD-PRELOAD环境变量和Set-UID程序"><a href="#2-7-Task7：LD-PRELOAD环境变量和Set-UID程序" class="headerlink" title="2.7 Task7：LD_PRELOAD环境变量和Set-UID程序"></a>2.7 Task7：LD_PRELOAD环境变量和Set-UID程序</h3><p>在这个任务中，我们研究Set-UID 程序如何处理某些环境变量，包括LD_PRELOAD、LD_LIBRARY_PATH和其他LD_* 如何影响动态加载器&#x2F;链接器的行为。动态加载器&#x2F;链接器是操作系统(OS) 的一部分，它加载（从持久性存储到RAM）并链接可执行文件在运行时所需的共享库。</p>
+<p>在Linux 中，ld.so 或ld-linux.so 是动态加载器&#x2F;链接器（用于不同类型的二进制文件）。在影响其行为的环境变量中，本实验关注LD_LIBRARY_PATH 和LD_PRELOAD。在Linux 中，LD_LIBRARY_PATH 是一组以冒号分隔的目录，应首先在其中搜索库，然后是标准目录集。LD_PRELOAD 指定了要在所有其他库之前加载的附加的用户指定的共享库的列表。在这个任务中，我们将只研究LD_PRELOAD。</p>
+<p>Step1：按照实验手册指导构建动态链接库</p>
+<p>Step2：在不同条件下运行myprog，观察发生现象。</p>
+<p>Case1：普通程序，普通用户执行，可以看到程序正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950807.png"></p>
+<p>case2：set-uid特权程序，普通用户执行，停顿后并未调用库函数：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950868.png"></p>
+<p>case3：set-uid特权程序，在root下重新设置LD_PRELOAD环境变量，并执行，可以观察到程序正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950677.png"></p>
+<p>case4：使myprog 为一个Set-UIDUser1 程序（User1 是程序的所有者，是另一个用户账户），在另一个用户账户下重新加LD_PRELOAD 环境变量，并执行它,新建用户并将该myprog修改为Set-UIDUser1 程序，执行后如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140951249.png"></p>
+<p>Step3：原因解释，在step2中执行每种情况的同时打印每一次当前状态下的LD_PRELOAD 环境变量，即可观察到原因</p>
+<p>当一个正常程序的时候，子进程会继承这个环境变量；当他是一个SETUID程序的时候，子进程没有继承该环境变量；所有者是user1，即使有环境变量也不可以调用，我们可以得出这种继承策略是一种很好的保护策略。</p>
+<h3 id="2-8-Task8：使用system-和execve-调用外部程序的对比"><a href="#2-8-Task8：使用system-和execve-调用外部程序的对比" class="headerlink" title="2.8 Task8：使用system()和execve()调用外部程序的对比"></a>2.8 Task8：使用system()和execve()调用外部程序的对比</h3><p>尽管system() 和execve() 都可以被用于执行新的程序，但是system() 在高特权态下更加危险，比如Set-UID 程序。在前面的任务里，我们看到了PATH 环境变量是如何影响system() 的行为的，因为该变量会影响shell 的工作。execve() 则没有这个问题，因为它不调用shell。除了环境变量，调用shell还有另外危险的结果。</p>
+<p>Step1：编译所给出程序，使其成为set-uid程序，进行攻击如下：</p>
+<p>首先编译并修改后，运行该程序，可以看到该进程会利用cat打印出文件内容</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954057.png"></p>
+<p>然后我们尝试打印&#x2F;etc&#x2F;shadow，属于root权限下才可以读的文件，发现不允许：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954885.png"></p>
+<p>关掉系统的保护策略后重新读取，发现可以成功读取，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955377.png"></p>
+<p>由于程序种调用了system函数，在传递参数的时候没有将代码和数据进行分离，因而可以利用构造参数，使前者作为函数参数后者作为命令执行，进行得到系统超级权限，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955212.png"></p>
+<p>得到root权限后便可以随意删除没有写权限的文件，因而bob可以损害系统的完整性。</p>
+<h3 id="2-9-Task9：权限泄露"><a href="#2-9-Task9：权限泄露" class="headerlink" title="2.9 Task9：权限泄露"></a>2.9 Task9：权限泄露</h3><p>为了遵循最小权限原则，Set-UID 程序如果不再需要这种权限，它会永久地放弃root 权限。此外，有时程序需要将其控制权交给用户，在这种情况下，root 权限必须被撤销。setuid() 系统调用可以用来撤销权限。根据手册，setuid() 设置调用进程的有效用户ID。如果调用者的有效UID 是root，真实的UID和保存的set-user-id 也被设置。因此，如果一个有效UID 为0 的Set-UID 程序调用setuid(n)，则该进程将成为正常进程，其所有的UID 都设置为n。</p>
+<p>当撤销权限的时候，最常见的错误就是权限泄露。该进程可能在它仍然享有特权时已经获得了一些特权功能。当特权降级时，如果程序没有清理这些功能，则它们仍然可以由非特权进程访问。换句话说，虽然进程的有效用户ID 变为非特权，但是该进程仍具有特权，因为它具有特权能力。编译以下程序，将其所有者更改为root，并使其成为Set-UID 程序。以普通用户身份运行程序。你能利用这个程序中的权限泄漏漏洞吗？目标是以普通用户身份写入&#x2F;etc&#x2F;zzz 文件。</p>
+<p>攻击步骤如下：</p>
+<p>首先对所给出的漏洞程序进行编译，并且修改为setuid程序</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955034.png"></p>
+<p>然后尝试对&#x2F;etc&#x2F;zzz文件进行写入，发现没有权限，原因在于，当前状态下，该程序的euid已经修改为了普通用户而非root权限</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956755.png"></p>
+<p>但是由于当前该程序仍然在执行，而且在程序中打开了文件后，并未进行合法的关闭与退出，因而我们可以根据所打印出的文件描述符fd进行文件写入，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956822.png"></p>
+<p>可以看到攻击成功，将自己的文本写入了zzz文件中，针对于这种攻击，修补方法便是销毁文件描述符，即关闭文件。</p>
+]]></content>
+  </entry>
+  <entry>
     <title>Buffer Overflow Attack Lab (Set-UID Version)</title>
     <url>/2022/11/30/buffer_overflow/</url>
     <content><![CDATA[<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
@@ -249,25 +377,6 @@
       <tags>
         <tag>seedlab2.0</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>hello</title>
-    <url>/2022/11/10/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
   </entry>
   <entry>
     <title>条件竞争漏洞</title>
