@@ -1,467 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search>
-  <entry>
-    <title>Cross-Site Request Forgery Attack Lab</title>
-    <url>/2022/11/30/CSRF/</url>
-    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
-<span id="more"></span>
-<p>在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg 中有针对CSRF 的防御措施，但为了达到本实验的目的，我们已经将这些防御措施关闭。本实验覆盖以下主题:</p>
-<p>1. 跨站请求伪造攻击</p>
-<p>2. CSRF 对抗措施：秘密令牌（secret token）和同站cookie（same-site cookie）</p>
-<p>3. HTTP GET 和POST 请求</p>
-<p>4. JavaScript 和Ajax</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：观察HTTP-请求"><a href="#2-1-Task-1：观察HTTP-请求" class="headerlink" title="2.1 Task 1：观察HTTP 请求"></a>2.1 Task 1：观察HTTP 请求</h3><p>在跨站请求伪造攻击中，我们需要伪造HTTP 请求。因此，我们需要知道一个合法的HTTP 请求是什么样子的，以及它使用什么参数等。为此，我们可以使用一个名为”HTTP Header Live” 的火狐浏览器插件。本任务的目标是熟悉这个工具。指导中给出了如何使用这个工具的说明(§ 5.1)。请使用这个工具在Elgg 中捕获一个HTTP GET 请求和一个HTTP POST 请求。请在你的报告中指出这些请求中所使用的参数。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221440.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221450.png"></p>
-<p>在合法用户进行登录利用该工具进行抓取http报文，可以分别得到上图所示的POST报文和GET报文</p>
-<p>在POST报文中，有elgg_token,elgg_ts,username和password等参数，而在GET报文中没有参数显示。</p>
-<h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站 <a href="http://www.attacker32.com/">www.attacker32.com</a>  。假设你是Samy，描述你如何构建网页的内容，以便当Alice 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p>
-<p>实现思路：</p>
-<p>通过抓获合法添加好友过程中得到的报文，观察其中的参数结构，然后通过修改其参数，构建网页的内容</p>
-<p>实现步骤：</p>
-<p>首先登录到Samy的用户界面后，合法的把Alice添加为好友，在该过程中利用插件工具进行抓获http报文如下：</p>
-<p>可以看到其url请求为 ”<a href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D">http://www.seed-server.com/action/friends/add?friend=56”</a> 开头，该56为Alice的guid</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221545.png"></p>
-<p>因此我们想要让Alice添加Samy为好友的话，需要把friend后的参数修改为Samy的guid。而Samy的guid可以在合法登录到Samy的用户界面后，通过网页的源码得到，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221601.png"></p>
-<p>最后根据得到的gid构造img上所附带的链接，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221614.png"></p>
-<p>攻击实现如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221635.png"></p>
-<p>在攻击页面中，点击链接后，刷新Alice的好友页面，就可以观察到Samy被成功添加为Alice的好友。</p>
-<h3 id="2-3-Task-3：使用POST-请求的CSRF-攻击"><a href="#2-3-Task-3：使用POST-请求的CSRF-攻击" class="headerlink" title="2.3 Task 3：使用POST 请求的CSRF 攻击"></a>2.3 Task 3：使用POST 请求的CSRF 攻击</h3><p>在把自己加入Alice 的朋友名单后，Samy 想进行更多的攻击。他想让Alice 在她的个人资料中写上”Samy is my Hero”，使得所有人都能够看到。当然，Alice 不喜欢Samy，更不用说把这个声明写进她的个人资料中。Samy 计划使用CSRF 攻击来实现这一目标，也就是这个Task 的目标。</p>
-<p>实现思路：</p>
-<p>同上一个任务中的方法，在合法用户修改个人资料的过程中，利用插件截获http报文后，根据报文中的参数进行修改攻击页面中的内容，即可实现攻击。</p>
-<p>实现步骤：</p>
-<p>首先在Samy的用户页面中，进行修改自己的个人资料，把个人描述修改为“Samy is my hero.”在提交过程中，利用插件进行捕获http报文，得到如下结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221711.png"></p>
-<p>可以看到该链接的网址以及报文中的参数内容，然后根据得到的报文对攻击网页的源码进行修改，即修改网页文件中的field中的参数以及p.action的内容。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221846.png"></p>
-<p>修改后，进入该攻击页面，即可成功修改Alice的个人资料如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221906.png"></p>
-<p>问题回答：</p>
-<p>问题1：如何获取Alice的guid？</p>
-<p>答：在上一个任务中，通过Samy在自己的用户页面添加Alice为好友的过程中，截获http报文，即可得到Alice的guid。</p>
-<p>问题2：如果Boby 想向任何访问他的恶意网页的人发动攻击。在这种情况下，他事先不知道谁在访问该网页。那么他还能发动CSRF 攻击来修改受害者的Elgg 资料吗？请解释原因。</p>
-<p>答：不可以。因为在攻击过程中需要知道受害者的guid并且预先设置好，如果是未知用户访问的话是不能够及时构造的。</p>
-<h3 id="2-4-Task-4：开启Elgg-的防御措施"><a href="#2-4-Task-4：开启Elgg-的防御措施" class="headerlink" title="2.4 Task 4：开启Elgg 的防御措施"></a>2.4 Task 4：开启Elgg 的防御措施</h3><p>开启防御措施要打开防御措施，首先要进入Elgg 容器的&#x2F;var&#x2F;www&#x2F;elgg&#x2F;vendor&#x2F;elgg&#x2F;elgg&#x2F;engine&#x2F;classes&#x2F;Elgg&#x2F;Security 文件夹，从Csrf.php 中删除return 语句。你可以使用一个内置在容器中的简单编辑器，名为nano 。在做了修改之后再次重复之前的攻击，看看你的攻击是否会成功。请指出捕获的HTTP 请求中的秘密令牌，并解释为什么攻击者为什么不能在CSRF 攻击中发送这些秘密令牌；是什么阻止了他们从网页上发现秘密令牌？</p>
-<p>实现步骤：</p>
-<p>首先在容器中修改文件内容，讲return语句注释掉，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221957.png"></p>
-<p>然后重新进行攻击，可以观察到如下结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222034.png"></p>
-<p>可以发现两次攻击都无法成功，网页会报错”form is missing __token or __ts fields”</p>
-<p>捕获的http请求中的token如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222100.png"></p>
-<p>由于return注释掉后，会执行validate函数，提取出请求中的两个参数__token 和__ts，但是由于在此前构造请求时没有补充这两个参数，因而会报错，并且攻击会失败</p>
-<h3 id="2-5-Task-5：测试同站Cookie-方法"><a href="#2-5-Task-5：测试同站Cookie-方法" class="headerlink" title="2.5 Task 5：测试同站Cookie 方法"></a>2.5 Task 5：测试同站Cookie 方法</h3><p>当访问该网站时，浏览器上会设置三个cookie，分别是：cookie-normal、cookie-lax 和cookie-strict。正如其名称所示，第一个cookie 只是一个普通的cookie，第二个和第三个cookie 是两种不同类型的同站cookie（Lax 和Strict）。我们设计了两组实验来观察当发送HTTP 请求时，哪些cookie 会被附加到服务器上。通常情况下，属于服务器的所有cookie 都将被附加到请求中，除了同站cookie。</p>
-<p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到 <a href="http://www.example32.com/showcookies.php">www.example32.com/showcookies.php</a> ，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie 会被浏览器发送。请完成以下要求：</p>
-<p>• 请描述你所看到的情况，并解释为什么在某些情况下不发送一些cookie。</p>
-<p>在同站请求的三种情况下，三个cookie都被发送</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222143.png"></p>
-<p>在跨站请求的情况下：</p>
-<p>Sending Get Request (link)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222157.png"></p>
-<p>Sending Get Request (form)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222254.png"></p>
-<p>Sending Post Request (form)：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222318.png"></p>
-<p>通过观察，可以得知，在跨站请求中，strict值都会阻止浏览器发送cookie到目标站点，而lax值则只有在post请求中才会被阻止发送。解释如下：</p>
-<p>查阅RFC文档中的<a href="https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7">samesite</a>部分可以得到如下内容：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222333.png"></p>
-<p>从中可以得知strict值将阻止浏览器在所有跨网站浏览上下文中将 cookie 发送到目标站点，即使遵循常规链接也是如此。而 Lax 值为希望在用户从外部链接到达后维护用户登录会话的网站提供了安全性和可用性之间的合理平衡，因此在get请求中会发送而在post请求中为了防御CSRF而不会被发送。</p>
-<p>• 根据你的理解，请描述同站cookies 如何帮助服务器检测一个请求是跨站还是同站请求。</p>
-<p>只需要检查该请求中的Strict值是否还在，即可知道该请求是跨站还是同站请求，因为在同站请求中，三个值都会保留而跨站请求中Strict值都不会被发送。</p>
-<p>• 请描述你将如何使用同站cookie机制来帮助Elgg防御CSRF攻击。只需要描述思路，无需实现。</p>
-<p>利用同站cookie和token一同使用，利用strit值进行检查是否为跨站请求。在服务端产生同步token，为用户的每一次会话请求都进行验证。并且token不应该用cookies进行传送，而是作为响应缓存的一部分，比如HTML或者JSON响应。</p>
-]]></content>
+<search> 
+  
+  
+    
+    <entry>
+      <title>环境变量与Set-UID</title>
+      <link href="/2023/09/14/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E4%B8%8ESetuid%E5%AE%9E%E9%AA%8C/"/>
+      <url>/2023/09/14/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E4%B8%8ESetuid%E5%AE%9E%E9%AA%8C/</url>
+      
+        <content type="html"><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让你理解环境变量是如何影响程序和系统的行为的。环境变量是存储在进程中的一系列动态命名的值，可以影响计算机上进程的行为方式。自从1979 年Unix 引入环境变量以来，大多数操作系统也开始采用环境变量。尽管环境变量会影响程序的行为，但是它是如何产生影响的，许多程序员并不真正理解。因此，如果一个程序利用了环境变量但是程序员不清楚它的运用，就可能会导致程序漏洞。</p><span id="more"></span><p>在本实验中，你将理解环境变量是如何工作，子进程是如何继承父进程的环境变量的，以及环境变量如何影响系统&#x2F;程序的行为的。我们还会特别了解环境变量是如何影响Set-UID 特权程序的行为的。本实验涵盖以下主题:</p><p>1. 环境变量</p><p>2. Set-UID 程序</p><p>3. 安全地调用外部程序</p><p>4. 权限泄漏</p><p>5. 动态装载器&#x2F;链接器</p><h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：配置环境变量"><a href="#2-1-Task-1：配置环境变量" class="headerlink" title="2.1 Task 1：配置环境变量"></a>2.1 Task 1：配置环境变量</h3><p>本任务中，我们学习设置和删除环境变量的指令。我们用Bash 来完成。用户使用的默认的shell 设置在文件&#x2F;etc&#x2F;passwd 中（每一项的最后一个字段）。你可以用chsh 命令来修改shell 程序（本实验无需修改）。请完成以下任务：</p><p>• 使用printenv 或者env 指令来打印环境变量。如果你对某个特定的环境变量感兴趣，比如PWD， 你可以用指令“printenv PWD”或者“env | grep PWD”。</p><p>我们可以打印全部环境变量以及PWD如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140936255.png"></p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140937831.png"></p><p>• 使用export 和unset 来设置或者取消环境变量。注意: 这两个指令不是单独的程序；它们是两个Bash 的内部指令（即，你不能在Bash 外调用它们噢）</p><p>设置一个新的环境变量然后取消 MYENV，如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942383.png"></p><h3 id="2-2-Task-2-从父进程向子进程传递环境变量"><a href="#2-2-Task-2-从父进程向子进程传递环境变量" class="headerlink" title="2.2 Task 2: 从父进程向子进程传递环境变量"></a>2.2 Task 2: 从父进程向子进程传递环境变量</h3><p>本任务中，我们研究子进程是如何继承父进程的环境变量的。Unix 操作系统中，fork() 系统调用会复制发起调用的进程，创建一个新进程。新进程称作子进程，被复制的进程称作父进程。然而，有些东西是没有被子进程继承的（在命令行中输入指令man fork，可以查看fork() 的指南）。在本任务中，我们想要知道子进程是否继承了父进程的环境变量。</p><p>Step1：编译并运行 myprintenv.c 文件，将输出保存到一个文件中</p><p>Step2：注释掉子进程的语句，取消注释父进程printenv()语句，再次编译并运行代码，将结果保存在另一个文件中。</p><p>两次的运行输出结果如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942584.png"></p><p>Step3：使用diff命令比较两个文件的差异，描述你得出的结论。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943286.png"></p><p>可以观察到两个文件只有文件名不同，其余环境变量均相同，说明在Linux中子进程继承了父进程除名字外的所有环境变量。</p><h3 id="2-3-Task3：环境变量与execve"><a href="#2-3-Task3：环境变量与execve" class="headerlink" title="2.3 Task3：环境变量与execve()"></a>2.3 Task3：环境变量与execve()</h3><p>本任务中，我们研究通过execve() 运行一个新程序，环境变量是如何受影响的。函数execve() 调用系统调用来加载新命令并执行它；这个函数永远不会返回。没有创建新进程；相反，调用进程的代码段、数据段、bss 段和栈被加载的程序覆盖。本质上，execve() 在调用进程中运行了新程序。我们对环境变量发生了什么感兴趣；它们会被新程序自动继承吗？</p><p>Step1：编译并运行给出程序，描述观察。如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943684.png"></p><p>可以看到该程序编译运行后没有打印任何内容</p><p>Step2：修改execve()的调用内容，重新编译并运行程序，描述观察。如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944354.png"></p><p>可以观察到该程序会输出打印当前文件下的所有环境变量。</p><p>Step3：请就新程序如何获得其环境变量得出你的结论。</p><p>首先对execve()函数进行分析，可以得到其有三个参数如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944722.png"></p><p>其中filename是一个二进制可执行文件，argv是调用程序执行的参数序列，也就是我们要调用程序所需要传入的参数，envp是参数序列作为新程序的环境。</p><p>在第一步中，新程序的环境输入为NULL，表示终止符，并未输入键值对作为环境变量，因而其输出打印的结果为空，而在第二步中将environ作文新程序的环境输入，该指针变量指向包含所有环境变量的一个列表，因而将其赋予新进程即可以打印出当前所有的环境变量。</p><h3 id="2-4-Task-4：环境变量和system"><a href="#2-4-Task-4：环境变量和system" class="headerlink" title="2.4 Task 4：环境变量和system()"></a>2.4 Task 4：环境变量和system()</h3><p>本任务中，我们研究通过system() 运行一个新程序，环境变量是如何受影响的。system() 也是用来执行一个命令的，但是和execve() 直接执行一个命令不同，system() 实际上执行“&#x2F;bin&#x2F;sh -c command”，即它先执行&#x2F;bin&#x2F;sh，然后让shell 执行这个command。</p><p>如果你查阅system() 函数的实现，你会发现它使用execl() 来执行&#x2F;bin&#x2F;sh；execl() 调用execve()，并将环境变量数组传递给它。因此，使用system() 时，调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh。请编译并运行以下程序来验证这一点。</p><p>首先对system函数进行分析，其用于执行shell（Linux&#x2F;Unix系统）命令，只有一个参数command，即命令名。调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh，运行结果如下图，会打印出当前的环境变量</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140945125.png"></p><h3 id="2-5-Task-5：环境变量与Set-UID程序"><a href="#2-5-Task-5：环境变量与Set-UID程序" class="headerlink" title="2.5 Task 5：环境变量与Set-UID程序"></a>2.5 Task 5：环境变量与Set-UID程序</h3><p>Set-UID 是Unix 系统中重要的安全机制。当Set-UID 程序执行时，它将获得程序拥有者的权限。如果程序执行者是root，所有执行该程序的人都将以root 权限执行该程序。Set-UID 使得我们可以做许多有趣的事情，但是在执行Set-UID 程序时，会提高执行者的权限，这是有风险的。尽管Set-UID 的行为是由他们的程序逻辑所决定的，而不是用户决定的，用户却可以通过环境变量来修改Set-UID 的行为。为了理解Set-UID 程序是如何被影响的，我们首先弄清楚Set-UID 程序的环境变量是否由用户程序继承而来。</p><p>Step1：编写所给出的程序，打印当前进程的所有环境变量。</p><p>Step2：编译上述程序得到foo，将其所有者更改为root，并使其成为一个Set-UID程序</p><p>Step3：在shell中设置给出的环境变量，这些环境变量是在普通用户的shell 进程中设置的。在你的shell 中运行第2 步中的Set-UID程序。在shell 中键入程序名后，shell 会fork 一个子进程，并使用子进程来运行该程序。请检查你在shell进程（父进程）中设置的所有环境变量是否都进入了Set-UID 子进程。描述你的观察。如果你有惊奇的发现，请描述它们。</p><p>首先编写给出程序，并且将其设置为Set-UID程序，如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946892.png"></p><p>然后查看所给出变量是否存在，并且利用export命令设置环境变量如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946056.png"></p><p>可以观察到在shell中本来只有PATH存在。</p><p>在子进程中查看环境变量，如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947096.png"></p><p>可以看到PATH和MYENV环境变量被继承，而LD_LIBRARY_PATH并未被继承。</p><h3 id="2-6-Task6：PATH环境变量和Set-UID程序"><a href="#2-6-Task6：PATH环境变量和Set-UID程序" class="headerlink" title="2.6 Task6：PATH环境变量和Set-UID程序"></a>2.6 Task6：PATH环境变量和Set-UID程序</h3><p>由于调用了shell 程序，在Set-UID 程序中调用system() 是非常危险的。这是因为shell 程序的实际行为会受到环境变量的影响，例如PATH 环境变量；这些环境变量由用户提供，可能是恶意的。通过更改这些变量，恶意用户可以控制Set-UID 程序的行为。</p><p>利用所给出的程序实现攻击步骤如下所示：</p><p>首先编写该程序，并且执行，发现该程序可以打印当前目录下的文件，结果如下图：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947368.png"></p><p>修改当前目录到PATH环境变量的首部，然后将&#x2F;bin&#x2F;cal文件复制到当前目录下，并且命名为ls，重新执行命令ls，可以发现其作用被修改。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948525.png"></p><p>其次再将所编写的程序设置为Set-UID程序</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948908.png"></p><p>重新执行task6程序，可以观察到其实在执行cal命令，原因在于PATH环境变量的首部被修改为了当前目录，而在调用system函数执行命令的时候，会在PATH环境变量中的目录按顺序进行查找是否有当前命令，因而可以实现攻击。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948220.png"></p><p>如果不是将cal而是把zsh复制到当前目录中，便可以成功得到当前系统的超级用户特权如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949623.png"></p><p>与此同时打印当前的id信息如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949871.png"></p><p>可以观察到当前执行实在seed用户下的，并未以root权限运行，根据手册中的提示，关掉保护策略后，重复上述攻击，可以观察到结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949332.png"></p><p>可以看到euid&#x3D;0，当前代码是以root程序运行的。</p><h3 id="2-7-Task7：LD-PRELOAD环境变量和Set-UID程序"><a href="#2-7-Task7：LD-PRELOAD环境变量和Set-UID程序" class="headerlink" title="2.7 Task7：LD_PRELOAD环境变量和Set-UID程序"></a>2.7 Task7：LD_PRELOAD环境变量和Set-UID程序</h3><p>在这个任务中，我们研究Set-UID 程序如何处理某些环境变量，包括LD_PRELOAD、LD_LIBRARY_PATH和其他LD_* 如何影响动态加载器&#x2F;链接器的行为。动态加载器&#x2F;链接器是操作系统(OS) 的一部分，它加载（从持久性存储到RAM）并链接可执行文件在运行时所需的共享库。</p><p>在Linux 中，ld.so 或ld-linux.so 是动态加载器&#x2F;链接器（用于不同类型的二进制文件）。在影响其行为的环境变量中，本实验关注LD_LIBRARY_PATH 和LD_PRELOAD。在Linux 中，LD_LIBRARY_PATH 是一组以冒号分隔的目录，应首先在其中搜索库，然后是标准目录集。LD_PRELOAD 指定了要在所有其他库之前加载的附加的用户指定的共享库的列表。在这个任务中，我们将只研究LD_PRELOAD。</p><p>Step1：按照实验手册指导构建动态链接库</p><p>Step2：在不同条件下运行myprog，观察发生现象。</p><p>Case1：普通程序，普通用户执行，可以看到程序正常运行：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950807.png"></p><p>case2：set-uid特权程序，普通用户执行，停顿后并未调用库函数：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950868.png"></p><p>case3：set-uid特权程序，在root下重新设置LD_PRELOAD环境变量，并执行，可以观察到程序正常运行：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950677.png"></p><p>case4：使myprog 为一个Set-UIDUser1 程序（User1 是程序的所有者，是另一个用户账户），在另一个用户账户下重新加LD_PRELOAD 环境变量，并执行它,新建用户并将该myprog修改为Set-UIDUser1 程序，执行后如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140951249.png"></p><p>Step3：原因解释，在step2中执行每种情况的同时打印每一次当前状态下的LD_PRELOAD 环境变量，即可观察到原因</p><p>当一个正常程序的时候，子进程会继承这个环境变量；当他是一个SETUID程序的时候，子进程没有继承该环境变量；所有者是user1，即使有环境变量也不可以调用，我们可以得出这种继承策略是一种很好的保护策略。</p><h3 id="2-8-Task8：使用system-和execve-调用外部程序的对比"><a href="#2-8-Task8：使用system-和execve-调用外部程序的对比" class="headerlink" title="2.8 Task8：使用system()和execve()调用外部程序的对比"></a>2.8 Task8：使用system()和execve()调用外部程序的对比</h3><p>尽管system() 和execve() 都可以被用于执行新的程序，但是system() 在高特权态下更加危险，比如Set-UID 程序。在前面的任务里，我们看到了PATH 环境变量是如何影响system() 的行为的，因为该变量会影响shell 的工作。execve() 则没有这个问题，因为它不调用shell。除了环境变量，调用shell还有另外危险的结果。</p><p>Step1：编译所给出程序，使其成为set-uid程序，进行攻击如下：</p><p>首先编译并修改后，运行该程序，可以看到该进程会利用cat打印出文件内容</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954057.png"></p><p>然后我们尝试打印&#x2F;etc&#x2F;shadow，属于root权限下才可以读的文件，发现不允许：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954885.png"></p><p>关掉系统的保护策略后重新读取，发现可以成功读取，如下图：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955377.png"></p><p>由于程序种调用了system函数，在传递参数的时候没有将代码和数据进行分离，因而可以利用构造参数，使前者作为函数参数后者作为命令执行，进行得到系统超级权限，如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955212.png"></p><p>得到root权限后便可以随意删除没有写权限的文件，因而bob可以损害系统的完整性。</p><h3 id="2-9-Task9：权限泄露"><a href="#2-9-Task9：权限泄露" class="headerlink" title="2.9 Task9：权限泄露"></a>2.9 Task9：权限泄露</h3><p>为了遵循最小权限原则，Set-UID 程序如果不再需要这种权限，它会永久地放弃root 权限。此外，有时程序需要将其控制权交给用户，在这种情况下，root 权限必须被撤销。setuid() 系统调用可以用来撤销权限。根据手册，setuid() 设置调用进程的有效用户ID。如果调用者的有效UID 是root，真实的UID和保存的set-user-id 也被设置。因此，如果一个有效UID 为0 的Set-UID 程序调用setuid(n)，则该进程将成为正常进程，其所有的UID 都设置为n。</p><p>当撤销权限的时候，最常见的错误就是权限泄露。该进程可能在它仍然享有特权时已经获得了一些特权功能。当特权降级时，如果程序没有清理这些功能，则它们仍然可以由非特权进程访问。换句话说，虽然进程的有效用户ID 变为非特权，但是该进程仍具有特权，因为它具有特权能力。编译以下程序，将其所有者更改为root，并使其成为Set-UID 程序。以普通用户身份运行程序。你能利用这个程序中的权限泄漏漏洞吗？目标是以普通用户身份写入&#x2F;etc&#x2F;zzz 文件。</p><p>攻击步骤如下：</p><p>首先对所给出的漏洞程序进行编译，并且修改为setuid程序</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955034.png"></p><p>然后尝试对&#x2F;etc&#x2F;zzz文件进行写入，发现没有权限，原因在于，当前状态下，该程序的euid已经修改为了普通用户而非root权限</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956755.png"></p><p>但是由于当前该程序仍然在执行，而且在程序中打开了文件后，并未进行合法的关闭与退出，因而我们可以根据所打印出的文件描述符fd进行文件写入，如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956822.png"></p><p>可以看到攻击成功，将自己的文本写入了zzz文件中，针对于这种攻击，修补方法便是销毁文件描述符，即关闭文件。</p>]]></content>
+      
+      
       <categories>
-        <category>软件安全</category>
+          
+          <category> 软件安全 </category>
+          
       </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Buffer Overflow Attack Lab (Set-UID Version)</title>
-    <url>/2022/11/30/buffer_overflow/</url>
-    <content><![CDATA[<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
-<span id="more"></span>
-<p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p>
-<ol>
-<li>缓冲区溢出漏洞与攻击</li>
-<li>堆栈布局</li>
-<li>地址随机化，不可执行栈以及 StackGuard</li>
-<li>Shellcode (32-bit and 64-bit)</li>
-<li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li>
-</ol>
-<h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p>
-<p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p>
-<h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p>
-<h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p>
-<p>运行结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p>
-<p>解释说明：</p>
-<ul>
-<li><p>Shellcode 填写：</p>
-<p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p>
-</li>
-<li><p>Start 填写：</p>
-<p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p>
-</li>
-<li><p>Ret（返回地址）填写：</p>
-<p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p>
-<p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p>
-<p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p>
-<ul>
-<li><p>Offset 填写（64bit 程序同理）：</p>
-<p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p>
-<p>bof 函数的具体执行步骤，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p>
-<p>在调用strcpy 函数时加入断点：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p>
-<p>计算offset：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p>
-<p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p>
-</li>
-</ul>
-<h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p>
-<p>解释说明：</p>
-<p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p>
-<p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p>
-<h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p>
-<p>解释说明：</p>
-<p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p>
-<p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p>
-<h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p>
-<p>解释说明：</p>
-<p>填写方法同上一次任务，未遇到新的挑战。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p>
-<h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p>
-<p>运行结果：</p>
-<p>​	下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p>
-<p>​	下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p>
-<p>解释说明：</p>
-<p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p>
-<p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p>
-<p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p>
-<h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p>
-<p>解释说明：</p>
-<p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p>
-<p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p>
-<p>攻击结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p>
-<h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul>
-<li><p>打开 StackGuard 保护机制</p>
-<p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p>
-<p>​		原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p>
-<ul>
-<li><p>打开不可执行栈保护机制</p>
-<p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> seedlab2.0 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>条件竞争漏洞</title>
+      <link href="/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/"/>
+      <url>/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/</url>
+      
+        <content type="html"><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。</p><span id="more"></span><p>本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限的方案。除了攻击方法外，还将引导学生了解几种可用于对抗竞争条件攻击的保护方案。学生需要评估这些方案是否有效，并解释原因。本实验涵盖以下主题：</p><p>1. 竞争条件漏洞</p><p>2. 粘滞符号链接保护</p><p>3. 最小权限原则</p><h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：选择目标"><a href="#2-1-Task-1：选择目标" class="headerlink" title="2.1 Task 1：选择目标"></a>2.1 Task 1：选择目标</h3><p>我们希望利用程序中的竞争条件漏洞。我们选择以普通用户无法写入的口令文件&#x2F;etc&#x2F;passwd 为目标。通过利用该漏洞，我们希望向口令文件添加一条记录，目的是创建一个具有 root 权限的新用户账号.在该口令文件中，每个用户都有一个条目，该条目由七个字段组成并用冒号 (:) 分隔。root 用户的条目如下所示。</p><table><thead><tr><th>root: x :0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash</th></tr></thead></table><p>为了验证 magic 值口令是否有效，我们（作为超级用户）手动将以下条目添加到&#x2F;etc&#x2F;passwd文件的末尾。请在报告中说明你是否可以在不键入口令的情况下登录 test 账户，并检查你是否具有 root 权限。</p><table><thead><tr><th>test:U6aMy0wojraho:0:0:test:&#x2F;root:&#x2F;bin&#x2F;bash</th></tr></thead></table><p>利用gedit打开并修改&#x2F;etc&#x2F;passwd 文件，然后进行登录如下，证明具有root权限</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20230914090952.png"></p><h3 id="2-2-Task-2：发起竞争条件攻击"><a href="#2-2-Task-2：发起竞争条件攻击" class="headerlink" title="2.2 Task 2：发起竞争条件攻击"></a>2.2 Task 2：发起竞争条件攻击</h3><p>此任务的目标是利用前面列出的易受攻击的 Set-UID 程序中的竞争条件漏洞。最终目标是获得 root权限。攻击的最关键步骤是使&#x2F;tmp&#x2F;XYZ 指向口令文件，该步骤必须发生在检查和使用之间的窗口内；即在易受攻击程序中的 access 和 fopen 调用之间。</p><h4 id="Task-2-A：模拟一个缓慢的机器"><a href="#Task-2-A：模拟一个缓慢的机器" class="headerlink" title="Task 2.A：模拟一个缓慢的机器"></a>Task 2.A：模拟一个缓慢的机器</h4><p>假设机器非常慢，在 access() 和 fopen() 调用之间有一个 10 秒的时间窗口。通过此添加，vulp 程序（重新编译时)将暂停并将控制权交给操作系统 10 秒。我们的工作是手动执行一些操作，因此当程序在 10 秒后恢复时，该程序可以帮助你将 root 帐户添加到系统中。请演示如何实现这一点。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140912547.png"></p><p>再漏洞程序中进行添加如上代码后，重新编译该程序，并按实验手册进行：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140913020.png"></p><h4 id="Task-2-B：进行真实攻击"><a href="#Task-2-B：进行真实攻击" class="headerlink" title="Task 2.B：进行真实攻击"></a>Task 2.B：进行真实攻击</h4><p>在模拟攻击中，我们使用“ln-s”命令创建&#x2F;更改符号链接。现在我们需要在一个程序中进行。我们可以在 C 中使用 symlink() 来创建符号链接。由于 Linux 不允许在链接已经存在的情况下创建链接，因此我们需要先删除旧链接。下面的 C 代码片段显示了如何删除链接，然后使&#x2F;tmp&#x2F;XYZ 指向&#x2F;etc&#x2F;passwd。请编写你的攻击程序。如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140914093.png"></p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140915864.png"></p><p>我们需要多次运行漏洞程序，因此编写一个程序来自动执行此过程。为了避免手动向漏洞程序 vulp 键入输入，我们可以使用输入重定向。也就是说，我们将输入保存在一个文件中，并要求 vulp 使用“vulp &lt; inputFile”从该文件获取输入。我们也可以使用 pipe（稍后将给出一个示例）。该攻击可能需要一段时间才能成功修改口令文件，因此我们需要一种方法来自动检测攻击是否成功。很多方法可以满足此要求；一种简单的方法是监控文件的时间戳。下面的 shell 脚本运行“ls -l”命令，该命令输出关于文件的几条信息，包括上次修改的时间。通过将命令的输出与之前生成的输出进行比较，我们可以判断文件是否已被修改。以下 shell 脚本循环执行易受攻击的程序（vulp），输入由 echo 命令（通过一个 pipe）提供。你需要决定实际输入的内容。如果攻击成功，即 passwd 被修改，则 shell 脚本将停止。本任务需要一定的耐心，通常你能够在 5 分钟内成功。</p><p>执行攻击程序和脚本如下：</p><p>在攻击过程中，可以观察到XYZ文件的符号链接一直在被修改，说明程序执行成功，等待一段时候后：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140916090.png"></p><p>可以观察到攻击成功，可以以test用户身份登录并且验证root权限。</p><h4 id="Task-2-C：一种改进的攻击方法"><a href="#Task-2-C：一种改进的攻击方法" class="headerlink" title="Task 2.C：一种改进的攻击方法"></a>Task 2.C：一种改进的攻击方法</h4><p>首先创建两个符号链接&#x2F;tmp&#x2F;XYZ 和&#x2F;tmp&#x2F;ABC，然后使用 renameat2 系统调用来原子地交换它们。这允许我们在不引入任何竞争条件的情况下更改&#x2F;tmp&#x2F;XYZ 指向的内容。请使用此新策略修改你的攻击策略，然后重试攻击。如果一切正确，你的攻击应该能够成功</p><p>修改后的攻击程序如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918310.png"></p><p>执行此攻击程序和脚本，结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918449.png"></p><p>可以观察到攻击一次便成功，可以以test用户身份登录并且验证root权限。</p><h3 id="2-3-Task-3：预防措施"><a href="#2-3-Task-3：预防措施" class="headerlink" title="2.3 Task 3：预防措施"></a>2.3 Task 3：预防措施</h3><h4 id="Task-3-A：应用最小权限原则"><a href="#Task-3-A：应用最小权限原则" class="headerlink" title="Task 3.A：应用最小权限原则"></a>Task 3.A：应用最小权限原则</h4><p>本实验中，漏洞程序的根本问题是违反了最小权限原则。程序员考虑到运行程序的用户可能权限过高，所以他&#x2F;她引入了 access() 来限制用户的能力。然而，这不是正确的方法。更好的方法是应用最小权限原则；也就是说，如果用户不需要某些特权，则该特权需要被禁用。</p><p>我们可以使用 seteuid 系统调用暂时禁用 root 权限，然后在必要时启用它。请使用此方法修复程序中的漏洞，然后重复攻击。你能成功吗？请报告你的观察结果并提供解释。</p><p>修改漏洞程序如下图：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919935.png"></p><p>重新对程序进行编译并且执行改进后的攻击程序和脚本，结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919341.png"></p><p>发现攻击始终失败。解释如下：</p><p>调用open()函数的时候，没有root权限，因而无法打开&#x2F;tmp&#x2F;XYZ指向的受的文件passwd。</p><h4 id="Task-3-B：使用-Ubuntu-的内置方案"><a href="#Task-3-B：使用-Ubuntu-的内置方案" class="headerlink" title="Task 3.B：使用 Ubuntu 的内置方案"></a>Task 3.B：使用 Ubuntu 的内置方案</h4><p>Ubuntu 10.10 和更高版本附带了一个内置的防止竞争条件攻击的保护方案。在此任务中，你需要使用以下命令重新启用保护：</p><table><thead><tr><th>$ sudo sysctl -w fs.protected_symlinks&#x3D;1</th></tr></thead></table><p>执行该命令后，重新进行攻击，观察结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140920171.png"></p><p>发现攻击失败，此时XYZ文件的所有者已经成为root。</p><p>解释以下内容：</p><p>1. 该保护方案是如何工作的？</p><p>因为在这种情况下，XYZ文件的所有者是 root，tmp目录的所有者是 root，符号链接所有者是seed。 因而访问将被拒绝</p><p>2. 这个方案有什么局限性？</p><p>该机制仅适用于启用了粘滞位的目录，像 &#x2F;tmp 或 &#x2F;var&#x2F;tmp 这样的粘性位目录。 因此攻击者可以利用其他目录中的竞争条件并获得访问权限。</p><h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p><p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>]]></content>
+      
+      
       <categories>
-        <category>软件安全</category>
+          
+          <category> 软件安全 </category>
+          
       </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Scripts</title>
-    <url>/2022/11/11/Scripts/</url>
-    <content><![CDATA[<h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
-<span id="more"></span>
-<h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p>
-<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p>
-<p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p>
-<h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p>
-<h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p>
-<p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p>
-<p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p>
-<p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p>
-<p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p>
-<h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p>
-<p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p>
-<p>条件操作码：对条件进行判断，产生一个布尔结果。</p>
-<h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure>
-<p>计算2+3的和并且判断其是否等于5</p>
-<p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p>
-<h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p>
-<p>锁定脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>解锁脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure>
-
-
-<p>组合后的验证脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-  </entry>
-  <entry>
-    <title>hello</title>
-    <url>/2022/11/10/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>环境变量与Set-UID</title>
-    <url>/2023/09/14/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E4%B8%8ESetuid%E5%AE%9E%E9%AA%8C/</url>
-    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让你理解环境变量是如何影响程序和系统的行为的。环境变量是存储在进程中的一系列动态命名的值，可以影响计算机上进程的行为方式。自从1979 年Unix 引入环境变量以来，大多数操作系统也开始采用环境变量。尽管环境变量会影响程序的行为，但是它是如何产生影响的，许多程序员并不真正理解。因此，如果一个程序利用了环境变量但是程序员不清楚它的运用，就可能会导致程序漏洞。</p>
-<span id="more"></span>
-<p>在本实验中，你将理解环境变量是如何工作，子进程是如何继承父进程的环境变量的，以及环境变量如何影响系统&#x2F;程序的行为的。我们还会特别了解环境变量是如何影响Set-UID 特权程序的行为的。本实验涵盖以下主题:</p>
-<p>1. 环境变量</p>
-<p>2. Set-UID 程序</p>
-<p>3. 安全地调用外部程序</p>
-<p>4. 权限泄漏</p>
-<p>5. 动态装载器&#x2F;链接器</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：配置环境变量"><a href="#2-1-Task-1：配置环境变量" class="headerlink" title="2.1 Task 1：配置环境变量"></a>2.1 Task 1：配置环境变量</h3><p>本任务中，我们学习设置和删除环境变量的指令。我们用Bash 来完成。用户使用的默认的shell 设置在文件&#x2F;etc&#x2F;passwd 中（每一项的最后一个字段）。你可以用chsh 命令来修改shell 程序（本实验无需修改）。请完成以下任务：</p>
-<p>• 使用printenv 或者env 指令来打印环境变量。如果你对某个特定的环境变量感兴趣，比如PWD， 你可以用指令“printenv PWD”或者“env | grep PWD”。</p>
-<p>我们可以打印全部环境变量以及PWD如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140936255.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140937831.png"></p>
-<p>• 使用export 和unset 来设置或者取消环境变量。注意: 这两个指令不是单独的程序；它们是两个Bash 的内部指令（即，你不能在Bash 外调用它们噢）</p>
-<p>设置一个新的环境变量然后取消 MYENV，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942383.png"></p>
-<h3 id="2-2-Task-2-从父进程向子进程传递环境变量"><a href="#2-2-Task-2-从父进程向子进程传递环境变量" class="headerlink" title="2.2 Task 2: 从父进程向子进程传递环境变量"></a>2.2 Task 2: 从父进程向子进程传递环境变量</h3><p>本任务中，我们研究子进程是如何继承父进程的环境变量的。Unix 操作系统中，fork() 系统调用会复制发起调用的进程，创建一个新进程。新进程称作子进程，被复制的进程称作父进程。然而，有些东西是没有被子进程继承的（在命令行中输入指令man fork，可以查看fork() 的指南）。在本任务中，我们想要知道子进程是否继承了父进程的环境变量。</p>
-<p>Step1：编译并运行 myprintenv.c 文件，将输出保存到一个文件中</p>
-<p>Step2：注释掉子进程的语句，取消注释父进程printenv()语句，再次编译并运行代码，将结果保存在另一个文件中。</p>
-<p>两次的运行输出结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942584.png"></p>
-<p>Step3：使用diff命令比较两个文件的差异，描述你得出的结论。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943286.png"></p>
-<p>可以观察到两个文件只有文件名不同，其余环境变量均相同，说明在Linux中子进程继承了父进程除名字外的所有环境变量。</p>
-<h3 id="2-3-Task3：环境变量与execve"><a href="#2-3-Task3：环境变量与execve" class="headerlink" title="2.3 Task3：环境变量与execve()"></a>2.3 Task3：环境变量与execve()</h3><p>本任务中，我们研究通过execve() 运行一个新程序，环境变量是如何受影响的。函数execve() 调用系统调用来加载新命令并执行它；这个函数永远不会返回。没有创建新进程；相反，调用进程的代码段、数据段、bss 段和栈被加载的程序覆盖。本质上，execve() 在调用进程中运行了新程序。我们对环境变量发生了什么感兴趣；它们会被新程序自动继承吗？</p>
-<p>Step1：编译并运行给出程序，描述观察。如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943684.png"></p>
-<p>可以看到该程序编译运行后没有打印任何内容</p>
-<p>Step2：修改execve()的调用内容，重新编译并运行程序，描述观察。如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944354.png"></p>
-<p>可以观察到该程序会输出打印当前文件下的所有环境变量。</p>
-<p>Step3：请就新程序如何获得其环境变量得出你的结论。</p>
-<p>首先对execve()函数进行分析，可以得到其有三个参数如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944722.png"></p>
-<p>其中filename是一个二进制可执行文件，argv是调用程序执行的参数序列，也就是我们要调用程序所需要传入的参数，envp是参数序列作为新程序的环境。</p>
-<p>在第一步中，新程序的环境输入为NULL，表示终止符，并未输入键值对作为环境变量，因而其输出打印的结果为空，而在第二步中将environ作文新程序的环境输入，该指针变量指向包含所有环境变量的一个列表，因而将其赋予新进程即可以打印出当前所有的环境变量。</p>
-<h3 id="2-4-Task-4：环境变量和system"><a href="#2-4-Task-4：环境变量和system" class="headerlink" title="2.4 Task 4：环境变量和system()"></a>2.4 Task 4：环境变量和system()</h3><p>本任务中，我们研究通过system() 运行一个新程序，环境变量是如何受影响的。system() 也是用来执行一个命令的，但是和execve() 直接执行一个命令不同，system() 实际上执行“&#x2F;bin&#x2F;sh -c command”，即它先执行&#x2F;bin&#x2F;sh，然后让shell 执行这个command。</p>
-<p>如果你查阅system() 函数的实现，你会发现它使用execl() 来执行&#x2F;bin&#x2F;sh；execl() 调用execve()，并将环境变量数组传递给它。因此，使用system() 时，调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh。请编译并运行以下程序来验证这一点。</p>
-<p>首先对system函数进行分析，其用于执行shell（Linux&#x2F;Unix系统）命令，只有一个参数command，即命令名。调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh，运行结果如下图，会打印出当前的环境变量</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140945125.png"></p>
-<h3 id="2-5-Task-5：环境变量与Set-UID程序"><a href="#2-5-Task-5：环境变量与Set-UID程序" class="headerlink" title="2.5 Task 5：环境变量与Set-UID程序"></a>2.5 Task 5：环境变量与Set-UID程序</h3><p>Set-UID 是Unix 系统中重要的安全机制。当Set-UID 程序执行时，它将获得程序拥有者的权限。如果程序执行者是root，所有执行该程序的人都将以root 权限执行该程序。Set-UID 使得我们可以做许多有趣的事情，但是在执行Set-UID 程序时，会提高执行者的权限，这是有风险的。尽管Set-UID 的行为是由他们的程序逻辑所决定的，而不是用户决定的，用户却可以通过环境变量来修改Set-UID 的行为。为了理解Set-UID 程序是如何被影响的，我们首先弄清楚Set-UID 程序的环境变量是否由用户程序继承而来。</p>
-<p>Step1：编写所给出的程序，打印当前进程的所有环境变量。</p>
-<p>Step2：编译上述程序得到foo，将其所有者更改为root，并使其成为一个Set-UID程序</p>
-<p>Step3：在shell中设置给出的环境变量，这些环境变量是在普通用户的shell 进程中设置的。在你的shell 中运行第2 步中的Set-UID程序。在shell 中键入程序名后，shell 会fork 一个子进程，并使用子进程来运行该程序。请检查你在shell进程（父进程）中设置的所有环境变量是否都进入了Set-UID 子进程。描述你的观察。如果你有惊奇的发现，请描述它们。</p>
-<p>首先编写给出程序，并且将其设置为Set-UID程序，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946892.png"></p>
-<p>然后查看所给出变量是否存在，并且利用export命令设置环境变量如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946056.png"></p>
-<p>可以观察到在shell中本来只有PATH存在。</p>
-<p>在子进程中查看环境变量，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947096.png"></p>
-<p>可以看到PATH和MYENV环境变量被继承，而LD_LIBRARY_PATH并未被继承。</p>
-<h3 id="2-6-Task6：PATH环境变量和Set-UID程序"><a href="#2-6-Task6：PATH环境变量和Set-UID程序" class="headerlink" title="2.6 Task6：PATH环境变量和Set-UID程序"></a>2.6 Task6：PATH环境变量和Set-UID程序</h3><p>由于调用了shell 程序，在Set-UID 程序中调用system() 是非常危险的。这是因为shell 程序的实际行为会受到环境变量的影响，例如PATH 环境变量；这些环境变量由用户提供，可能是恶意的。通过更改这些变量，恶意用户可以控制Set-UID 程序的行为。</p>
-<p>利用所给出的程序实现攻击步骤如下所示：</p>
-<p>首先编写该程序，并且执行，发现该程序可以打印当前目录下的文件，结果如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947368.png"></p>
-<p>修改当前目录到PATH环境变量的首部，然后将&#x2F;bin&#x2F;cal文件复制到当前目录下，并且命名为ls，重新执行命令ls，可以发现其作用被修改。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948525.png"></p>
-<p>其次再将所编写的程序设置为Set-UID程序</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948908.png"></p>
-<p>重新执行task6程序，可以观察到其实在执行cal命令，原因在于PATH环境变量的首部被修改为了当前目录，而在调用system函数执行命令的时候，会在PATH环境变量中的目录按顺序进行查找是否有当前命令，因而可以实现攻击。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948220.png"></p>
-<p>如果不是将cal而是把zsh复制到当前目录中，便可以成功得到当前系统的超级用户特权如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949623.png"></p>
-<p>与此同时打印当前的id信息如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949871.png"></p>
-<p>可以观察到当前执行实在seed用户下的，并未以root权限运行，根据手册中的提示，关掉保护策略后，重复上述攻击，可以观察到结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949332.png"></p>
-<p>可以看到euid&#x3D;0，当前代码是以root程序运行的。</p>
-<h3 id="2-7-Task7：LD-PRELOAD环境变量和Set-UID程序"><a href="#2-7-Task7：LD-PRELOAD环境变量和Set-UID程序" class="headerlink" title="2.7 Task7：LD_PRELOAD环境变量和Set-UID程序"></a>2.7 Task7：LD_PRELOAD环境变量和Set-UID程序</h3><p>在这个任务中，我们研究Set-UID 程序如何处理某些环境变量，包括LD_PRELOAD、LD_LIBRARY_PATH和其他LD_* 如何影响动态加载器&#x2F;链接器的行为。动态加载器&#x2F;链接器是操作系统(OS) 的一部分，它加载（从持久性存储到RAM）并链接可执行文件在运行时所需的共享库。</p>
-<p>在Linux 中，ld.so 或ld-linux.so 是动态加载器&#x2F;链接器（用于不同类型的二进制文件）。在影响其行为的环境变量中，本实验关注LD_LIBRARY_PATH 和LD_PRELOAD。在Linux 中，LD_LIBRARY_PATH 是一组以冒号分隔的目录，应首先在其中搜索库，然后是标准目录集。LD_PRELOAD 指定了要在所有其他库之前加载的附加的用户指定的共享库的列表。在这个任务中，我们将只研究LD_PRELOAD。</p>
-<p>Step1：按照实验手册指导构建动态链接库</p>
-<p>Step2：在不同条件下运行myprog，观察发生现象。</p>
-<p>Case1：普通程序，普通用户执行，可以看到程序正常运行：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950807.png"></p>
-<p>case2：set-uid特权程序，普通用户执行，停顿后并未调用库函数：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950868.png"></p>
-<p>case3：set-uid特权程序，在root下重新设置LD_PRELOAD环境变量，并执行，可以观察到程序正常运行：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950677.png"></p>
-<p>case4：使myprog 为一个Set-UIDUser1 程序（User1 是程序的所有者，是另一个用户账户），在另一个用户账户下重新加LD_PRELOAD 环境变量，并执行它,新建用户并将该myprog修改为Set-UIDUser1 程序，执行后如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140951249.png"></p>
-<p>Step3：原因解释，在step2中执行每种情况的同时打印每一次当前状态下的LD_PRELOAD 环境变量，即可观察到原因</p>
-<p>当一个正常程序的时候，子进程会继承这个环境变量；当他是一个SETUID程序的时候，子进程没有继承该环境变量；所有者是user1，即使有环境变量也不可以调用，我们可以得出这种继承策略是一种很好的保护策略。</p>
-<h3 id="2-8-Task8：使用system-和execve-调用外部程序的对比"><a href="#2-8-Task8：使用system-和execve-调用外部程序的对比" class="headerlink" title="2.8 Task8：使用system()和execve()调用外部程序的对比"></a>2.8 Task8：使用system()和execve()调用外部程序的对比</h3><p>尽管system() 和execve() 都可以被用于执行新的程序，但是system() 在高特权态下更加危险，比如Set-UID 程序。在前面的任务里，我们看到了PATH 环境变量是如何影响system() 的行为的，因为该变量会影响shell 的工作。execve() 则没有这个问题，因为它不调用shell。除了环境变量，调用shell还有另外危险的结果。</p>
-<p>Step1：编译所给出程序，使其成为set-uid程序，进行攻击如下：</p>
-<p>首先编译并修改后，运行该程序，可以看到该进程会利用cat打印出文件内容</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954057.png"></p>
-<p>然后我们尝试打印&#x2F;etc&#x2F;shadow，属于root权限下才可以读的文件，发现不允许：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954885.png"></p>
-<p>关掉系统的保护策略后重新读取，发现可以成功读取，如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955377.png"></p>
-<p>由于程序种调用了system函数，在传递参数的时候没有将代码和数据进行分离，因而可以利用构造参数，使前者作为函数参数后者作为命令执行，进行得到系统超级权限，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955212.png"></p>
-<p>得到root权限后便可以随意删除没有写权限的文件，因而bob可以损害系统的完整性。</p>
-<h3 id="2-9-Task9：权限泄露"><a href="#2-9-Task9：权限泄露" class="headerlink" title="2.9 Task9：权限泄露"></a>2.9 Task9：权限泄露</h3><p>为了遵循最小权限原则，Set-UID 程序如果不再需要这种权限，它会永久地放弃root 权限。此外，有时程序需要将其控制权交给用户，在这种情况下，root 权限必须被撤销。setuid() 系统调用可以用来撤销权限。根据手册，setuid() 设置调用进程的有效用户ID。如果调用者的有效UID 是root，真实的UID和保存的set-user-id 也被设置。因此，如果一个有效UID 为0 的Set-UID 程序调用setuid(n)，则该进程将成为正常进程，其所有的UID 都设置为n。</p>
-<p>当撤销权限的时候，最常见的错误就是权限泄露。该进程可能在它仍然享有特权时已经获得了一些特权功能。当特权降级时，如果程序没有清理这些功能，则它们仍然可以由非特权进程访问。换句话说，虽然进程的有效用户ID 变为非特权，但是该进程仍具有特权，因为它具有特权能力。编译以下程序，将其所有者更改为root，并使其成为Set-UID 程序。以普通用户身份运行程序。你能利用这个程序中的权限泄漏漏洞吗？目标是以普通用户身份写入&#x2F;etc&#x2F;zzz 文件。</p>
-<p>攻击步骤如下：</p>
-<p>首先对所给出的漏洞程序进行编译，并且修改为setuid程序</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955034.png"></p>
-<p>然后尝试对&#x2F;etc&#x2F;zzz文件进行写入，发现没有权限，原因在于，当前状态下，该程序的euid已经修改为了普通用户而非root权限</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956755.png"></p>
-<p>但是由于当前该程序仍然在执行，而且在程序中打开了文件后，并未进行合法的关闭与退出，因而我们可以根据所打印出的文件描述符fd进行文件写入，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956822.png"></p>
-<p>可以看到攻击成功，将自己的文本写入了zzz文件中，针对于这种攻击，修补方法便是销毁文件描述符，即关闭文件。</p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> seedlab2.0 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Cross-Site Request Forgery Attack Lab</title>
+      <link href="/2022/11/30/CSRF/"/>
+      <url>/2022/11/30/CSRF/</url>
+      
+        <content type="html"><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p><span id="more"></span><p>在本实验中，学生们将通过CSRF 攻击来攻击一个社交网络应用。这个开源的社交网络应用被称为Elgg，它已经被安装在我们的虚拟机中。Elgg 中有针对CSRF 的防御措施，但为了达到本实验的目的，我们已经将这些防御措施关闭。本实验覆盖以下主题:</p><p>1. 跨站请求伪造攻击</p><p>2. CSRF 对抗措施：秘密令牌（secret token）和同站cookie（same-site cookie）</p><p>3. HTTP GET 和POST 请求</p><p>4. JavaScript 和Ajax</p><h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：观察HTTP-请求"><a href="#2-1-Task-1：观察HTTP-请求" class="headerlink" title="2.1 Task 1：观察HTTP 请求"></a>2.1 Task 1：观察HTTP 请求</h3><p>在跨站请求伪造攻击中，我们需要伪造HTTP 请求。因此，我们需要知道一个合法的HTTP 请求是什么样子的，以及它使用什么参数等。为此，我们可以使用一个名为”HTTP Header Live” 的火狐浏览器插件。本任务的目标是熟悉这个工具。指导中给出了如何使用这个工具的说明(§ 5.1)。请使用这个工具在Elgg 中捕获一个HTTP GET 请求和一个HTTP POST 请求。请在你的报告中指出这些请求中所使用的参数。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221440.png"></p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221450.png"></p><p>在合法用户进行登录利用该工具进行抓取http报文，可以分别得到上图所示的POST报文和GET报文</p><p>在POST报文中，有elgg_token,elgg_ts,username和password等参数，而在GET报文中没有参数显示。</p><h3 id="2-2-Task-2：使用GET-请求的CSRF-攻击"><a href="#2-2-Task-2：使用GET-请求的CSRF-攻击" class="headerlink" title="2.2 Task 2：使用GET 请求的CSRF 攻击"></a>2.2 Task 2：使用GET 请求的CSRF 攻击</h3><p>在这个任务中，我们需要Elgg 社交网络中的两个账户Alice 和Samy。Samy 想成为Alice 的朋友，但Alice 拒绝添加他为好友。Samy 决定使用CSRF 攻击来实现他的目标。他向Alice 发送了一个URL（通过电子邮件或在发布在Elgg 上）。Alice 对这个网址很好奇，点击了这个网址，这就把她带到了Samy 的网站 <a href="http://www.attacker32.com/">www.attacker32.com</a>  。假设你是Samy，描述你如何构建网页的内容，以便当Alice 访问该网页时，Samy 能够被添加到Alice 的好友列表中（假设Alice 有一个活跃的Elgg 会话）</p><p>实现思路：</p><p>通过抓获合法添加好友过程中得到的报文，观察其中的参数结构，然后通过修改其参数，构建网页的内容</p><p>实现步骤：</p><p>首先登录到Samy的用户界面后，合法的把Alice添加为好友，在该过程中利用插件工具进行抓获http报文如下：</p><p>可以看到其url请求为 ”<a href="http://www.seed-server.com/action/friends/add?friend=56%E2%80%9D">http://www.seed-server.com/action/friends/add?friend=56”</a> 开头，该56为Alice的guid</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221545.png"></p><p>因此我们想要让Alice添加Samy为好友的话，需要把friend后的参数修改为Samy的guid。而Samy的guid可以在合法登录到Samy的用户界面后，通过网页的源码得到，如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221601.png"></p><p>最后根据得到的gid构造img上所附带的链接，如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221614.png"></p><p>攻击实现如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221635.png"></p><p>在攻击页面中，点击链接后，刷新Alice的好友页面，就可以观察到Samy被成功添加为Alice的好友。</p><h3 id="2-3-Task-3：使用POST-请求的CSRF-攻击"><a href="#2-3-Task-3：使用POST-请求的CSRF-攻击" class="headerlink" title="2.3 Task 3：使用POST 请求的CSRF 攻击"></a>2.3 Task 3：使用POST 请求的CSRF 攻击</h3><p>在把自己加入Alice 的朋友名单后，Samy 想进行更多的攻击。他想让Alice 在她的个人资料中写上”Samy is my Hero”，使得所有人都能够看到。当然，Alice 不喜欢Samy，更不用说把这个声明写进她的个人资料中。Samy 计划使用CSRF 攻击来实现这一目标，也就是这个Task 的目标。</p><p>实现思路：</p><p>同上一个任务中的方法，在合法用户修改个人资料的过程中，利用插件截获http报文后，根据报文中的参数进行修改攻击页面中的内容，即可实现攻击。</p><p>实现步骤：</p><p>首先在Samy的用户页面中，进行修改自己的个人资料，把个人描述修改为“Samy is my hero.”在提交过程中，利用插件进行捕获http报文，得到如下结果：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221711.png"></p><p>可以看到该链接的网址以及报文中的参数内容，然后根据得到的报文对攻击网页的源码进行修改，即修改网页文件中的field中的参数以及p.action的内容。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221846.png"></p><p>修改后，进入该攻击页面，即可成功修改Alice的个人资料如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221906.png"></p><p>问题回答：</p><p>问题1：如何获取Alice的guid？</p><p>答：在上一个任务中，通过Samy在自己的用户页面添加Alice为好友的过程中，截获http报文，即可得到Alice的guid。</p><p>问题2：如果Boby 想向任何访问他的恶意网页的人发动攻击。在这种情况下，他事先不知道谁在访问该网页。那么他还能发动CSRF 攻击来修改受害者的Elgg 资料吗？请解释原因。</p><p>答：不可以。因为在攻击过程中需要知道受害者的guid并且预先设置好，如果是未知用户访问的话是不能够及时构造的。</p><h3 id="2-4-Task-4：开启Elgg-的防御措施"><a href="#2-4-Task-4：开启Elgg-的防御措施" class="headerlink" title="2.4 Task 4：开启Elgg 的防御措施"></a>2.4 Task 4：开启Elgg 的防御措施</h3><p>开启防御措施要打开防御措施，首先要进入Elgg 容器的&#x2F;var&#x2F;www&#x2F;elgg&#x2F;vendor&#x2F;elgg&#x2F;elgg&#x2F;engine&#x2F;classes&#x2F;Elgg&#x2F;Security 文件夹，从Csrf.php 中删除return 语句。你可以使用一个内置在容器中的简单编辑器，名为nano 。在做了修改之后再次重复之前的攻击，看看你的攻击是否会成功。请指出捕获的HTTP 请求中的秘密令牌，并解释为什么攻击者为什么不能在CSRF 攻击中发送这些秘密令牌；是什么阻止了他们从网页上发现秘密令牌？</p><p>实现步骤：</p><p>首先在容器中修改文件内容，讲return语句注释掉，如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130221957.png"></p><p>然后重新进行攻击，可以观察到如下结果：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222034.png"></p><p>可以发现两次攻击都无法成功，网页会报错”form is missing __token or __ts fields”</p><p>捕获的http请求中的token如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222100.png"></p><p>由于return注释掉后，会执行validate函数，提取出请求中的两个参数__token 和__ts，但是由于在此前构造请求时没有补充这两个参数，因而会报错，并且攻击会失败</p><h3 id="2-5-Task-5：测试同站Cookie-方法"><a href="#2-5-Task-5：测试同站Cookie-方法" class="headerlink" title="2.5 Task 5：测试同站Cookie 方法"></a>2.5 Task 5：测试同站Cookie 方法</h3><p>当访问该网站时，浏览器上会设置三个cookie，分别是：cookie-normal、cookie-lax 和cookie-strict。正如其名称所示，第一个cookie 只是一个普通的cookie，第二个和第三个cookie 是两种不同类型的同站cookie（Lax 和Strict）。我们设计了两组实验来观察当发送HTTP 请求时，哪些cookie 会被附加到服务器上。通常情况下，属于服务器的所有cookie 都将被附加到请求中，除了同站cookie。</p><p>请点击两个实验的链接。链接A 指向example32.com 上的一个页面，而链接B 则指向attacker32.com 上一个页面。两个页面都是相同的（除了背景颜色），并且它们都发送三种不同的请求到 <a href="http://www.example32.com/showcookies.php">www.example32.com/showcookies.php</a> ，这个链接只是显示浏览器发送的cookies。通过观察显示的结果，你可以知道哪些cookie 会被浏览器发送。请完成以下要求：</p><p>• 请描述你所看到的情况，并解释为什么在某些情况下不发送一些cookie。</p><p>在同站请求的三种情况下，三个cookie都被发送</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222143.png"></p><p>在跨站请求的情况下：</p><p>Sending Get Request (link)：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222157.png"></p><p>Sending Get Request (form)：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222254.png"></p><p>Sending Post Request (form)：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222318.png"></p><p>通过观察，可以得知，在跨站请求中，strict值都会阻止浏览器发送cookie到目标站点，而lax值则只有在post请求中才会被阻止发送。解释如下：</p><p>查阅RFC文档中的<a href="https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02#section-5.3.7">samesite</a>部分可以得到如下内容：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130222333.png"></p><p>从中可以得知strict值将阻止浏览器在所有跨网站浏览上下文中将 cookie 发送到目标站点，即使遵循常规链接也是如此。而 Lax 值为希望在用户从外部链接到达后维护用户登录会话的网站提供了安全性和可用性之间的合理平衡，因此在get请求中会发送而在post请求中为了防御CSRF而不会被发送。</p><p>• 根据你的理解，请描述同站cookies 如何帮助服务器检测一个请求是跨站还是同站请求。</p><p>只需要检查该请求中的Strict值是否还在，即可知道该请求是跨站还是同站请求，因为在同站请求中，三个值都会保留而跨站请求中Strict值都不会被发送。</p><p>• 请描述你将如何使用同站cookie机制来帮助Elgg防御CSRF攻击。只需要描述思路，无需实现。</p><p>利用同站cookie和token一同使用，利用strit值进行检查是否为跨站请求。在服务端产生同步token，为用户的每一次会话请求都进行验证。并且token不应该用cookies进行传送，而是作为响应缓存的一部分，比如HTML或者JSON响应。</p>]]></content>
+      
+      
       <categories>
-        <category>软件安全</category>
+          
+          <category> 软件安全 </category>
+          
       </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>条件竞争漏洞</title>
-    <url>/2023/09/14/%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%AE%9E%E9%AA%8C/</url>
-    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生将从课堂上学到的关于竞争条件漏洞的知识付诸行动，以获得关于竞争条件漏洞的第一手经验。当多个进程同时访问和操作相同的数据时，会出现竞争条件，执行的结果取决于访问发生的特定顺序。如果特权程序存在竞争条件漏洞，攻击者可以运行并行进程与特权程序“竞争”，从而改变程序的行为。</p>
-<span id="more"></span>
-<p>本实验中，学生得到一个包含竞争条件漏洞的程序；他们的任务是开发一种利用漏洞并获得 root 权限的方案。除了攻击方法外，还将引导学生了解几种可用于对抗竞争条件攻击的保护方案。学生需要评估这些方案是否有效，并解释原因。本实验涵盖以下主题：</p>
-<p>1. 竞争条件漏洞</p>
-<p>2. 粘滞符号链接保护</p>
-<p>3. 最小权限原则</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：选择目标"><a href="#2-1-Task-1：选择目标" class="headerlink" title="2.1 Task 1：选择目标"></a>2.1 Task 1：选择目标</h3><p>我们希望利用程序中的竞争条件漏洞。我们选择以普通用户无法写入的口令文件&#x2F;etc&#x2F;passwd 为目标。通过利用该漏洞，我们希望向口令文件添加一条记录，目的是创建一个具有 root 权限的新用户账号.在该口令文件中，每个用户都有一个条目，该条目由七个字段组成并用冒号 (:) 分隔。root 用户的条目如下所示。</p>
-<table>
-<thead>
-<tr>
-<th>root: x :0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash</th>
-</tr>
-</thead>
-</table>
-<p>为了验证 magic 值口令是否有效，我们（作为超级用户）手动将以下条目添加到&#x2F;etc&#x2F;passwd文件的末尾。请在报告中说明你是否可以在不键入口令的情况下登录 test 账户，并检查你是否具有 root 权限。</p>
-<table>
-<thead>
-<tr>
-<th>test:U6aMy0wojraho:0:0:test:&#x2F;root:&#x2F;bin&#x2F;bash</th>
-</tr>
-</thead>
-</table>
-<p>利用gedit打开并修改&#x2F;etc&#x2F;passwd 文件，然后进行登录如下，证明具有root权限</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20230914090952.png"></p>
-<h3 id="2-2-Task-2：发起竞争条件攻击"><a href="#2-2-Task-2：发起竞争条件攻击" class="headerlink" title="2.2 Task 2：发起竞争条件攻击"></a>2.2 Task 2：发起竞争条件攻击</h3><p>此任务的目标是利用前面列出的易受攻击的 Set-UID 程序中的竞争条件漏洞。最终目标是获得 root权限。攻击的最关键步骤是使&#x2F;tmp&#x2F;XYZ 指向口令文件，该步骤必须发生在检查和使用之间的窗口内；即在易受攻击程序中的 access 和 fopen 调用之间。</p>
-<h4 id="Task-2-A：模拟一个缓慢的机器"><a href="#Task-2-A：模拟一个缓慢的机器" class="headerlink" title="Task 2.A：模拟一个缓慢的机器"></a>Task 2.A：模拟一个缓慢的机器</h4><p>假设机器非常慢，在 access() 和 fopen() 调用之间有一个 10 秒的时间窗口。通过此添加，vulp 程序（重新编译时)将暂停并将控制权交给操作系统 10 秒。我们的工作是手动执行一些操作，因此当程序在 10 秒后恢复时，该程序可以帮助你将 root 帐户添加到系统中。请演示如何实现这一点。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140912547.png"></p>
-<p>再漏洞程序中进行添加如上代码后，重新编译该程序，并按实验手册进行：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140913020.png"></p>
-<h4 id="Task-2-B：进行真实攻击"><a href="#Task-2-B：进行真实攻击" class="headerlink" title="Task 2.B：进行真实攻击"></a>Task 2.B：进行真实攻击</h4><p>在模拟攻击中，我们使用“ln-s”命令创建&#x2F;更改符号链接。现在我们需要在一个程序中进行。我们可以在 C 中使用 symlink() 来创建符号链接。由于 Linux 不允许在链接已经存在的情况下创建链接，因此我们需要先删除旧链接。下面的 C 代码片段显示了如何删除链接，然后使&#x2F;tmp&#x2F;XYZ 指向&#x2F;etc&#x2F;passwd。请编写你的攻击程序。如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140914093.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140915864.png"></p>
-<p>我们需要多次运行漏洞程序，因此编写一个程序来自动执行此过程。为了避免手动向漏洞程序 vulp 键入输入，我们可以使用输入重定向。也就是说，我们将输入保存在一个文件中，并要求 vulp 使用“vulp &lt; inputFile”从该文件获取输入。我们也可以使用 pipe（稍后将给出一个示例）。该攻击可能需要一段时间才能成功修改口令文件，因此我们需要一种方法来自动检测攻击是否成功。很多方法可以满足此要求；一种简单的方法是监控文件的时间戳。下面的 shell 脚本运行“ls -l”命令，该命令输出关于文件的几条信息，包括上次修改的时间。通过将命令的输出与之前生成的输出进行比较，我们可以判断文件是否已被修改。以下 shell 脚本循环执行易受攻击的程序（vulp），输入由 echo 命令（通过一个 pipe）提供。你需要决定实际输入的内容。如果攻击成功，即 passwd 被修改，则 shell 脚本将停止。本任务需要一定的耐心，通常你能够在 5 分钟内成功。</p>
-<p>执行攻击程序和脚本如下：</p>
-<p>在攻击过程中，可以观察到XYZ文件的符号链接一直在被修改，说明程序执行成功，等待一段时候后：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140916090.png"></p>
-<p>可以观察到攻击成功，可以以test用户身份登录并且验证root权限。</p>
-<h4 id="Task-2-C：一种改进的攻击方法"><a href="#Task-2-C：一种改进的攻击方法" class="headerlink" title="Task 2.C：一种改进的攻击方法"></a>Task 2.C：一种改进的攻击方法</h4><p>首先创建两个符号链接&#x2F;tmp&#x2F;XYZ 和&#x2F;tmp&#x2F;ABC，然后使用 renameat2 系统调用来原子地交换它们。这允许我们在不引入任何竞争条件的情况下更改&#x2F;tmp&#x2F;XYZ 指向的内容。请使用此新策略修改你的攻击策略，然后重试攻击。如果一切正确，你的攻击应该能够成功</p>
-<p>修改后的攻击程序如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918310.png"></p>
-<p>执行此攻击程序和脚本，结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140918449.png"></p>
-<p>可以观察到攻击一次便成功，可以以test用户身份登录并且验证root权限。</p>
-<h3 id="2-3-Task-3：预防措施"><a href="#2-3-Task-3：预防措施" class="headerlink" title="2.3 Task 3：预防措施"></a>2.3 Task 3：预防措施</h3><h4 id="Task-3-A：应用最小权限原则"><a href="#Task-3-A：应用最小权限原则" class="headerlink" title="Task 3.A：应用最小权限原则"></a>Task 3.A：应用最小权限原则</h4><p>本实验中，漏洞程序的根本问题是违反了最小权限原则。程序员考虑到运行程序的用户可能权限过高，所以他&#x2F;她引入了 access() 来限制用户的能力。然而，这不是正确的方法。更好的方法是应用最小权限原则；也就是说，如果用户不需要某些特权，则该特权需要被禁用。</p>
-<p>我们可以使用 seteuid 系统调用暂时禁用 root 权限，然后在必要时启用它。请使用此方法修复程序中的漏洞，然后重复攻击。你能成功吗？请报告你的观察结果并提供解释。</p>
-<p>修改漏洞程序如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919935.png"></p>
-<p>重新对程序进行编译并且执行改进后的攻击程序和脚本，结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140919341.png"></p>
-<p>发现攻击始终失败。解释如下：</p>
-<p>调用open()函数的时候，没有root权限，因而无法打开&#x2F;tmp&#x2F;XYZ指向的受的文件passwd。</p>
-<h4 id="Task-3-B：使用-Ubuntu-的内置方案"><a href="#Task-3-B：使用-Ubuntu-的内置方案" class="headerlink" title="Task 3.B：使用 Ubuntu 的内置方案"></a>Task 3.B：使用 Ubuntu 的内置方案</h4><p>Ubuntu 10.10 和更高版本附带了一个内置的防止竞争条件攻击的保护方案。在此任务中，你需要使用以下命令重新启用保护：</p>
-<table>
-<thead>
-<tr>
-<th>$ sudo sysctl -w fs.protected_symlinks&#x3D;1</th>
-</tr>
-</thead>
-</table>
-<p>执行该命令后，重新进行攻击，观察结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140920171.png"></p>
-<p>发现攻击失败，此时XYZ文件的所有者已经成为root。</p>
-<p>解释以下内容：</p>
-<p>1. 该保护方案是如何工作的？</p>
-<p>因为在这种情况下，XYZ文件的所有者是 root，tmp目录的所有者是 root，符号链接所有者是seed。 因而访问将被拒绝</p>
-<p>2. 这个方案有什么局限性？</p>
-<p>该机制仅适用于启用了粘滞位的目录，像 &#x2F;tmp 或 &#x2F;var&#x2F;tmp 这样的粘性位目录。 因此攻击者可以利用其他目录中的竞争条件并获得访问权限。</p>
-<h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p>
-<p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> seedlab2.0 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Buffer Overflow Attack Lab (Set-UID Version)</title>
+      <link href="/2022/11/30/buffer_overflow/"/>
+      <url>/2022/11/30/buffer_overflow/</url>
+      
+        <content type="html"><![CDATA[<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p><span id="more"></span><p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p><ol><li>缓冲区溢出漏洞与攻击</li><li>堆栈布局</li><li>地址随机化，不可执行栈以及 StackGuard</li><li>Shellcode (32-bit and 64-bit)</li><li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li></ol><h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p><p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p><h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p><h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p><p>运行结果如下图所示：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p><p>解释说明：</p><ul><li><p>Shellcode 填写：</p><p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p></li><li><p>Start 填写：</p><p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p></li><li><p>Ret（返回地址）填写：</p><p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p></li></ul><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p><p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p><p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p><ul><li><p>Offset 填写（64bit 程序同理）：</p><p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p><p>bof 函数的具体执行步骤，如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p><p>在调用strcpy 函数时加入断点：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p><p>计算offset：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p><p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p></li></ul><h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p><p>补全值如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p><p>运行结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p><p>解释说明：</p><p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p><p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p><h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p><p>补全值如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p><p>运行结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p><p>解释说明：</p><p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p><p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p><h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p><p>补全值如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p><p>运行结果如下：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p><p>解释说明：</p><p>填写方法同上一次任务，未遇到新的挑战。</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p><h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p><p>运行结果：</p><p>​下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p><p>​下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p><p>解释说明：</p><p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p><p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p><p>运行结果：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p><p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p><h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p><p>运行结果：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p><p>解释说明：</p><p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p><p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p><p>攻击结果：</p><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p><h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul><li><p>打开 StackGuard 保护机制</p><p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p><p>运行结果如下：</p></li></ul><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p><p>​解释说明：</p><p>​在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p><p>​原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p><ul><li><p>打开不可执行栈保护机制</p><p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p><p>运行结果如下：</p></li></ul><p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p><p>​解释说明：</p><p>​在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>]]></content>
+      
+      
       <categories>
-        <category>软件安全</category>
+          
+          <category> 软件安全 </category>
+          
       </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
+      
+      
+        <tags>
+            
+            <tag> seedlab2.0 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Scripts</title>
+      <link href="/2022/11/11/Scripts/"/>
+      <url>/2022/11/11/Scripts/</url>
+      
+        <content type="html"><![CDATA[<h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p><span id="more"></span><h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p><h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p><p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p><h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p><h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p><p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p><p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p><p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p><p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p><h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p><p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p><p>条件操作码：对条件进行判断，产生一个布尔结果。</p><h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure><p>计算2+3的和并且判断其是否等于5</p><p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p><h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p><p>锁定脚本</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure><p>解锁脚本</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure><p>组合后的验证脚本</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>hello</title>
+      <link href="/2022/11/10/hello-world/"/>
+      <url>/2022/11/10/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><span id="more"></span><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+  
+  
 </search>
