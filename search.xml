@@ -1,6 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>伪随机数生成 Lab</title>
+    <url>/2022/12/14/Pseudo-random%20Number/</url>
+    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>生成随机数是安全软件中非常常见的任务。在许多情况下，加密密钥不是由用户提供的，而是在软件内部生成的。它们的随机性非常重要。否则，攻击者可以预测加密密钥，从而达到破坏加密目的。许多开发人员从其先前的经验中知道如何生成随机数（例如用于蒙特卡洛模拟），因此他们使用类似的方法生成用于安全目的的随机数。不幸的是，随机数序列对于蒙特卡洛模拟可能是好的，但对于加密密钥则可能是不好的。开发人员需要知道如何生成安全的随机数，否则就会犯错。在一些著名的产品（包括Netscape和Kerberos ）中也犯过类似的错误。</p>
+<span id="more"></span>
+<p>在本实验中，学生将学习为什么典型的随机数生成方法不适用于生成秘密（例如加密密钥）。进一步学习生成用于安全目的的伪随机数的标准方法。本实验涵盖以下主题：</p>
+<p>1. 伪随机数生成</p>
+<p>2. 随机数生成中的错误</p>
+<p>3. 加密密钥生成</p>
+<p>4. 设备文件&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：用错误的方式生成加密密钥"><a href="#2-1-Task-1：用错误的方式生成加密密钥" class="headerlink" title="2.1 Task 1：用错误的方式生成加密密钥"></a>2.1 Task 1：用错误的方式生成加密密钥</h3><p>要生成一个好的伪随机数，我们需要从一些随机的东西开始。否则，结果会是可预测的。库函数time() 以从纪元1970-01-01 00:00:00 +0000 (UTC) 起的秒数的形式返回当前时间。运行上面的代码，并描述你的观察结果。然后，注释掉第À 行，再次运行该程序，并描述你观察到的结果。使用在两种情况下观察到的结果来解释代码中srand() 和time() 函数的用途。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150915034.png"></p>
+<p>注释前如上图所示，每次生成的随机数不同。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917202.png"></p>
+<p>注释掉后如上图所示，每次生成的随机数相同</p>
+<p>解释：</p>
+<p>srand函数用于给随机数生成器根据当前系统时间设定种子，而将该函数注释掉后，会默认使用随机数种子0，因此会产生两种不同的观察结果。</p>
+<h3 id="2-2-Task-2-猜测密钥"><a href="#2-2-Task-2-猜测密钥" class="headerlink" title="2.2 Task 2: 猜测密钥"></a>2.2 Task 2: 猜测密钥</h3><p>给定以AES—CBC模式加密的明文，密文以及初始IV如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917199.png"></p>
+<p>编写一个程序用于尝试所有可能的密钥。密钥生成方式由TASK1给出。</p>
+<p>思路：</p>
+<p>首先利用task1中所给出的代码进行改写，根据所给出时间的及其前两个小时的时间种子来生成128bit长度的密钥，然后再编写脚本来遍历所生成的密钥，利用AES进行加密明文，如过加密后的密文与给出的密文相同，则得到正确的密钥。</p>
+<p>首先查看时间如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917950.png"></p>
+<p>利用时间种子进行生成密钥，并保存在文件中。</p>
+<p>代码如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918752.png"></p>
+<p>生成结果如下，可以观察到生成了16bytes长的密钥如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918380.png"></p>
+<p>编写python脚本如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918073.png"></p>
+<p>执行脚本即可得到正确的密钥如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918966.png"></p>
+<h3 id="2-3-Task-3-测量内核的熵"><a href="#2-3-Task-3-测量内核的熵" class="headerlink" title="2.3 Task 3: 测量内核的熵"></a>2.3 Task 3: 测量内核的熵</h3><p>随机性使用熵来度量，这与信息论中熵的含义不同。在这里，熵仅仅意味着系统当前有多少bit 的随机数。你可以使用下面的命令找出在当前时刻内核的熵是多少。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919407.png"></p>
+<p>watch 可以周期性地执行一个程序。我们使用watch 运行上面的命令来监控熵的变化。下面的命令每0.1 秒就执行一次cat 程序。请执行上面的命令。在它运行时，移动你的鼠标，点击鼠标，输入什么东西，读取一个大文件，访问一个网站。哪些活动会显著地使熵变大？请在实验报告中描述你的发现。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919176.png"></p>
+<p>移动鼠标会发现，增长很慢，移动一次即可增长1</p>
+<p>输入字符，输入一个字符熵增长1</p>
+<p>阅读文件，这里阅读系统日志，发现利用less阅读一次熵增长</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919436.png"></p>
+<p>访问网站，熵并不会自动增长，其增长取决于鼠标的点击移动以及字符的输入。</p>
+<h3 id="2-4-任务4-从-x2F-dev-x2F-random-中获取伪随机数"><a href="#2-4-任务4-从-x2F-dev-x2F-random-中获取伪随机数" class="headerlink" title="2.4 任务4: 从&#x2F;dev&#x2F;random 中获取伪随机数"></a>2.4 任务4: 从&#x2F;dev&#x2F;random 中获取伪随机数</h3><p>Linux 将从物理资源收集的随机数据存储到一个随机池中，然后使用两个设备将随机源转换为伪随机数。这两个设备是&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom 。它们有不同的行为。&#x2F;dev&#x2F;random 设备是阻塞设备。即，每当该设备给出随机数时，随机池的熵将减小。当熵达到零时，&#x2F;dev&#x2F;random 将阻塞，直到获得足够的随机性为止。</p>
+<p>让我们设计一个实验来观察&#x2F;dev&#x2F;random 设备的行为。我们将使用cat 命令持续从&#x2F;dev&#x2F;random 中读取伪随机数。我们将输出通过管道传递到hexdump 以便获得良好的输出。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150920697.png"></p>
+<p>请运行上面的命令，同时使用watch 命令来监视熵。如果不移动鼠标，也不键入任何内容，将会发生什么。然后，随机移动鼠标，看看是否可以观察到任何差异。请描述并解释你观察到的现象。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150921781.png"></p>
+<p>如上图所示，如果没有操作，间隔一到二分钟后，会自动生成一行随机数，如果随机移动鼠标生成新的一行随机数的时间间隔变小。</p>
+<p>解释如下：</p>
+<p>为了保证随机数的质量，&#x2F;dev&#x2F;random 只能返回熵池当前最大可用的随机二进制位，当请求超过这个值，就会阻塞，直到熵池中有足够的随机二进制位。而移动鼠标可以增加当前的熵，因而其生成新一行随机数的时间间隔变小。</p>
+<p><strong>问题：</strong> 假设一个服务器使用&#x2F;dev&#x2F;random 与客户端生成随机会话密钥。请描述你将如何对这样的一个服务器发起拒绝服务（DoS）攻击。</p>
+<p><strong>回答：</strong>不断向服务器发送请求使其生成返回熵池中最大可用随机二进制位，直至其阻塞。</p>
+<h3 id="2-5-任务5-从-x2F-dev-x2F-urandom-获取随机数"><a href="#2-5-任务5-从-x2F-dev-x2F-urandom-获取随机数" class="headerlink" title="2.5 任务5: 从&#x2F;dev&#x2F;urandom 获取随机数"></a>2.5 任务5: 从&#x2F;dev&#x2F;urandom 获取随机数</h3><p>Linux 提供了另一种方式，可以通过&#x2F;dev&#x2F;urandom 设备访问随机池。&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom都可以使用随机池中的数据生成伪随机数。当熵不足时，&#x2F;dev&#x2F;random 将会暂停，而&#x2F;dev&#x2F;urandom 会继续生成新的数。将随机池中的数据视作“种子”，我们可以使用种子想生成多少随机数就生成多少。</p>
+<p>让我们来看看&#x2F;dev&#x2F;urandom 的行为。我们再次使用cat 从设备中获取伪随机数。请运行下面的命令，描述移动鼠标是否会影响结果。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150921810.png"></p>
+<p>如上图所示，urandom会不断产生新的随机数，其产生速度很快且没有任何停顿，移动鼠标并不会影响结果。</p>
+<p>让我们测量随机数的质量。我们可以使用一个名为ent 的工具，该工具已经安装在我们的虚拟机中。根据其手册所言：“ent 对存储在文件中的字节序列进行各种测试，并报告这些测试的结果。该程序对于评估加密和统计采样应用程序，压缩算法以及其他文件信息密度受关注的应用程序的伪随机数生成器很有用”。让我们首先从&#x2F;dev&#x2F;urandom 生成1 MB 的伪随机数，并将其保存在文件中。然后，在该文件上运行ent。请描述你的结果，并分析随机数的质量是否良好</p>
+<p>运行结果如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922383.png"></p>
+<p>分析随机数质量：</p>
+<p>可以观察到其熵接近8比特，可以得知其信息很密集，随机性好。</p>
+<p>数据字节的算数平均值接近于127.5，蒙特卡洛值接近Π，行相关系数接近于0，因此可以推断由urandom所产生的随机数的随机性较好。</p>
+<p>修改实验手册中的代码片段来生成一个256 bit 的加密密钥。请编译并运行你的代码，输出这些数并将屏幕截图放在报告里。</p>
+<p>修改代码如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922807.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922485.png"></p>
+]]></content>
+      <categories>
+        <category>软件安全</category>
+      </categories>
+      <tags>
+        <tag>seedlab2.0</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Cross-Site Request Forgery Attack Lab</title>
     <url>/2022/11/30/CSRF/</url>
     <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
@@ -83,72 +158,96 @@
       </tags>
   </entry>
   <entry>
-    <title>伪随机数生成 Lab</title>
-    <url>/2022/12/14/Pseudo-random%20Number/</url>
-    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>生成随机数是安全软件中非常常见的任务。在许多情况下，加密密钥不是由用户提供的，而是在软件内部生成的。它们的随机性非常重要。否则，攻击者可以预测加密密钥，从而达到破坏加密目的。许多开发人员从其先前的经验中知道如何生成随机数（例如用于蒙特卡洛模拟），因此他们使用类似的方法生成用于安全目的的随机数。不幸的是，随机数序列对于蒙特卡洛模拟可能是好的，但对于加密密钥则可能是不好的。开发人员需要知道如何生成安全的随机数，否则就会犯错。在一些著名的产品（包括Netscape和Kerberos ）中也犯过类似的错误。</p>
+    <title>SQL injection Lab</title>
+    <url>/2022/10/20/SQLinjection/</url>
+    <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>SQL 注入是一种代码注入技术，利用 Web 应用程序和数据库服务器之间接口的漏洞。当用户的输入没有被 Web 应用程序正确检查就被发送到后端数据库服务器时，就会出现 SQL 注入漏洞。很多 Web 应用程序从用户处获取输入，并使用用户输入来构建 SQL 查询，以获得数据库中的数据信息。Web 应用程序也使用 SQL 查询在数据库中进行数据信息的存储。这些都是 Web 应用程序开发中的常见做法。如果没有仔细构造 SQL 查询，则可能会出现 SQL 注入漏洞。SQL 注入攻击是对 Web 应用程序最常见的攻击之一。</p>
 <span id="more"></span>
-<p>在本实验中，学生将学习为什么典型的随机数生成方法不适用于生成秘密（例如加密密钥）。进一步学习生成用于安全目的的伪随机数的标准方法。本实验涵盖以下主题：</p>
-<p>1. 伪随机数生成</p>
-<p>2. 随机数生成中的错误</p>
-<p>3. 加密密钥生成</p>
-<p>4. 设备文件&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：用错误的方式生成加密密钥"><a href="#2-1-Task-1：用错误的方式生成加密密钥" class="headerlink" title="2.1 Task 1：用错误的方式生成加密密钥"></a>2.1 Task 1：用错误的方式生成加密密钥</h3><p>要生成一个好的伪随机数，我们需要从一些随机的东西开始。否则，结果会是可预测的。库函数time() 以从纪元1970-01-01 00:00:00 +0000 (UTC) 起的秒数的形式返回当前时间。运行上面的代码，并描述你的观察结果。然后，注释掉第À 行，再次运行该程序，并描述你观察到的结果。使用在两种情况下观察到的结果来解释代码中srand() 和time() 函数的用途。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150915034.png"></p>
-<p>注释前如上图所示，每次生成的随机数不同。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917202.png"></p>
-<p>注释掉后如上图所示，每次生成的随机数相同</p>
-<p>解释：</p>
-<p>srand函数用于给随机数生成器根据当前系统时间设定种子，而将该函数注释掉后，会默认使用随机数种子0，因此会产生两种不同的观察结果。</p>
-<h3 id="2-2-Task-2-猜测密钥"><a href="#2-2-Task-2-猜测密钥" class="headerlink" title="2.2 Task 2: 猜测密钥"></a>2.2 Task 2: 猜测密钥</h3><p>给定以AES—CBC模式加密的明文，密文以及初始IV如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917199.png"></p>
-<p>编写一个程序用于尝试所有可能的密钥。密钥生成方式由TASK1给出。</p>
-<p>思路：</p>
-<p>首先利用task1中所给出的代码进行改写，根据所给出时间的及其前两个小时的时间种子来生成128bit长度的密钥，然后再编写脚本来遍历所生成的密钥，利用AES进行加密明文，如过加密后的密文与给出的密文相同，则得到正确的密钥。</p>
-<p>首先查看时间如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150917950.png"></p>
-<p>利用时间种子进行生成密钥，并保存在文件中。</p>
-<p>代码如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918752.png"></p>
-<p>生成结果如下，可以观察到生成了16bytes长的密钥如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918380.png"></p>
-<p>编写python脚本如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918073.png"></p>
-<p>执行脚本即可得到正确的密钥如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150918966.png"></p>
-<h3 id="2-3-Task-3-测量内核的熵"><a href="#2-3-Task-3-测量内核的熵" class="headerlink" title="2.3 Task 3: 测量内核的熵"></a>2.3 Task 3: 测量内核的熵</h3><p>随机性使用熵来度量，这与信息论中熵的含义不同。在这里，熵仅仅意味着系统当前有多少bit 的随机数。你可以使用下面的命令找出在当前时刻内核的熵是多少。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919407.png"></p>
-<p>watch 可以周期性地执行一个程序。我们使用watch 运行上面的命令来监控熵的变化。下面的命令每0.1 秒就执行一次cat 程序。请执行上面的命令。在它运行时，移动你的鼠标，点击鼠标，输入什么东西，读取一个大文件，访问一个网站。哪些活动会显著地使熵变大？请在实验报告中描述你的发现。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919176.png"></p>
-<p>移动鼠标会发现，增长很慢，移动一次即可增长1</p>
-<p>输入字符，输入一个字符熵增长1</p>
-<p>阅读文件，这里阅读系统日志，发现利用less阅读一次熵增长</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150919436.png"></p>
-<p>访问网站，熵并不会自动增长，其增长取决于鼠标的点击移动以及字符的输入。</p>
-<h3 id="2-4-任务4-从-x2F-dev-x2F-random-中获取伪随机数"><a href="#2-4-任务4-从-x2F-dev-x2F-random-中获取伪随机数" class="headerlink" title="2.4 任务4: 从&#x2F;dev&#x2F;random 中获取伪随机数"></a>2.4 任务4: 从&#x2F;dev&#x2F;random 中获取伪随机数</h3><p>Linux 将从物理资源收集的随机数据存储到一个随机池中，然后使用两个设备将随机源转换为伪随机数。这两个设备是&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom 。它们有不同的行为。&#x2F;dev&#x2F;random 设备是阻塞设备。即，每当该设备给出随机数时，随机池的熵将减小。当熵达到零时，&#x2F;dev&#x2F;random 将阻塞，直到获得足够的随机性为止。</p>
-<p>让我们设计一个实验来观察&#x2F;dev&#x2F;random 设备的行为。我们将使用cat 命令持续从&#x2F;dev&#x2F;random 中读取伪随机数。我们将输出通过管道传递到hexdump 以便获得良好的输出。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150920697.png"></p>
-<p>请运行上面的命令，同时使用watch 命令来监视熵。如果不移动鼠标，也不键入任何内容，将会发生什么。然后，随机移动鼠标，看看是否可以观察到任何差异。请描述并解释你观察到的现象。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150921781.png"></p>
-<p>如上图所示，如果没有操作，间隔一到二分钟后，会自动生成一行随机数，如果随机移动鼠标生成新的一行随机数的时间间隔变小。</p>
-<p>解释如下：</p>
-<p>为了保证随机数的质量，&#x2F;dev&#x2F;random 只能返回熵池当前最大可用的随机二进制位，当请求超过这个值，就会阻塞，直到熵池中有足够的随机二进制位。而移动鼠标可以增加当前的熵，因而其生成新一行随机数的时间间隔变小。</p>
-<p><strong>问题：</strong> 假设一个服务器使用&#x2F;dev&#x2F;random 与客户端生成随机会话密钥。请描述你将如何对这样的一个服务器发起拒绝服务（DoS）攻击。</p>
-<p><strong>回答：</strong>不断向服务器发送请求使其生成返回熵池中最大可用随机二进制位，直至其阻塞。</p>
-<h3 id="2-5-任务5-从-x2F-dev-x2F-urandom-获取随机数"><a href="#2-5-任务5-从-x2F-dev-x2F-urandom-获取随机数" class="headerlink" title="2.5 任务5: 从&#x2F;dev&#x2F;urandom 获取随机数"></a>2.5 任务5: 从&#x2F;dev&#x2F;urandom 获取随机数</h3><p>Linux 提供了另一种方式，可以通过&#x2F;dev&#x2F;urandom 设备访问随机池。&#x2F;dev&#x2F;random 和&#x2F;dev&#x2F;urandom都可以使用随机池中的数据生成伪随机数。当熵不足时，&#x2F;dev&#x2F;random 将会暂停，而&#x2F;dev&#x2F;urandom 会继续生成新的数。将随机池中的数据视作“种子”，我们可以使用种子想生成多少随机数就生成多少。</p>
-<p>让我们来看看&#x2F;dev&#x2F;urandom 的行为。我们再次使用cat 从设备中获取伪随机数。请运行下面的命令，描述移动鼠标是否会影响结果。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150921810.png"></p>
-<p>如上图所示，urandom会不断产生新的随机数，其产生速度很快且没有任何停顿，移动鼠标并不会影响结果。</p>
-<p>让我们测量随机数的质量。我们可以使用一个名为ent 的工具，该工具已经安装在我们的虚拟机中。根据其手册所言：“ent 对存储在文件中的字节序列进行各种测试，并报告这些测试的结果。该程序对于评估加密和统计采样应用程序，压缩算法以及其他文件信息密度受关注的应用程序的伪随机数生成器很有用”。让我们首先从&#x2F;dev&#x2F;urandom 生成1 MB 的伪随机数，并将其保存在文件中。然后，在该文件上运行ent。请描述你的结果，并分析随机数的质量是否良好</p>
-<p>运行结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922383.png"></p>
-<p>分析随机数质量：</p>
-<p>可以观察到其熵接近8比特，可以得知其信息很密集，随机性好。</p>
-<p>数据字节的算数平均值接近于127.5，蒙特卡洛值接近Π，行相关系数接近于0，因此可以推断由urandom所产生的随机数的随机性较好。</p>
-<p>修改实验手册中的代码片段来生成一个256 bit 的加密密钥。请编译并运行你的代码，输出这些数并将屏幕截图放在报告里。</p>
-<p>修改代码如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922807.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150922485.png"></p>
+<p>在本实验中，我们创建了一个易受 SQL 注入攻击的 Web 应用程序，它包含许多 Web 开发人员常犯的错误。实验的目标是找到利用 SQL 注入漏洞的方法，展示攻击所能造成的伤害，并掌握防御此类攻击的技术。本实验覆盖以下主题:</p>
+<p>1. SQL 语句：SELECT 与 UPDATE</p>
+<p>2. SQL 注入</p>
+<p>3. 语句预处理</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：熟悉-SQL-语句"><a href="#2-1-Task-1：熟悉-SQL-语句" class="headerlink" title="2.1 Task 1：熟悉 SQL 语句"></a>2.1 Task 1：熟悉 SQL 语句</h3><p>Task 1 的目标是通过使用提供的数据库来熟悉 SQL 命令。Web 应用程序所使用的数据存储在 MySQL数据库中，由 MySQL 容器托管。我们创建了一个名为 sqllab_users 的数据库，其中包含一个名为credential 的表。表中存储着每个员工的个人信息（例如 eid、password、salary、ssn 等）。本任务中，请通过操作数据库熟悉 SQL 查询语句。运行手册中所给出命令后，你需要使用一条 SQL 命令打印员工 Alice 的所有资料信息。请提供结果截图。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151934509.png"></p>
+<p>如上图所示，使用语句select * from credential where Name&#x3D;’Alice’;即可得到并打印Alice的所有资料信息。</p>
+<h3 id="2-2-Task-2：基于SELECT语句的SQL注入攻击"><a href="#2-2-Task-2：基于SELECT语句的SQL注入攻击" class="headerlink" title="2.2 Task 2：基于SELECT语句的SQL注入攻击"></a>2.2 Task 2：基于SELECT语句的SQL注入攻击</h3><p>攻击者通过 SQL 注入技术可以执行恶意 SQL 语句，即恶意负载。通过恶意的 SQL 语句，攻击者可以从数据库中窃取数据，甚至对数据库进行修改。我们的 Web 应用程序数据库含有 SQL 注入漏洞，模仿了开发人员的常犯错误。在登陆网站<a href="http://www.seed-server.com中进行/">www.seed-server.com中进行</a> SQL 注入攻击的练习，登录页面见图 1。Web 应用程序根据用户名和口令认证用户，所以只有知道自己口令的员工才能登录。作为攻击者，请在无法得知任何员工口令的前提下成功登录 Web 应用程序。</p>
+<h4 id="Task-2-1-基于网页的-SQL-注入攻击"><a href="#Task-2-1-基于网页的-SQL-注入攻击" class="headerlink" title="Task 2.1 基于网页的 SQL 注入攻击"></a>Task 2.1 基于网页的 SQL 注入攻击</h4><p>你的任务是以管理员的身份从登录页面登录到 Web 应用程序，这样你就可以查看所有员工的信息。管理员的用户名是 admin，口令未知。请在用户名与口令输入框中输入能成功完成攻击的内容。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151935882.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151936746.png"></p>
+<p>如上图所示，在用户名框输入以上内容，即可成功登入管理员界面。其原理如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937038.png"></p>
+<p>在输入如上内容后，数据库中执行了上图中所展示的命令，#作为注释符，其后面的内容便无需再验证，即可成功进入管理员页面。</p>
+<h4 id="Task-2-2-基于命令行的-SQL-注入攻击"><a href="#Task-2-2-基于命令行的-SQL-注入攻击" class="headerlink" title="Task 2.2 基于命令行的 SQL 注入攻击"></a>Task 2.2 基于命令行的 SQL 注入攻击</h4><p>在不使用网页的情况下完成 Task 2.1 的目标。你可以使用命令行工具，如 curl，它可以发送 HTTP 请求。如需在 HTTP 请求中包含多个参数，需要把 URL 和参数用一对单引号括起来。否则，用于分隔参数的特殊字符 (如 &amp;) 会被 shell 曲解，造成命令歧义。以下给出向Web 应用程序发送带有两个参数（username 和 Password）的 HTTP GET 请求的示例。</p>
+<p>首先我们尝试输入正确的的用户名和口令，可以得到如下所示的结果。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937183.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151939901.png"></p>
+<p>然后我们进行SQL注入攻击，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940274.png"></p>
+<p>我们可以观察到两次得到相同的结果，证明在命令行中SQL注入攻击实现成功。</p>
+<h4 id="Task-2-3-增加一条新的-SQL-语句"><a href="#Task-2-3-增加一条新的-SQL-语句" class="headerlink" title="Task 2.3 增加一条新的 SQL 语句"></a>Task 2.3 增加一条新的 SQL 语句</h4><p>在 Task 2.1 与 Task 2.2 中，我们只能做到从数据库中窃取信息，进一步的攻击是通过登录页面上的相同漏洞对数据库的数据进行修改。请尝试在 SQL 注入攻击中使用两条SQL 语句，第二条是更新或删除语句。在 SQL 中，分号（;）被用来分隔两条 SQL 语句。请在登录页面使用两条 SQL 语句进行攻击。</p>
+<p>首先在登录页面中进行尝试，得到如下报错：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940588.png"></p>
+<p>然后再命令行中进行尝试，同样得到报错如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940111.png"></p>
+<p>但是我们在数据库中直接运行以分号间隔的两条指令时，可以得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940179.png"></p>
+<p>发现并未产生报错，说明在数据库中是支持两条指令的执行的。根据报错，我们可以在网站的源码中找到如下代码：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941931.png"></p>
+<p>报错发生在query过程中，经过上网查询，可以得知，query函数执行针对数据库的某个查询，要实现多个语句的执行，需要将其修改为支持多个查询的multi_query函数，修改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941333.png"></p>
+<p>重新在命令行中进行SQL注入攻击，可以得到如下结果，未发生报错，说明语句成功执行。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941904.png"></p>
+<h3 id="2-3-Task-3：基于UPDATE语句的SQL注入攻击"><a href="#2-3-Task-3：基于UPDATE语句的SQL注入攻击" class="headerlink" title="2.3 Task 3：基于UPDATE语句的SQL注入攻击"></a>2.3 Task 3：基于UPDATE语句的SQL注入攻击</h3><h4 id="Task-3-1-：修改自己的工资"><a href="#Task-3-1-：修改自己的工资" class="headerlink" title="Task 3.1 ：修改自己的工资"></a>Task 3.1 ：修改自己的工资</h4><p>编辑页面中只能修改员工的昵称、电子邮件、地址、电话号码和口令，而不能用于修改工资。假设你 (Alice) 由于老板 Boby 今年未给你加薪而感到不满。你想利用存在于编辑页面的SQL 注入漏洞来增加自己的工资。请展示你是如何实现这一目标的。已知列 salary 用于存储工资数额。首先我们使用Alice正确的用户名和口令进入自己的页面，可以得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943088.png"></p>
+<p>可以观察到其工资为20000，然后在编辑页面进行如下操作：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943132.png"></p>
+<p>修改后再观察自己的页面，可以发现攻击成功，工资变为99999</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943791.png"></p>
+<p>但是在数据库中，打印所有员工信息时，发现所有人的工资都被修改为了99999，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944937.png"></p>
+<p>这样的攻击容易被发现，通过研究发现，原因在于注释后没有限定语句，因而将所有人的工资都进行了修改，需要把原有的语句修改为</p>
+<table>
+<thead>
+<tr>
+<th>muyoo’,salary&#x3D;99999 where Name&#x3D;’Alice’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可单独修改Alice的工资。</p>
+<h4 id="Task-3-2：修改他人的工资"><a href="#Task-3-2：修改他人的工资" class="headerlink" title="Task 3.2：修改他人的工资"></a>Task 3.2：修改他人的工资</h4><p>在提高自己的工资数额后，你决定惩罚你的老板 Boby，将他的工资减少到1 美元。请展示你是如何实现这一目标的。</p>
+<p>在Alice的编辑页面中NickName一项中输入如下指令：</p>
+<table>
+<thead>
+<tr>
+<th>‘,salary&#x3D;1 where Name&#x3D;’Boby’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可成功修改Boby的工资，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944484.png"></p>
+<h4 id="Task-3-3：修改他人的口令"><a href="#Task-3-3：修改他人的口令" class="headerlink" title="Task 3.3：修改他人的口令"></a>Task 3.3：修改他人的口令</h4><p>修改完 Boby 的工资后，你仍心有不甘，所以你想修改 Boby 的口令，这样你就可以登录他的账户，做进一步的破坏。请展示你是如何实现这一目标的。你需要证明你可以用新的口令成功登录 Boby 的账户。需要注意，数据库存储的并非明文形式的口令，而是口令的哈希值。请在unsafe_edit_backend.php 中查看口令的存储方式，程序使用 SHA1 哈希函数来生成口令的哈希值。 由于在数据库中存储口令为sha1加密的，因而在Alice的编辑页面中NickName一项中输入如下指令：</p>
+<table>
+<thead>
+<tr>
+<th>‘,password&#x3D;sha1(‘123’) where Name&#x3D;’Boby’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可成功修改Boby的口令为123</p>
+<p>然后在登陆页面中输入用户名和口令即可成功进入Boby的主页，如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944428.png"></p>
+<h3 id="2-4-Task-4：对策：语句预处理"><a href="#2-4-Task-4：对策：语句预处理" class="headerlink" title="2.4 Task 4：对策：语句预处理"></a>2.4 Task 4：对策：语句预处理</h3><p>请使用语句预处理机制来修复 SQL 注入漏洞。为了简单起见，我们在文件夹 defense 内创建了一个简化程序，你需要对这个文件夹中的文件进行修改。访问下面给出的 URL，你会看到一个类似于 Web应用程序登录页面的网页，在网页中提供正确的用户名和口令即可查询员工的信息。</p>
+<p>进入新的登录页面，利用SQL注入仍然可以成功登入页面，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945671.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945254.png"></p>
+<p>根据实验手册中所给出指导对源码进行修改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945766.png"></p>
+<p>重新在登录页面进行SQL注入攻击，发现登录进的页面不会显示个人信息：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945667.png"></p>
+<p>如果输入正确的用户名和口令，仍然可以会显示个人信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151946465.png"></p>
+<p>证明防御措施的部署是成功的。</p>
+<h3 id="2-5-思考题"><a href="#2-5-思考题" class="headerlink" title="2.5 思考题"></a>2.5 思考题</h3><p>假设数据库只存储 password 和 eid 两列的 SHA256 值。使用下面 SQL 语句与数据库交互，其中$passwd 和 $eid 变量的值由用户提供。这个程序是否存在 SQL 注入问题？如果没有，请解释原因；如果有，请给出构造范例。</p>
+<p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
 ]]></content>
       <categories>
         <category>软件安全</category>
@@ -274,129 +373,6 @@
 <p>该机制仅适用于启用了粘滞位的目录，像 &#x2F;tmp 或 &#x2F;var&#x2F;tmp 这样的粘性位目录。 因此攻击者可以利用其他目录中的竞争条件并获得访问权限。</p>
 <h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p>
 <p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
-]]></content>
-      <categories>
-        <category>软件安全</category>
-      </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Buffer Overflow Attack Lab (Set-UID Version)</title>
-    <url>/2022/11/30/buffer_overflow/</url>
-    <content><![CDATA[<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
-<span id="more"></span>
-<p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p>
-<ol>
-<li>缓冲区溢出漏洞与攻击</li>
-<li>堆栈布局</li>
-<li>地址随机化，不可执行栈以及 StackGuard</li>
-<li>Shellcode (32-bit and 64-bit)</li>
-<li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li>
-</ol>
-<h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p>
-<p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p>
-<h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p>
-<h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p>
-<p>运行结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p>
-<p>解释说明：</p>
-<ul>
-<li><p>Shellcode 填写：</p>
-<p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p>
-</li>
-<li><p>Start 填写：</p>
-<p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p>
-</li>
-<li><p>Ret（返回地址）填写：</p>
-<p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p>
-<p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p>
-<p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p>
-<ul>
-<li><p>Offset 填写（64bit 程序同理）：</p>
-<p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p>
-<p>bof 函数的具体执行步骤，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p>
-<p>在调用strcpy 函数时加入断点：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p>
-<p>计算offset：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p>
-<p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p>
-</li>
-</ul>
-<h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p>
-<p>解释说明：</p>
-<p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p>
-<p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p>
-<h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p>
-<p>解释说明：</p>
-<p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p>
-<p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p>
-<h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p>
-<p>补全值如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p>
-<p>运行结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p>
-<p>解释说明：</p>
-<p>填写方法同上一次任务，未遇到新的挑战。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p>
-<h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p>
-<p>运行结果：</p>
-<p>​	下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p>
-<p>​	下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p>
-<p>解释说明：</p>
-<p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p>
-<p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p>
-<p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p>
-<h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p>
-<p>运行结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p>
-<p>解释说明：</p>
-<p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p>
-<p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p>
-<p>攻击结果：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p>
-<h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul>
-<li><p>打开 StackGuard 保护机制</p>
-<p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p>
-<p>​		原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p>
-<ul>
-<li><p>打开不可执行栈保护机制</p>
-<p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p>
-<p>运行结果如下：</p>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p>
-<p>​		解释说明：</p>
-<p>​		在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>
 ]]></content>
       <categories>
         <category>软件安全</category>
@@ -538,6 +514,129 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Buffer Overflow Attack Lab (Set-UID Version)</title>
+    <url>/2022/11/30/buffer_overflow/</url>
+    <content><![CDATA[<h1 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h1><p>缓冲区溢出定义为程序试图将数据写入缓冲区边界之外的情况。这一漏洞可以被恶意用户利用来改变程序的控制流，从而执行恶意代码。本实验的目的是让学生深入了解此类漏洞，并学习如何在攻击中利用此类漏洞。</p>
+<span id="more"></span>
+<p>在本实验中，学生将获得一个具有缓冲区溢出漏洞的程序；他们的任务是开发一种利用漏洞的方案并最终获得 root 权限。除了攻击之外，还将引导学生通过操作系统中已实施的几个保护机制来抵御缓冲区溢出攻击。学生需要评估这些机制是否有效并解释原因。本实验涵盖以下主题:</p>
+<ol>
+<li>缓冲区溢出漏洞与攻击</li>
+<li>堆栈布局</li>
+<li>地址随机化，不可执行栈以及 StackGuard</li>
+<li>Shellcode (32-bit and 64-bit)</li>
+<li>return-to-libc 攻击，旨在绕过不可执行栈的防御措施，相关内容会在另一个单独的实验中被覆盖</li>
+</ol>
+<h1 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h1><h2 id="Task-1：熟悉-Shellcode"><a href="#Task-1：熟悉-Shellcode" class="headerlink" title="Task 1：熟悉 Shellcode"></a>Task 1：熟悉 Shellcode</h2><p>给出了两个 shellcode 的副本，一个是 32-bit 另一个是 64-bit。当我们使用- m32 选项编译程序时，将使用 32-bit 的版本；如果没有-m32 选项，将使用 64-bit的版本。根据提供的 Makefile 文件，你可以通过输入 make 命令来编译程序。这样将会生成两个二进制文件：a32.out (32-bit) 和 a64.out(64-bit)。运行它们并描述你的观察结果。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130212823.png"></p>
+<p>如上图所示，可以分别得到两个超级用户权限的shell窗口</p>
+<h2 id="Task-2：理解漏洞程序"><a href="#Task-2：理解漏洞程序" class="headerlink" title="Task 2：理解漏洞程序"></a>Task 2：理解漏洞程序</h2><p>所给出程序存在缓冲区溢出漏洞。它首先从 badfile 文件中读取一个输入，然后将该输入传递给函数 bof() 中的另一个缓冲区。原始输入的最大长度可以为 517 字节，但是 bof() 中的缓冲区只有BUF_SIZE(100) 字节长，小于 517 字节。因为函数 strcpy() 不检查边界，所以会发生缓冲区溢出。由于此程序是一个以 root 为所有者的 Set-UID 程序，如果普通用户可以利用该缓冲区溢出漏洞，普通用户可能会获得 root shell。需要注意的是，该程序从 badfile 文件中获取输入，这个文件受用户控制。现在我们的目标是为 badfile 文件创建内容，这样当漏洞程序将内容复制到其缓冲区时，就可以获得 root shell。编译结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213005.png"></p>
+<h2 id="Task-3-：对-32-bit-程序实施攻击-Level1）"><a href="#Task-3-：对-32-bit-程序实施攻击-Level1）" class="headerlink" title="Task 3 ：对 32 bit 程序实施攻击 (Level1）"></a>Task 3 ：对 32 bit 程序实施攻击 (Level1）</h2><p>为了利用目标程序中的缓冲区溢出漏洞，我们需要构造一个payload ，并将其保存在 badfile 文件 中。我们将使用一个 python 程序来做到这一点。在 Labsetup 文件夹中，我们提供了 exploit.py 程序 框架。代码不完整，学生需要替换代码中的一些基本值。 补全值如下图 所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213234.png"></p>
+<p>运行结果如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213318.png"></p>
+<p>解释说明：</p>
+<ul>
+<li><p>Shellcode 填写：</p>
+<p>由于该程序为 32bit，且在task1 中已经给出了 32bit 的 shellcode 编码，只需要将其补充到python 文件中即可。</p>
+</li>
+<li><p>Start 填写：</p>
+<p>将恶意代码置于buffer 的尾部，可以在填充NOP 指令后，更方便的跳转到恶意代码，降低攻击难度。</p>
+</li>
+<li><p>Ret（返回地址）填写：</p>
+<p>如图，该图即为在调用 strcpy 函数 时，栈中的具体情况，用来确定 offset 和返回地址 ret</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213506.png"></p>
+<p>由于关闭了地址随机化，所以在gdb 调试时所得到的地址与运行时相同，通过 gdb 调试，可以在bof 函数的逐步调试过程中，得到上一个调用函数的ebp 的值所在的地址，如下图所示，为 0xffffd148</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213628.png"></p>
+<p>然后根据栈在调用函数时候的结构如上图，可以知道，在该帧指针上方即为bof函数的返回地址，又因为程序为 32bit，因而需要对该地址进行 8 位的偏移，即可得到 bof 函数的返回地址为：0xffffd148+8。</p>
+<ul>
+<li><p>Offset 填写（64bit 程序同理）：</p>
+<p>在gdb 中调试bof 函数时，可以通过disas 指令得到bof 函数的具体执行步骤，在其中找到call strcpy@plt 一行，加入断点，在重新调试程序，执行到该断点时，函数栈中ebp 仍指向上一个函数的ebp，而在其下面存放的是 bof 函数中所定义的局部变量buffer，因此，我们只需要取到ebp（rbp -64bit）的地址，以及 buffer 的地址，将其做差得到如下结果：</p>
+<p>bof 函数的具体执行步骤，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213724.png"></p>
+<p>在调用strcpy 函数时加入断点：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213804.png"></p>
+<p>计算offset：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213846.png"></p>
+<p>根据在计算ret 时所绘制的函数栈情况，可以看到返回地址所放置的位置应该在该差值上继续向上偏移 4 位（64bit 程序中偏移 8 位），因而为 112。</p>
+</li>
+</ul>
+<h2 id="Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2"><a href="#Task-4：在不知道缓冲区大小的情况下实施攻击-Level-2" class="headerlink" title="Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)"></a>Task 4：在不知道缓冲区大小的情况下实施攻击 (Level 2)</h2><p>在 Level 1 攻击中，我们通过 gdb 调试获得了缓冲区的大小，但是在真实攻击中，缓冲区大小的信息可能很难获得。例如，如果目标程序是运行在远程机器上的服务器程序时，那么我们将无法获得二进制代码或源代码的副本。在本任务中，我们将添加一个约束条件：你仍然可以使用 gdb，但不允许获得缓冲区的大小。实际上， Makefile 文件提供了缓冲区的大小，但是在攻击中不允许使用该信息。你的任务是让漏洞程序在此约束条件下运行 shellcode。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213939.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130213958.png"></p>
+<p>解释说明：</p>
+<p>Shellcode，start，ret 填写方法同任务三，在填写 offset 时，由于不知道缓冲区大小，不可以直接获取buffer 地址，因而需要尝试其他方法如下，在 gdb 中查看bof 函数的执行步骤时可以观察到如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214058.png"></p>
+<p>可以观察到bof 函数栈向下开辟了 164 位，因而可以推断出其缓冲区的大小在 100-164 之间，向下进行尝试，直到攻击成功，即可得到缓冲区大小为 160，同理即可计算出offset 的值位 172。</p>
+<h2 id="Task-5：对-64-bit-程序实施攻击-Level-3"><a href="#Task-5：对-64-bit-程序实施攻击-Level-3" class="headerlink" title="Task 5：对 64-bit 程序实施攻击 (Level 3)"></a>Task 5：对 64-bit 程序实施攻击 (Level 3)</h2><p>在本任务中，我们将漏洞程序编译为一个称为 stack-L3 的 64-bit 二进制文件。我们将对该程序实施 攻击。编译和设置 Set-UID 命令已经包含在 Makefile 文件中。与之前的任务类似，你需要在实验报告中提供详细的攻击过程。对于 64-bit 程序，使用 gdb 调试的方法与 32-bit 程序相同。唯一的区别是帧指针寄存器的名称不同。在 x86 体系结构中，帧指针寄存器为 ebp，而在 x64 体系结构中，帧指针寄存器rbp。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214234.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214251.png"></p>
+<p>解释说明：</p>
+<p>由于该程序为 64bit，需要修改 shellcode，修改为前面任务中所给出编码后的结果即可，start，ret，offset 的设置方法同 32bit 程序中的攻击，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214334.png"></p>
+<p>此处由于为64位程序，在取值结果上，应该分别偏移16位，和8位。</p>
+<h2 id="Task-6：对-64-bit-程序实施攻击-Level-4"><a href="#Task-6：对-64-bit-程序实施攻击-Level-4" class="headerlink" title="Task 6：对 64-bit 程序实施攻击 (Level 4)"></a>Task 6：对 64-bit 程序实施攻击 (Level 4)</h2><p>本任务中的目标程序 (stack-L4) 与 Level 3 中的目标程序类似，除了缓冲区大小非常小之外。本任务中，我们将缓冲区大小设置为 10，而在 Level 3 中的缓冲区要大得多。目标还是一样的：通过攻击Set-UID 程序来获得 root shell。由于缓冲区大小较小，你可能会在攻击中遇到其他挑战。在这种情况下，你需要解释你是如何在攻击中解决这些挑战的。</p>
+<p>补全值如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214455.png"></p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214523.png"></p>
+<p>解释说明：</p>
+<p>填写方法同上一次任务，未遇到新的挑战。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214608.png"></p>
+<h2 id="Task-7：攻破-dash-的保护机制"><a href="#Task-7：攻破-dash-的保护机制" class="headerlink" title="Task 7：攻破 dash 的保护机制"></a>Task 7：攻破 dash 的保护机制</h2><p>将 call_shellcode.c 编译为以 root 为所有者的二进制文件（通过输入”make setuid” 命令）。在不调用 setuid(0) 的情况下运行 a32.out 和 a64.out，然后在调用 setuid(0) 的情况下再次运行a32.out 和 a64.out。请描述并解释你的观察结果。</p>
+<p>运行结果：</p>
+<p>​	下图为调用setuid(0) 的情况，如图得到了超级用户权限的shell：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214709.png"></p>
+<p>​	下图为没有调用setuid(0) 的情况，如图得到普通用户的 shell：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214729.png"></p>
+<p>解释说明：</p>
+<p>在调用setuid(0) 的情况下，将&#x2F;bin&#x2F;sh 符号连接到了&#x2F;bin&#x2F;dash，运行shellcode 后会得到超级用户权限，而未调用时，&#x2F;bin&#x2F;sh 符号连接到了 zsh，仅可以得到普通用户权限。</p>
+<p>现在，使用更新的 shellcode 并打开 shell 的安全机制，我们可以再次尝试攻击漏洞程序。对 Level 1 重新进行攻击，观察是否可以获得 root shell。在获得 root shell 之后，请运行下面的命令证明安全机制已经打开。虽然不要求对 Level 2 和 Level 3 重新进行攻击，但是你可以自行尝试并观察攻击是否有效。</p>
+<p>运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214805.png"></p>
+<p>可以观察到&#x2F;bin&#x2F;sh -&gt; &#x2F;bin&#x2F;dash，证明安全机制已打开。</p>
+<h2 id="Task-8：攻破地址随机化"><a href="#Task-8：攻破地址随机化" class="headerlink" title="Task 8：攻破地址随机化"></a>Task 8：攻破地址随机化</h2><p>在 32-bit Linux 机器上，栈的可用熵为 19 比特，意味着栈的基地址有 219 &#x3D; 524, 288 种可能性。这个数字并不是很大，可以很容易地使用暴力方法穷举。在本任务中，我们使用这种方法来攻破 32-bit VM 上的地址随机化安全机制。首先我们使用以下命令打开 Ubuntu 的地址随机化，然后对 stack-L1 实施相同的攻击。请描述和解释你的观察结果。</p>
+<p>运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214858.png"></p>
+<p>解释说明：</p>
+<p>开启地址随机化后，python 文件中所填写的地址为调试程序时得到的栈函数中的地址，但在重新执行函数时，其地址发生改变，返回地址错误，因而攻击失败。</p>
+<p>然后我们使用暴力的方法反复攻击漏洞程序，直到我们放在 badfile 文件中的地址正确为止。我们 只对 32-bit 程序 stack-L1 尝试攻击。</p>
+<p>攻击结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130214933.png"></p>
+<h2 id="Task-9：测试其他保护机制"><a href="#Task-9：测试其他保护机制" class="headerlink" title="Task 9：测试其他保护机制"></a>Task 9：测试其他保护机制</h2><ul>
+<li><p>打开 StackGuard 保护机制</p>
+<p>通过在没有-fno-stack-protector 选项的情况下重 新编译漏洞程序 stack.c 来打开 StackGuard 保护机制。在 gcc 4.3.3 版本及更高版本中，默认启用了 StackGuard。实施攻击；报告并解释你的观察结果。</p>
+<p>运行结果如下：</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215012.png"></p>
+<p>​		解释说明：</p>
+<p>​		在打开栈保护机制后重新编译并且进行攻击，会发现攻击失败，报错 “*** stack smashing detected ***: terminatedAborted”</p>
+<p>​		原因在于buffer 大小只有 100 而在bof 函数中将 517 位的字符串放到了buffer中，造成了缓冲区溢出，在打开StackGuard 保护机制后，数组越界会发生报错。</p>
+<ul>
+<li><p>打开不可执行栈保护机制</p>
+<p>在本任务中，我们将使栈不可执行。我们在 shellcode 文件夹中完成该实验。 call_shellcode 程序将 shellcode 的副本放在栈上，然后在栈上执行代码。请在不使用-z execstack 选项的情况下重新编译call_shellcode.c，分别编译为 a32.out 和 a64.out。运行它们并描述和解释你的观察结果。</p>
+<p>运行结果如下：</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure20221130215116.png"></p>
+<p>​		解释说明：</p>
+<p>​		在打开不可执行栈保护及之后，可以看到重新编译后的.out 文件无法成功运行，原因在于该机制会检测栈中的内容，发现其为非法命令比如打开shell时。便会进行保护机制，使其不可执行，保障系统安全。</p>
+]]></content>
+      <categories>
+        <category>软件安全</category>
+      </categories>
+      <tags>
+        <tag>seedlab2.0</tag>
+      </tags>
   </entry>
   <entry>
     <title>Crypto implementation Lab</title>

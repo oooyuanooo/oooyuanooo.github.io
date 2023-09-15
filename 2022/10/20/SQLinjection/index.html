@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一.实验目的SQL 注入是一种代码注入技术，利用 Web 应用程序和数据库服务器之间接口的漏洞。当用户的输入没有被 Web 应用程序正确检查就被发送到后端数据库服务器时，就会出现 SQL 注入漏洞。很多 Web 应用程序从用户处获取输入，并使用用户输入来构建 SQL 查询，以获得数据库中的数据信息。Web 应用程序也使用 SQL 查询在数据库中进行数据信息的存储。这些都是 Web 应用程序开发中的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL injection Lab">
+<meta property="og:url" content="https://www.mrdothing.com/2022/10/20/SQLinjection/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="一.实验目的SQL 注入是一种代码注入技术，利用 Web 应用程序和数据库服务器之间接口的漏洞。当用户的输入没有被 Web 应用程序正确检查就被发送到后端数据库服务器时，就会出现 SQL 注入漏洞。很多 Web 应用程序从用户处获取输入，并使用用户输入来构建 SQL 查询，以获得数据库中的数据信息。Web 应用程序也使用 SQL 查询在数据库中进行数据信息的存储。这些都是 Web 应用程序开发中的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151934509.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151935882.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151936746.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937038.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937183.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151939901.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940274.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940588.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940111.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940179.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941931.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941333.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941904.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943088.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943132.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943791.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944937.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944484.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944428.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945671.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945254.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945766.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945667.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151946465.png">
+<meta property="article:published_time" content="2022-10-20T14:11:12.000Z">
+<meta property="article:modified_time" content="2023-09-15T11:56:57.010Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151934509.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2022/10/20/SQLinjection/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>SQL injection Lab | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/10/20/SQLinjection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQL injection Lab
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-10-20 22:11:12" itemprop="dateCreated datePublished" datetime="2022-10-20T22:11:12+08:00">2022-10-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-15 19:56:57" itemprop="dateModified" datetime="2023-09-15T19:56:57+08:00">2023-09-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>SQL 注入是一种代码注入技术，利用 Web 应用程序和数据库服务器之间接口的漏洞。当用户的输入没有被 Web 应用程序正确检查就被发送到后端数据库服务器时，就会出现 SQL 注入漏洞。很多 Web 应用程序从用户处获取输入，并使用用户输入来构建 SQL 查询，以获得数据库中的数据信息。Web 应用程序也使用 SQL 查询在数据库中进行数据信息的存储。这些都是 Web 应用程序开发中的常见做法。如果没有仔细构造 SQL 查询，则可能会出现 SQL 注入漏洞。SQL 注入攻击是对 Web 应用程序最常见的攻击之一。</p>
+<span id="more"></span>
+<p>在本实验中，我们创建了一个易受 SQL 注入攻击的 Web 应用程序，它包含许多 Web 开发人员常犯的错误。实验的目标是找到利用 SQL 注入漏洞的方法，展示攻击所能造成的伤害，并掌握防御此类攻击的技术。本实验覆盖以下主题:</p>
+<p>1. SQL 语句：SELECT 与 UPDATE</p>
+<p>2. SQL 注入</p>
+<p>3. 语句预处理</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：熟悉-SQL-语句"><a href="#2-1-Task-1：熟悉-SQL-语句" class="headerlink" title="2.1 Task 1：熟悉 SQL 语句"></a>2.1 Task 1：熟悉 SQL 语句</h3><p>Task 1 的目标是通过使用提供的数据库来熟悉 SQL 命令。Web 应用程序所使用的数据存储在 MySQL数据库中，由 MySQL 容器托管。我们创建了一个名为 sqllab_users 的数据库，其中包含一个名为credential 的表。表中存储着每个员工的个人信息（例如 eid、password、salary、ssn 等）。本任务中，请通过操作数据库熟悉 SQL 查询语句。运行手册中所给出命令后，你需要使用一条 SQL 命令打印员工 Alice 的所有资料信息。请提供结果截图。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151934509.png"></p>
+<p>如上图所示，使用语句select * from credential where Name&#x3D;’Alice’;即可得到并打印Alice的所有资料信息。</p>
+<h3 id="2-2-Task-2：基于SELECT语句的SQL注入攻击"><a href="#2-2-Task-2：基于SELECT语句的SQL注入攻击" class="headerlink" title="2.2 Task 2：基于SELECT语句的SQL注入攻击"></a>2.2 Task 2：基于SELECT语句的SQL注入攻击</h3><p>攻击者通过 SQL 注入技术可以执行恶意 SQL 语句，即恶意负载。通过恶意的 SQL 语句，攻击者可以从数据库中窃取数据，甚至对数据库进行修改。我们的 Web 应用程序数据库含有 SQL 注入漏洞，模仿了开发人员的常犯错误。在登陆网站<a target="_blank" rel="noopener" href="http://www.seed-server.com中进行/">www.seed-server.com中进行</a> SQL 注入攻击的练习，登录页面见图 1。Web 应用程序根据用户名和口令认证用户，所以只有知道自己口令的员工才能登录。作为攻击者，请在无法得知任何员工口令的前提下成功登录 Web 应用程序。</p>
+<h4 id="Task-2-1-基于网页的-SQL-注入攻击"><a href="#Task-2-1-基于网页的-SQL-注入攻击" class="headerlink" title="Task 2.1 基于网页的 SQL 注入攻击"></a>Task 2.1 基于网页的 SQL 注入攻击</h4><p>你的任务是以管理员的身份从登录页面登录到 Web 应用程序，这样你就可以查看所有员工的信息。管理员的用户名是 admin，口令未知。请在用户名与口令输入框中输入能成功完成攻击的内容。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151935882.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151936746.png"></p>
+<p>如上图所示，在用户名框输入以上内容，即可成功登入管理员界面。其原理如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937038.png"></p>
+<p>在输入如上内容后，数据库中执行了上图中所展示的命令，#作为注释符，其后面的内容便无需再验证，即可成功进入管理员页面。</p>
+<h4 id="Task-2-2-基于命令行的-SQL-注入攻击"><a href="#Task-2-2-基于命令行的-SQL-注入攻击" class="headerlink" title="Task 2.2 基于命令行的 SQL 注入攻击"></a>Task 2.2 基于命令行的 SQL 注入攻击</h4><p>在不使用网页的情况下完成 Task 2.1 的目标。你可以使用命令行工具，如 curl，它可以发送 HTTP 请求。如需在 HTTP 请求中包含多个参数，需要把 URL 和参数用一对单引号括起来。否则，用于分隔参数的特殊字符 (如 &amp;) 会被 shell 曲解，造成命令歧义。以下给出向Web 应用程序发送带有两个参数（username 和 Password）的 HTTP GET 请求的示例。</p>
+<p>首先我们尝试输入正确的的用户名和口令，可以得到如下所示的结果。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151937183.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151939901.png"></p>
+<p>然后我们进行SQL注入攻击，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940274.png"></p>
+<p>我们可以观察到两次得到相同的结果，证明在命令行中SQL注入攻击实现成功。</p>
+<h4 id="Task-2-3-增加一条新的-SQL-语句"><a href="#Task-2-3-增加一条新的-SQL-语句" class="headerlink" title="Task 2.3 增加一条新的 SQL 语句"></a>Task 2.3 增加一条新的 SQL 语句</h4><p>在 Task 2.1 与 Task 2.2 中，我们只能做到从数据库中窃取信息，进一步的攻击是通过登录页面上的相同漏洞对数据库的数据进行修改。请尝试在 SQL 注入攻击中使用两条SQL 语句，第二条是更新或删除语句。在 SQL 中，分号（;）被用来分隔两条 SQL 语句。请在登录页面使用两条 SQL 语句进行攻击。</p>
+<p>首先在登录页面中进行尝试，得到如下报错：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940588.png"></p>
+<p>然后再命令行中进行尝试，同样得到报错如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940111.png"></p>
+<p>但是我们在数据库中直接运行以分号间隔的两条指令时，可以得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151940179.png"></p>
+<p>发现并未产生报错，说明在数据库中是支持两条指令的执行的。根据报错，我们可以在网站的源码中找到如下代码：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941931.png"></p>
+<p>报错发生在query过程中，经过上网查询，可以得知，query函数执行针对数据库的某个查询，要实现多个语句的执行，需要将其修改为支持多个查询的multi_query函数，修改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941333.png"></p>
+<p>重新在命令行中进行SQL注入攻击，可以得到如下结果，未发生报错，说明语句成功执行。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151941904.png"></p>
+<h3 id="2-3-Task-3：基于UPDATE语句的SQL注入攻击"><a href="#2-3-Task-3：基于UPDATE语句的SQL注入攻击" class="headerlink" title="2.3 Task 3：基于UPDATE语句的SQL注入攻击"></a>2.3 Task 3：基于UPDATE语句的SQL注入攻击</h3><h4 id="Task-3-1-：修改自己的工资"><a href="#Task-3-1-：修改自己的工资" class="headerlink" title="Task 3.1 ：修改自己的工资"></a>Task 3.1 ：修改自己的工资</h4><p>编辑页面中只能修改员工的昵称、电子邮件、地址、电话号码和口令，而不能用于修改工资。假设你 (Alice) 由于老板 Boby 今年未给你加薪而感到不满。你想利用存在于编辑页面的SQL 注入漏洞来增加自己的工资。请展示你是如何实现这一目标的。已知列 salary 用于存储工资数额。首先我们使用Alice正确的用户名和口令进入自己的页面，可以得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943088.png"></p>
+<p>可以观察到其工资为20000，然后在编辑页面进行如下操作：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943132.png"></p>
+<p>修改后再观察自己的页面，可以发现攻击成功，工资变为99999</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151943791.png"></p>
+<p>但是在数据库中，打印所有员工信息时，发现所有人的工资都被修改为了99999，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944937.png"></p>
+<p>这样的攻击容易被发现，通过研究发现，原因在于注释后没有限定语句，因而将所有人的工资都进行了修改，需要把原有的语句修改为</p>
+<table>
+<thead>
+<tr>
+<th>muyoo’,salary&#x3D;99999 where Name&#x3D;’Alice’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可单独修改Alice的工资。</p>
+<h4 id="Task-3-2：修改他人的工资"><a href="#Task-3-2：修改他人的工资" class="headerlink" title="Task 3.2：修改他人的工资"></a>Task 3.2：修改他人的工资</h4><p>在提高自己的工资数额后，你决定惩罚你的老板 Boby，将他的工资减少到1 美元。请展示你是如何实现这一目标的。</p>
+<p>在Alice的编辑页面中NickName一项中输入如下指令：</p>
+<table>
+<thead>
+<tr>
+<th>‘,salary&#x3D;1 where Name&#x3D;’Boby’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可成功修改Boby的工资，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944484.png"></p>
+<h4 id="Task-3-3：修改他人的口令"><a href="#Task-3-3：修改他人的口令" class="headerlink" title="Task 3.3：修改他人的口令"></a>Task 3.3：修改他人的口令</h4><p>修改完 Boby 的工资后，你仍心有不甘，所以你想修改 Boby 的口令，这样你就可以登录他的账户，做进一步的破坏。请展示你是如何实现这一目标的。你需要证明你可以用新的口令成功登录 Boby 的账户。需要注意，数据库存储的并非明文形式的口令，而是口令的哈希值。请在unsafe_edit_backend.php 中查看口令的存储方式，程序使用 SHA1 哈希函数来生成口令的哈希值。 由于在数据库中存储口令为sha1加密的，因而在Alice的编辑页面中NickName一项中输入如下指令：</p>
+<table>
+<thead>
+<tr>
+<th>‘,password&#x3D;sha1(‘123’) where Name&#x3D;’Boby’; #</th>
+</tr>
+</thead>
+</table>
+<p>即可成功修改Boby的口令为123</p>
+<p>然后在登陆页面中输入用户名和口令即可成功进入Boby的主页，如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151944428.png"></p>
+<h3 id="2-4-Task-4：对策：语句预处理"><a href="#2-4-Task-4：对策：语句预处理" class="headerlink" title="2.4 Task 4：对策：语句预处理"></a>2.4 Task 4：对策：语句预处理</h3><p>请使用语句预处理机制来修复 SQL 注入漏洞。为了简单起见，我们在文件夹 defense 内创建了一个简化程序，你需要对这个文件夹中的文件进行修改。访问下面给出的 URL，你会看到一个类似于 Web应用程序登录页面的网页，在网页中提供正确的用户名和口令即可查询员工的信息。</p>
+<p>进入新的登录页面，利用SQL注入仍然可以成功登入页面，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945671.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945254.png"></p>
+<p>根据实验手册中所给出指导对源码进行修改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945766.png"></p>
+<p>重新在登录页面进行SQL注入攻击，发现登录进的页面不会显示个人信息：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151945667.png"></p>
+<p>如果输入正确的用户名和口令，仍然可以会显示个人信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151946465.png"></p>
+<p>证明防御措施的部署是成功的。</p>
+<h3 id="2-5-思考题"><a href="#2-5-思考题" class="headerlink" title="2.5 思考题"></a>2.5 思考题</h3><p>假设数据库只存储 password 和 eid 两列的 SHA256 值。使用下面 SQL 语句与数据库交互，其中$passwd 和 $eid 变量的值由用户提供。这个程序是否存在 SQL 注入问题？如果没有，请解释原因；如果有，请给出构造范例。</p>
+<p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/11/10/hello-world/" rel="next" title="hello">
+      hello <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">一.实验目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E4%B8%8E%E7%BB%93%E6%9E%9C"><span class="nav-number">2.</span> <span class="nav-text">二.实验步骤与结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Task-1%EF%BC%9A%E7%86%9F%E6%82%89-SQL-%E8%AF%AD%E5%8F%A5"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Task 1：熟悉 SQL 语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Task-2%EF%BC%9A%E5%9F%BA%E4%BA%8ESELECT%E8%AF%AD%E5%8F%A5%E7%9A%84SQL%E6%B3%A8%E5%85%A5%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Task 2：基于SELECT语句的SQL注入攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-1-%E5%9F%BA%E4%BA%8E%E7%BD%91%E9%A1%B5%E7%9A%84-SQL-%E6%B3%A8%E5%85%A5%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.1.</span> <span class="nav-text">Task 2.1 基于网页的 SQL 注入攻击</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-2-%E5%9F%BA%E4%BA%8E%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%9A%84-SQL-%E6%B3%A8%E5%85%A5%E6%94%BB%E5%87%BB"><span class="nav-number">2.2.2.</span> <span class="nav-text">Task 2.2 基于命令行的 SQL 注入攻击</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-2-3-%E5%A2%9E%E5%8A%A0%E4%B8%80%E6%9D%A1%E6%96%B0%E7%9A%84-SQL-%E8%AF%AD%E5%8F%A5"><span class="nav-number">2.2.3.</span> <span class="nav-text">Task 2.3 增加一条新的 SQL 语句</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Task-3%EF%BC%9A%E5%9F%BA%E4%BA%8EUPDATE%E8%AF%AD%E5%8F%A5%E7%9A%84SQL%E6%B3%A8%E5%85%A5%E6%94%BB%E5%87%BB"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Task 3：基于UPDATE语句的SQL注入攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-1-%EF%BC%9A%E4%BF%AE%E6%94%B9%E8%87%AA%E5%B7%B1%E7%9A%84%E5%B7%A5%E8%B5%84"><span class="nav-number">2.3.1.</span> <span class="nav-text">Task 3.1 ：修改自己的工资</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-2%EF%BC%9A%E4%BF%AE%E6%94%B9%E4%BB%96%E4%BA%BA%E7%9A%84%E5%B7%A5%E8%B5%84"><span class="nav-number">2.3.2.</span> <span class="nav-text">Task 3.2：修改他人的工资</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Task-3-3%EF%BC%9A%E4%BF%AE%E6%94%B9%E4%BB%96%E4%BA%BA%E7%9A%84%E5%8F%A3%E4%BB%A4"><span class="nav-number">2.3.3.</span> <span class="nav-text">Task 3.3：修改他人的口令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Task-4%EF%BC%9A%E5%AF%B9%E7%AD%96%EF%BC%9A%E8%AF%AD%E5%8F%A5%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Task 4：对策：语句预处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E6%80%9D%E8%80%83%E9%A2%98"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 思考题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
