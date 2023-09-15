@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="title: Crypto implementation Labdate: 2022-12-29 22:11:12categories: 软件安全tags: seedlab2.0 一.实验目的本实验的学习目标是让学生熟悉密钥加密与单向散列函数相关的概念。完成实验后，学生应该能够获得有关加密算法、加密模式、单向散列函数的第一手经验。此外，学生将能够使用工具和编写程序来加密&#x2F;解密消息，为给">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mr.Dothing">
+<meta property="og:url" content="https://www.mrdothing.com/2023/09/15/crypto_implementation/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="title: Crypto implementation Labdate: 2022-12-29 22:11:12categories: 软件安全tags: seedlab2.0 一.实验目的本实验的学习目标是让学生熟悉密钥加密与单向散列函数相关的概念。完成实验后，学生应该能够获得有关加密算法、加密模式、单向散列函数的第一手经验。此外，学生将能够使用工具和编写程序来加密&#x2F;解密消息，为给">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150940491.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150941137.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150943523.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150943413.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150944992.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150944553.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945908.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945326.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945977.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150948393.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150949685.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150949796.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950216.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950735.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950083.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150951870.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150952866.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150952399.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953849.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953495.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953790.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150955724.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956539.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956032.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956766.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150957889.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151001240.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151001961.png">
+<meta property="article:published_time" content="2023-09-15T02:02:20.602Z">
+<meta property="article:modified_time" content="2023-09-15T02:03:53.215Z">
+<meta property="article:author" content="Crazyoo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150940491.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2023/09/15/crypto_implementation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title> | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2023/09/15/crypto_implementation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2023-09-15 10:02:20 / Modified: 10:03:53" itemprop="dateCreated datePublished" datetime="2023-09-15T10:02:20+08:00">2023-09-15</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<p>title: Crypto implementation Lab<br>date: 2022-12-29 22:11:12<br>categories: 软件安全<br>tags: seedlab2.0</p>
+<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让学生熟悉密钥加密与单向散列函数相关的概念。完成实验后，学生应该能够获得有关加密算法、加密模式、单向散列函数的第一手经验。此外，学生将能够使用工具和编写程序来加密&#x2F;解密消息，为给定的消息生成单向散列值。</p>
+<span id="more"></span>
+<p>开发人员在使用加密算法和模式时会犯许多常见的错误。这些错误会削弱加密的强度，并最终导致出现漏洞。本实验向学生展示一些错误，并要求学生发起攻击以利用这些漏洞。</p>
+<p>1. 密钥加密。</p>
+<p>2. 加密模式、初始向量（IV）和填充（Padding）。</p>
+<p>3. 使用加密算法的常见错误。</p>
+<p>4. 使用密码库进行编程。</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：使用不同的密码算法和加密模式加密"><a href="#2-1-Task-1：使用不同的密码算法和加密模式加密" class="headerlink" title="2.1 Task 1：使用不同的密码算法和加密模式加密"></a>2.1 Task 1：使用不同的密码算法和加密模式加密</h3><p>在此任务中，我们将使用各种加密算法和模式。你可以使用以下openssl enc 命令来加密&#x2F;解密文件。要查看手册，你可以输入man openssl 和man enc。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150940491.png"></p>
+<p>请将ciphertype 替换为特定的加密算法，例如-aes-128-cbc，-aes-128-cfb，-bf-cbc 等。这个任务，你应该尝试至少3 种不同的加密算法和模式组合。</p>
+<p>实验步骤：</p>
+<p>使用AES-128-CBC加密，解密，并与原文对比：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150941137.png"></p>
+<p>使用AES-128-CFB加密，解密，并与原文对比：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150943523.png"></p>
+<p>使用AES-128-OFB加密，解密，并与原文对比：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150943413.png"></p>
+<h3 id="2-2-Task-2：加密模式：ECB-vs-CBC"><a href="#2-2-Task-2：加密模式：ECB-vs-CBC" class="headerlink" title="2.2 Task 2：加密模式：ECB vs. CBC"></a>2.2 Task 2：加密模式：ECB vs. CBC</h3><p>文件pic_original.bmp 包含一个简单的图片。我们想加密这张图片，所以没有加密密钥的人无法知道图片中的内容。请分别使用ECB（电子密码本）和CBC（密码块链接）模式加密文件。比如，你可以使用</p>
+<p>• CBC 模式：-aes-128-cbc</p>
+<p>• ECB 模式：-aes-128-ecb</p>
+<p>然后执行以下操作：</p>
+<p>（1）让我们将加密的图片视为图片，并使用图片查看软件来显示它。但是，对于.bmp 文件，前54 个字节包含有关图片的头部信息，我们必须正确设置它，因此加密文件可以被视为合法的.bmp 文件。我们将加密图片的头部替换为原始图片的头部。你可以使用十六进制编辑器工具（例如Bless）直接修改二进制文件。我们还可以使用以下命令从p1.bmp 中获取header，从p2.bmp 中获取数据（从偏移量55 到文件末尾），然后将header 和数据组合到一个新文件中。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150944992.png"></p>
+<p>（2）使用任意图片查看软件显示加密图片。在ECB 模式和CBC 模式下，你分别能得到关于加密图片的原始图片的任何有用的信息吗？请解释你的观察。</p>
+<p>实验步骤：</p>
+<p>采用ECB模式加密如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150944553.png"></p>
+<p>加密后的图片如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945908.png"></p>
+<p>采用CBC模式加密如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945326.png"></p>
+<p>加密后的图片如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150945977.png"></p>
+<p>通过与原图的对比可以得知，在ECB模式加密后，得到的加密图片仍然可以得到原来图片的轮廓与形状，而通过CBC模式加密后，得到的加密图片完全是乱码无法得到关于原始图片任何有用的信息。</p>
+<p>原因在于CBC模式每一次加密要将前一次的加密结果与加密内容进行异或，因此每一部分的加密前后不是一一对应的，即相同的明文块不会得到相同的密文块。而ECB模式中，不需要异或，相同的明文块会对应相同的密文块，因此图片的形状和轮廓依旧会保留。</p>
+<h3 id="2-3-Task-3：错误传播–-被破坏的密文"><a href="#2-3-Task-3：错误传播–-被破坏的密文" class="headerlink" title="2.3 Task 3：错误传播– 被破坏的密文"></a>2.3 Task 3：错误传播– 被破坏的密文</h3><p>为了理解各种工作模式的在错误传播上的性质，请做以下练习：</p>
+<p>1. 创建一个至少1000 字节长的文本文件。</p>
+<p>2. 使用AES-128 算法加密文件。</p>
+<p>3. 不幸的是，加密文件中第55 个字节的某一个bit 已损坏。你可以使用bless 十六进制编辑器来破坏该文件。</p>
+<p>4. 使用正确的密钥和IV 解密损坏的密文文件。</p>
+<p>请回答以下问题：如果工作模式是ECB 或CBC ，你分别能从解密后的损坏文件中恢复出多少信息？</p>
+<p>请在做这个任务之前回答这个问题，然后在完成此任务之后看看你的答案是否正确。给出你的理由。</p>
+<blockquote>
+<p>ECB模式将只有第四组解密错误<br>CBC模式将有第四组与第五组的解密错误</p>
+</blockquote>
+<p>实验步骤：</p>
+<p>首先创建一个1000字节长的文本文件如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150948393.png"></p>
+<p>采用ECB模式加密后得到如下文件：</p>
+<p>其中第55字节为E1</p>
+<p>对应二进制位1110 0001</p>
+<p>修改为A1</p>
+<p>对应二进制位1010 0001</p>
+<p>然后再进行解密</p>
+<p>如下图：</p>
+<p>修改前：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150949685.png"></p>
+<p>修改后：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150949796.png"></p>
+<p>解密后：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950216.png"></p>
+<p>可以观察到只有第四轮的明文改变</p>
+<p>CBC模式同理：</p>
+<p>如下图：</p>
+<p>修改前：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950735.png"></p>
+<p>修改后：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150950083.png"></p>
+<p>解密结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150951870.png"></p>
+<p>可以观察到第四轮的明文改变，以及第五轮的第七位发生改变</p>
+<p>实验结果与预期结果相同</p>
+<h3 id="2-4-Task-4：寻找密钥"><a href="#2-4-Task-4：寻找密钥" class="headerlink" title="2.4 Task 4：寻找密钥"></a>2.4 Task 4：寻找密钥</h3><p>你得到一个明文和一个密文，你知道aes-128-cbc 用于从明文生成密文。你得到的另一条线索是，加密此明文使用的密钥是一个少于16 个字符的英语单词。这个单词可以从英语字典中找到。由于这个单词少于16 个字符（即128 bits ）1，在单词的结尾附加了一些井号（#：十六进制值是0x23）构成一个128bits 的密钥。</p>
+<p>你的目标是编写一个程序来找出这个密钥，你可以使用任意的编程语言（如Java、C、Shell）来实现你的分析。你也可以在程序中直接调用OpenSSL 命令来使用加密算法。你可以从Internet 下载英文单词列表，我们也提供了一个：words.txt。</p>
+<p>明文、密文和IV 如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150952866.png"></p>
+<p>实验步骤如下：</p>
+<p>编写脚本如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150952399.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953849.png"></p>
+<p>执行该脚本，即可得到密钥如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953495.png"></p>
+<h3 id="2-5-Task-5：生成消息摘要"><a href="#2-5-Task-5：生成消息摘要" class="headerlink" title="2.5 Task 5：生成消息摘要"></a>2.5 Task 5：生成消息摘要</h3><p>在此任务中，我们将使用各种哈希算法。。你可以使用以下openssl dgst 命令生成文件的哈希值。</p>
+<table>
+<thead>
+<tr>
+<th>$ openssl dgst dgsttype filename</th>
+</tr>
+</thead>
+</table>
+<p>请使用特定的哈希算法替换dgsttype，例如-md5，-sha1，-sha256 等。在此任务中，你应该尝试至少3 种不同的算法，并描述你的观察。你可以通过键入“man dgst”找到支持的哈希算法。</p>
+<p>我们提供了一个（明文）文本文件用作测试：plain.txt</p>
+<p>步骤如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150953790.png"></p>
+<p>分别使用md5，sha1，sha256进行加密，可以观察得到了不同长度的十六进制字符串。</p>
+<h3 id="2-6-Task-6：哈希函数的输出特性"><a href="#2-6-Task-6：哈希函数的输出特性" class="headerlink" title="2.6 Task 6：哈希函数的输出特性"></a>2.6 Task 6：哈希函数的输出特性</h3><p>要了解哈希函数的输出特性，我们希望对SHA1 执行以下练习：</p>
+<p>1. 使用SHA1 算法为plain.txt 生成哈希值H1。</p>
+<p>2. 修改输入文件的一位。你可以使用Bless 来完成此修改。</p>
+<p>3. 为修改后的文件生成哈希值H2。</p>
+<p>请观察H1 和H2 是否相似。请在实验报告中描述你的观察结果。</p>
+<p>实验步骤：</p>
+<p>使用SHA1算法加密plain.txt后，得到结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150955724.png"></p>
+<p>修改文件的内容中第一个字节中的第一个bit</p>
+<p>初始为49，二进制为：0100 1001</p>
+<p>修改后为C9，二进制为：1100 1001</p>
+<p>如下图所示：</p>
+<p>修改前：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956539.png"></p>
+<p>修改后：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956032.png"></p>
+<p>重新采用SHA1算法进行，加密得到结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150956766.png"></p>
+<p>对比前后两次的哈希结果：</p>
+<p>修改前：8d3b090efe42d1344c7d6d60a534a7f525e2b2e7</p>
+<p>修改后：6711dd03a1332377c155d81f713b4ea78c306ebf</p>
+<p>可以发现两次的结果只有长度相同，在内容上完全不同，没有任何关联。由于任何一比特的改变都使得了输出结果的不同，保证了哈希算法的抗碰撞特性。</p>
+<h3 id="2-7-Task-7：单向性与抗碰撞性"><a href="#2-7-Task-7：单向性与抗碰撞性" class="headerlink" title="2.7 Task 7：单向性与抗碰撞性"></a>2.7 Task 7：单向性与抗碰撞性</h3><p>哈希函数的具有单向性与抗碰撞性。在这个实验里我们将使用暴力穷举方法来测试抗碰撞性，即找到具有相同哈希值的两个文件。你的目标是，在给定一个文件，编写一个程序来找出另一个具有相同哈希值的文件，你可以使用任意的编程语言（如Java、C、Shell）来实现你的分析。你可以在程序中直接调用OpenSSL 命令来使用哈希算法。</p>
+<p>由于大多数哈希函数的抗碰撞性的抵御暴力攻击的能力非常强大，因此使用暴力穷举方法攻破它们需要数年时间。为了使任务可行，我们将哈希值的长度减少到24 位。我们在此任务中只使用SHA1 哈希值的前24 位。即，可以理解成我们使用修改过的单向散列函数。请设计一个程序，找出以下内容：</p>
+<p>1. 计算original.txt 的SHA1 哈希值，并记录前24 位。</p>
+<p>2. 使用暴力穷举方法（生成随机字符串），找到另外一个文件与上述文件具有相同的哈希值（前24 位）。</p>
+<p>实验步骤如下：</p>
+<p>首先计算original.txt 的SHA1 哈希值，得到其前24位如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309150957889.png"></p>
+<p>根据得到的前24位哈希值，编写脚本如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! /usr/bin/python3</span></span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> sha1</span><br><span class="line"><span class="keyword">from</span> strgen <span class="keyword">import</span> StringGenerator <span class="keyword">as</span> SG</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">count = <span class="number">0</span></span><br><span class="line">start = time.time()</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    random_str = SG(<span class="string">r&quot;[\w]&#123;17&#125;&quot;</span>).render()</span><br><span class="line">    hash_str = sha1(random_str.encode())</span><br><span class="line">    hex_hash_str = hash_str.hexdigest()</span><br><span class="line">    count = count + <span class="number">1</span></span><br><span class="line">    <span class="comment"># print(random_str)</span></span><br><span class="line">    <span class="comment"># print(&quot;The hexadecimal equivalent of SHA1 is : &quot;)</span></span><br><span class="line">    <span class="comment"># print(hex_hash_str[0:6])</span></span><br><span class="line">    <span class="keyword">if</span> hex_hash_str[<span class="number">0</span>:<span class="number">6</span>] == <span class="string">&quot;4dc981&quot;</span>:</span><br><span class="line">        end = time.time()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Find same hash in 24 bits&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Random_str is :&quot;</span>,random_str)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;SHA1 is :&quot;</span>,hex_hash_str)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Count is :&quot;</span>,count)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Cost time:&quot;</span>,end-start)</span><br><span class="line">        <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+
+<p>执行该脚本得到结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151001240.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309151001961.png"></p>
+<p>此处生成的随机字符串长度同original.txt，有17位，得到五次碰撞如下：</p>
+<table>
+<thead>
+<tr>
+<th>原文</th>
+<th>密文</th>
+<th>次数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iVs3Kjk18KlBgu10v</td>
+<td>4dc9817f10edf31eb2e76bdce63d071944615297</td>
+<td>4519964</td>
+</tr>
+<tr>
+<td>x2vwXgg5_VTg8FjfM</td>
+<td>4dc9815669519a61e1ace2eb8c7081f4c8f3c868</td>
+<td>19477619</td>
+</tr>
+<tr>
+<td>xj10d3J7L38qP0L70</td>
+<td>4dc9812411f31e743a50506bb77a43d476d5d7c6</td>
+<td>33590917</td>
+</tr>
+<tr>
+<td>jQKpQ8kVkFzhyJQBc</td>
+<td>4dc98181cd118240664148ba948fff0be73c2fbe</td>
+<td>15379182</td>
+</tr>
+<tr>
+<td>rkYx0Se0m93vqeyXb</td>
+<td>4dc98131481a7bdc3fa0d6bc391fa8a06e2513c8</td>
+<td>19913632</td>
+</tr>
+</tbody></table>
+<p>平均碰撞次数：18576262.8次</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/09/14/Setuid/" rel="prev" title="环境变量与Set-UID">
+      <i class="fa fa-chevron-left"></i> 环境变量与Set-UID
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">一.实验目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E4%B8%8E%E7%BB%93%E6%9E%9C"><span class="nav-number">2.</span> <span class="nav-text">二.实验步骤与结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-Task-1%EF%BC%9A%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%90%8C%E7%9A%84%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95%E5%92%8C%E5%8A%A0%E5%AF%86%E6%A8%A1%E5%BC%8F%E5%8A%A0%E5%AF%86"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Task 1：使用不同的密码算法和加密模式加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Task-2%EF%BC%9A%E5%8A%A0%E5%AF%86%E6%A8%A1%E5%BC%8F%EF%BC%9AECB-vs-CBC"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Task 2：加密模式：ECB vs. CBC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Task-3%EF%BC%9A%E9%94%99%E8%AF%AF%E4%BC%A0%E6%92%AD%E2%80%93-%E8%A2%AB%E7%A0%B4%E5%9D%8F%E7%9A%84%E5%AF%86%E6%96%87"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Task 3：错误传播– 被破坏的密文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Task-4%EF%BC%9A%E5%AF%BB%E6%89%BE%E5%AF%86%E9%92%A5"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Task 4：寻找密钥</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-Task-5%EF%BC%9A%E7%94%9F%E6%88%90%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 Task 5：生成消息摘要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-Task-6%EF%BC%9A%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0%E7%9A%84%E8%BE%93%E5%87%BA%E7%89%B9%E6%80%A7"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 Task 6：哈希函数的输出特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-Task-7%EF%BC%9A%E5%8D%95%E5%90%91%E6%80%A7%E4%B8%8E%E6%8A%97%E7%A2%B0%E6%92%9E%E6%80%A7"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 Task 7：单向性与抗碰撞性</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
