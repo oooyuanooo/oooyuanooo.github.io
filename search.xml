@@ -1,6 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>DNS Rebinding Attack Lab</title>
+    <url>/2022/12/04/DNS_rebind/</url>
+    <content><![CDATA[<h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>本实验室的目标有两个:(1)演示DNS重绑定攻击是如何工作的，(2)提供帮助学生获得如何使用DNS重绑定技术攻击物联网设备的第一手经验。在在设置中，我们有一个模拟物联网设备，它可以通过一个web界面进行控制(这是典型的许多物联网设备)。即使攻击者可以，许多物联网设备也没有强大的保护机制直接与他们互动，他们可以很容易地破坏这些设备。</p>
+<span id="more"></span>
+<p>在这个实验室中模拟的物联网设备是一个恒温器，它可以控制房间的温度。成攻设置温度后，客户端需要能够与物联网服务器进行交互。因为物联网设备防火墙后，外部机器不能与物联网设备交互，因此不能控制恒温器。为了突破防火墙的保护，攻击代码必须进入内部首先网络。这并不难。当来自内部网络的用户访问攻击者的任何时间网站，攻击者的代码(JavaScript代码)实际上是从用户的浏览器运行的，因此在浏览器内部运行受保护的内部网络。但是，由于浏览器实现了沙盒保护，因此攻击者的代码仍然不能与物联网设备交互，即使它现在在内部网络中。</p>
+<p>本实验室的目的是利用DNS重绑定攻击来绕过沙盒保护，因此攻击者的JavaScript代码可以成功获取物联网设备的基本信息然后利用这些信息将恒温器的温度设置到一个危险的高值。这个实验室涵盖了以下主题:</p>
+<p>•DNS服务器设置</p>
+<p>•DNS重绑定攻击</p>
+<p>•攻击物联网设备</p>
+<p>•同源政策</p>
+<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><h3 id="2-1-DNS协议"><a href="#2-1-DNS协议" class="headerlink" title="2.1 DNS协议"></a>2.1 DNS协议</h3><p>域名系统（英语：Domain Name System，缩写：DNS）是互联网的一项服务。它作为将域名和IP地址相互映射的一个分布式数据库，能够使人更方便地访问互联网。DNS使用TCP和UDP端口53[1]。当前，对于每一级域名长度的限制是63个字符，域名总长度则不能超过253个字符。</p>
+<h3 id="2-2-同源策略"><a href="#2-2-同源策略" class="headerlink" title="2.2 同源策略"></a>2.2 同源策略</h3><p>在Web浏览器中，允许某个网页脚本访问另一个网页的数据，但前提是这两个网页必须有相同的URI、主机名和端口号，一旦两个网站满足上述条件，这两个网站就被认定为具有相同来源。此策略可防止某个网页上的恶意脚本通过该页面的文档对象模型访问另一网页上的敏感数据。</p>
+<p>同源策略对Web应用程序具有特殊意义，因为Web应用程序广泛依赖于HTTP cookie来维持用户会话，所以必须将不相关网站严格分隔，以防止丢失数据泄露。</p>
+<p>值得注意的是同源策略仅适用于脚本，这意味着某网站可以通过相应的HTML标签访问不同来源网站上的图像、CSS和动态加载脚本等资源。而跨站请求伪造就是利用同源策略不适用于HTML标签的缺陷。</p>
+<h3 id="2-3-拓扑搭建"><a href="#2-3-拓扑搭建" class="headerlink" title="2.3 拓扑搭建"></a>2.3 拓扑搭建</h3><p>DNS重新绑定攻击的网络拓扑如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181028470.png"></p>
+<p>在这个实验室里，我们将使用六台机器。实验环境设置如图1所示。只有用户机器将使用VM，其他的都是容器。在设置中，我们有两个网络，一个家庭网络和外部网络。家庭网络模拟了一个典型的家庭网络。User机器物联网服务连接到该网络，该网络由路由器容器上的防火墙保护。防火墙会阻止所有到达192.168.60.80的流量。这样，外部机器就不能访问物联网设备。我们还在路由器上设置了一个NAT服务器，这样家庭网络中的机器就可以访问外部(回复包可以返回)。</p>
+<p>第二个网络模拟外部网域。除了路由器之外，还有三个容器连接到这个网络，一个作为本地DNS服务器，另外两个作为攻击者的名称服务器和web服务器。攻击者拥有attacker32.com域，它由攻击者的命名服务器容器。该web服务器上有一个用于攻击的恶意网站。</p>
+<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu20.04。</p>
+<p>2．Docker.</p>
+<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-实验环境配置"><a href="#4-1-实验环境配置" class="headerlink" title="4.1 实验环境配置"></a>4.1 实验环境配置</h3><h4 id="4-1-1-减少Firefox的DNS缓存时间"><a href="#4-1-1-减少Firefox的DNS缓存时间" class="headerlink" title="4.1.1 减少Firefox的DNS缓存时间"></a>4.1.1 减少Firefox的DNS缓存时间</h4><p>减少DNS服务器的负载，加快响应速度时间，Firefox浏览器缓存DNS结果。缺省情况下，缓存过期时间为60秒。这意味着我们的DNS重绑定攻击需要等待至少60秒。为了使我们实验更容易，我们减少了时间为10秒或更短。在URL字段中输入about:config。在点击一个警告页面后，我们将看到首选项名称及其值的列表。搜索dnsCache，找到以下条目和改变它的值。修改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181029706.png"></p>
+<h4 id="4-1-2-修改-x2F-etc-x2F-host文件"><a href="#4-1-2-修改-x2F-etc-x2F-host文件" class="headerlink" title="4.1.2 修改&#x2F;etc&#x2F;host文件"></a>4.1.2 修改&#x2F;etc&#x2F;host文件</h4><p>我们需要在&#x2F;etc&#x2F;hosts文件中添加以下条目。我们将使用<a href="http://www.seedIoT32.com作为物联网服务器的名称。IP地址为192.168.60.80">www.seedIoT32.com作为物联网服务器的名称。IP地址为192.168.60.80</a></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181029139.png"></p>
+<h4 id="4-1-3-本地DNS服务"><a href="#4-1-3-本地DNS服务" class="headerlink" title="4.1.3 本地DNS服务"></a>4.1.3 本地DNS服务</h4><p>我们需要让User VM使用特定的本地DNS服务器。这是通过将本地DNS服务器设置为解析器配置文件中的第一个名称服务器条目来实现(&#x2F; etc &#x2F; resolv.conf)。一个挑战是所提供的虚拟机使用动态主机配置通过DHCP协议获取网络配置参数，如IP地址、本地DNS服务器等。DHCP客户端使用DHCP服务器提供的信息覆盖&#x2F;etc&#x2F;resolv.conf文件。将信息放入&#x2F;etc&#x2F;resolv.conf而不用担心DHCP的一种方法是to</p>
+<p>在&#x2F;etc&#x2F;resolvconf&#x2F;resolv.conf文件中添加以下条目。D &#x2F;头文件(10.9.0.53是本地DNS服务器的IP地址)。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030382.png"></p>
+<h4 id="4-1-4-测试实验配置"><a href="#4-1-4-测试实验配置" class="headerlink" title="4.1.4 测试实验配置"></a>4.1.4 测试实验配置</h4><p>配置完User虚拟机后，使用dig命令获取<a href="http://www.attacker32.com的ip地址和ns.attacker32.com.你应该分别得到10.9.0.180和10.9.0.153.如果你有不明白这个,你的实验室环境没有正确设置.我们现在可以测试攻击者的网站了.将浏览器指向user/">www.attacker32.com的IP地址和ns.attacker32.com。你应该分别得到10.9.0.180和10.9.0.153。如果你有不明白这个，你的实验室环境没有正确设置。我们现在可以测试攻击者的网站了。将浏览器指向User</a> VM上的以下URL，然后你应该能够看到攻击者的网站。请在你的实验报告中提供一个截图。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030173.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030846.png"></p>
+<p>攻击者网站的内容如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181031002.png"></p>
+<p>说明实验配置搭建成功。</p>
+<h3 id="4-2-在物联网设备上进行攻击"><a href="#4-2-在物联网设备上进行攻击" class="headerlink" title="4.2 在物联网设备上进行攻击"></a>4.2 在物联网设备上进行攻击</h3><h4 id="4-2-1-理解同源策略保护机制"><a href="#4-2-1-理解同源策略保护机制" class="headerlink" title="4.2.1 理解同源策略保护机制"></a>4.2.1 理解同源策略保护机制</h4><p>在本任务中，我们将做一些实验来了解实现的同源策略保护浏览器。点击第二页和第三页的按钮，描述你的观察。哪个页面可以成功设定恒温器的温度?请解释原因。要查找原因，请单击下面的菜单序列从Firefox。将出现一个控制台窗口，其中显示错误消息(如果有的话)。提示:原因与浏览器强制的同源策略有关。请解释为什么这个政策会导致一个失败的页面。</p>
+<p>首先在<a href="http://www.seediot32.com/change">http://www.seedIoT32.com/change</a> 网站中点击按钮，可以发现温度被成功修改，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181032825.png"></p>
+<p>利用浏览器中的工具，可以观察到下列报文：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181032446.png"></p>
+<p>可以观察到他们都有正确的password，并且报文的来源ip地址与物联网设备的ip地址相同。</p>
+<p>然后在攻击者的网站<a href="http://www.attacker32.com/change">http://www.attacker32.com/change</a> 中点击按钮，发现该设备的温度并不会发生改变，并且利用火狐浏览器中的工具，可以捕获到以下的报错内容。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181033240.png"></p>
+<p>可以观察到GET报文中报错cross-origin request blocked</p>
+<p>Reason: CORS header ‘Access-Control-Allow-Origin’ missing 经过查询可以得知原因在于对于跨站请求的响应缺少必须的Access-Control-Allow-Origin报头，而该报头用于确定当前站点源内的操作是否可以访问目的网站。这便是同源策略进行保护的原理所在。</p>
+<h4 id="4-2-2-打破同源策略保护机制"><a href="#4-2-2-打破同源策略保护机制" class="headerlink" title="4.2.2 打破同源策略保护机制"></a>4.2.2 打破同源策略保护机制</h4><p>从前面的任务来看，从攻击者的页面设置恒温器的温度似乎是不可能的到浏览器的同源策略保护。这项任务的目的就是要摧毁这种保护，所以我们可以从这一页设定温度。打击原产地保护的主要思路来自于政策的实施是基于主机名，而不是IP地址，所以只要我们在URL，我们遵守SOP政策，但这并不意味着我们被限制与<a href="http://www.attacker32.com/">www.attacker32.com</a> web服务器。在用户的浏览器向<a href="http://www.attacker32.com发送请求之前，它首先需要知道IP地址:www.attacker32.com。一个DNS请求将从用户的机器发出。如果IP地址没有缓存到本地DNS服务器，DNS请求最终将被发送attacker32.com的名称服务器，由攻击者控制。因此，攻击者可以决定在响应中放入什么。">www.attacker32.com发送请求之前，它首先需要知道IP地址:www.attacker32.com。一个DNS请求将从用户的机器发出。如果IP地址没有缓存到本地DNS服务器，DNS请求最终将被发送attacker32.com的名称服务器，由攻击者控制。因此，攻击者可以决定在响应中放入什么。</a></p>
+<p>攻击步骤如下：</p>
+<p>Step1：修改JavaScript代码</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181035604.png"></p>
+<p>成功修改后，重新打开攻击者的页面，并且点击按钮，发现仍然报错，如下所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181035646.png"></p>
+<p>原因在于未定义password。</p>
+<p>Step2：进行DNS重新绑定</p>
+<p>我们的JavaScript代码将请求发送到<a href="http://www.attacker32.com,也就是说,请求将返回到攻击者的web服务器.这不是我们想要的;我们想要请求到物联网服务器.这可以通过dns重绑定技术实现.我们首先绘制映射www.attacker32.com到攻击者的web服务器的ip地址,这样用户就可以获得实际的页面从http//www.attacker32.com/change%E3%80%82%E5%9C%A8%E7%82%B9%E5%87%BB%E9%A1%B5%E9%9D%A2%E4%B8%8A%E7%9A%84%E6%8C%89%E9%92%AE%E4%B9%8B%E5%89%8D%EF%BC%8C%E6%88%91%E4%BB%AC%E8%A6%81%E9%87%8D%E6%96%B0%E6%98%A0%E5%B0%84">www.attacker32.com，也就是说，请求将返回到攻击者的web服务器。这不是我们想要的;我们想要请求到物联网服务器。这可以通过DNS重绑定技术实现。我们首先绘制映射www.attacker32.com到攻击者的web服务器的IP地址，这样用户就可以获得实际的页面从http://www.attacker32.com/change。在点击页面上的按钮之前，我们要重新映射</a></p>
+<p>将<a href="http://www.attacker32.com主机名设置为物联网服务器的ip地址,因此该请求由按钮将转到物联网服务器.这正是我们想要的./">www.attacker32.com主机名设置为物联网服务器的IP地址，因此该请求由按钮将转到物联网服务器。这正是我们想要的。</a></p>
+<p>根据实验手册中的指导，我们可以进行如下攻击：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037963.png"></p>
+<p>首先在攻击者的域名服务器上修改默认的TTL响应时间，应该设置一个较小的值，然后将www的DNS解析绑定为物联网设备的IP地址</p>
+<p>然后清除本地DNS的缓存</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037255.png"></p>
+<p>此处重新绑定DNS时，应该是在打开攻击者页面，点击按钮之前，否则攻击就会失败。</p>
+<p>然后再攻击者页面中点击按钮，可以观察到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037029.png"></p>
+<p>可以发现攻击者所发送的报文中有正确的password，其报文也成功被物联网设备所接收，修改其温度为99℃。</p>
+<p>在物联网设备的页面也可以观察到其温度被修改，并且来自于攻击者网站的请求报文。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037955.png"></p>
+<p>攻击成功</p>
+<h4 id="4-2-3-自动进行攻击"><a href="#4-2-3-自动进行攻击" class="headerlink" title="4.2.3 自动进行攻击"></a>4.2.3 自动进行攻击</h4><p>在前面的任务中，用户必须单击按钮将温度设置为危险的高值。显然，用户不太可能这么做。在这个任务中，我们需要自动完成。我们有已经为此创建了一个网页将此页面加载到User VM后，应该能够看到一个带有计时器的页面从10降到0。一旦它达到0，该页上的JavaScript代码将发送设置温度请求<a href="http://www.attacker32.com,然后将计时器值重置为10.学生需要使用dns重绑定技术,所以一旦计时器达到0,恒温器的温度被设置为88摄氏度./">http://www.attacker32.com，然后将计时器值重置为10。学生需要使用DNS重绑定技术，所以一旦计时器达到0，恒温器的温度被设置为88摄氏度。</a></p>
+<p>攻击过程同上，使用DNS重新绑定的方法，需要在页面的计时器数到0的时候进行重新绑定，即可在该页面实现其自动攻击</p>
+<p>如下图所示：</p>
+<p>攻击者的页面内容发生改变，证明其已经连接到了物联网设备</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181038265.png"></p>
+<p>在物联网设备的页面，可以观察到其不断收到来自于攻击者网站的请求，使其温度修改到88℃，证明攻击成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181038880.png"></p>
+]]></content>
+      <categories>
+        <category>软件安全</category>
+      </categories>
+      <tags>
+        <tag>seedlab2.0</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Cross-Site Request Forgery Attack Lab</title>
     <url>/2022/10/11/CSRF/</url>
     <content><![CDATA[<h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的目的是帮助学生了解跨站请求伪造（CSRF）攻击。CSRF 攻击涉及一个受害用户、一个受信任的网站和一个恶意网站。受害用户在访问恶意站点时，正在与受信任的网站保持活动会话。恶意网站将可信网站的HTTP 请求注入到受害者用户会话中，造成损害。</p>
@@ -297,85 +378,49 @@
       </tags>
   </entry>
   <entry>
-    <title>DNS Rebinding Attack Lab</title>
-    <url>/2022/12/04/DNS_rebind/</url>
-    <content><![CDATA[<h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>本实验室的目标有两个:(1)演示DNS重绑定攻击是如何工作的，(2)提供帮助学生获得如何使用DNS重绑定技术攻击物联网设备的第一手经验。在在设置中，我们有一个模拟物联网设备，它可以通过一个web界面进行控制(这是典型的许多物联网设备)。即使攻击者可以，许多物联网设备也没有强大的保护机制直接与他们互动，他们可以很容易地破坏这些设备。</p>
+    <title>Scripts</title>
+    <url>/2022/11/11/Scripts/</url>
+    <content><![CDATA[<h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
 <span id="more"></span>
-<p>在这个实验室中模拟的物联网设备是一个恒温器，它可以控制房间的温度。成攻设置温度后，客户端需要能够与物联网服务器进行交互。因为物联网设备防火墙后，外部机器不能与物联网设备交互，因此不能控制恒温器。为了突破防火墙的保护，攻击代码必须进入内部首先网络。这并不难。当来自内部网络的用户访问攻击者的任何时间网站，攻击者的代码(JavaScript代码)实际上是从用户的浏览器运行的，因此在浏览器内部运行受保护的内部网络。但是，由于浏览器实现了沙盒保护，因此攻击者的代码仍然不能与物联网设备交互，即使它现在在内部网络中。</p>
-<p>本实验室的目的是利用DNS重绑定攻击来绕过沙盒保护，因此攻击者的JavaScript代码可以成功获取物联网设备的基本信息然后利用这些信息将恒温器的温度设置到一个危险的高值。这个实验室涵盖了以下主题:</p>
-<p>•DNS服务器设置</p>
-<p>•DNS重绑定攻击</p>
-<p>•攻击物联网设备</p>
-<p>•同源政策</p>
-<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><h3 id="2-1-DNS协议"><a href="#2-1-DNS协议" class="headerlink" title="2.1 DNS协议"></a>2.1 DNS协议</h3><p>域名系统（英语：Domain Name System，缩写：DNS）是互联网的一项服务。它作为将域名和IP地址相互映射的一个分布式数据库，能够使人更方便地访问互联网。DNS使用TCP和UDP端口53[1]。当前，对于每一级域名长度的限制是63个字符，域名总长度则不能超过253个字符。</p>
-<h3 id="2-2-同源策略"><a href="#2-2-同源策略" class="headerlink" title="2.2 同源策略"></a>2.2 同源策略</h3><p>在Web浏览器中，允许某个网页脚本访问另一个网页的数据，但前提是这两个网页必须有相同的URI、主机名和端口号，一旦两个网站满足上述条件，这两个网站就被认定为具有相同来源。此策略可防止某个网页上的恶意脚本通过该页面的文档对象模型访问另一网页上的敏感数据。</p>
-<p>同源策略对Web应用程序具有特殊意义，因为Web应用程序广泛依赖于HTTP cookie来维持用户会话，所以必须将不相关网站严格分隔，以防止丢失数据泄露。</p>
-<p>值得注意的是同源策略仅适用于脚本，这意味着某网站可以通过相应的HTML标签访问不同来源网站上的图像、CSS和动态加载脚本等资源。而跨站请求伪造就是利用同源策略不适用于HTML标签的缺陷。</p>
-<h3 id="2-3-拓扑搭建"><a href="#2-3-拓扑搭建" class="headerlink" title="2.3 拓扑搭建"></a>2.3 拓扑搭建</h3><p>DNS重新绑定攻击的网络拓扑如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181028470.png"></p>
-<p>在这个实验室里，我们将使用六台机器。实验环境设置如图1所示。只有用户机器将使用VM，其他的都是容器。在设置中，我们有两个网络，一个家庭网络和外部网络。家庭网络模拟了一个典型的家庭网络。User机器物联网服务连接到该网络，该网络由路由器容器上的防火墙保护。防火墙会阻止所有到达192.168.60.80的流量。这样，外部机器就不能访问物联网设备。我们还在路由器上设置了一个NAT服务器，这样家庭网络中的机器就可以访问外部(回复包可以返回)。</p>
-<p>第二个网络模拟外部网域。除了路由器之外，还有三个容器连接到这个网络，一个作为本地DNS服务器，另外两个作为攻击者的名称服务器和web服务器。攻击者拥有attacker32.com域，它由攻击者的命名服务器容器。该web服务器上有一个用于攻击的恶意网站。</p>
-<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu20.04。</p>
-<p>2．Docker.</p>
-<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-实验环境配置"><a href="#4-1-实验环境配置" class="headerlink" title="4.1 实验环境配置"></a>4.1 实验环境配置</h3><h4 id="4-1-1-减少Firefox的DNS缓存时间"><a href="#4-1-1-减少Firefox的DNS缓存时间" class="headerlink" title="4.1.1 减少Firefox的DNS缓存时间"></a>4.1.1 减少Firefox的DNS缓存时间</h4><p>减少DNS服务器的负载，加快响应速度时间，Firefox浏览器缓存DNS结果。缺省情况下，缓存过期时间为60秒。这意味着我们的DNS重绑定攻击需要等待至少60秒。为了使我们实验更容易，我们减少了时间为10秒或更短。在URL字段中输入about:config。在点击一个警告页面后，我们将看到首选项名称及其值的列表。搜索dnsCache，找到以下条目和改变它的值。修改如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181029706.png"></p>
-<h4 id="4-1-2-修改-x2F-etc-x2F-host文件"><a href="#4-1-2-修改-x2F-etc-x2F-host文件" class="headerlink" title="4.1.2 修改&#x2F;etc&#x2F;host文件"></a>4.1.2 修改&#x2F;etc&#x2F;host文件</h4><p>我们需要在&#x2F;etc&#x2F;hosts文件中添加以下条目。我们将使用<a href="http://www.seedIoT32.com作为物联网服务器的名称。IP地址为192.168.60.80">www.seedIoT32.com作为物联网服务器的名称。IP地址为192.168.60.80</a></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181029139.png"></p>
-<h4 id="4-1-3-本地DNS服务"><a href="#4-1-3-本地DNS服务" class="headerlink" title="4.1.3 本地DNS服务"></a>4.1.3 本地DNS服务</h4><p>我们需要让User VM使用特定的本地DNS服务器。这是通过将本地DNS服务器设置为解析器配置文件中的第一个名称服务器条目来实现(&#x2F; etc &#x2F; resolv.conf)。一个挑战是所提供的虚拟机使用动态主机配置通过DHCP协议获取网络配置参数，如IP地址、本地DNS服务器等。DHCP客户端使用DHCP服务器提供的信息覆盖&#x2F;etc&#x2F;resolv.conf文件。将信息放入&#x2F;etc&#x2F;resolv.conf而不用担心DHCP的一种方法是to</p>
-<p>在&#x2F;etc&#x2F;resolvconf&#x2F;resolv.conf文件中添加以下条目。D &#x2F;头文件(10.9.0.53是本地DNS服务器的IP地址)。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030382.png"></p>
-<h4 id="4-1-4-测试实验配置"><a href="#4-1-4-测试实验配置" class="headerlink" title="4.1.4 测试实验配置"></a>4.1.4 测试实验配置</h4><p>配置完User虚拟机后，使用dig命令获取<a href="http://www.attacker32.com的ip地址和ns.attacker32.com.你应该分别得到10.9.0.180和10.9.0.153.如果你有不明白这个,你的实验室环境没有正确设置.我们现在可以测试攻击者的网站了.将浏览器指向user/">www.attacker32.com的IP地址和ns.attacker32.com。你应该分别得到10.9.0.180和10.9.0.153。如果你有不明白这个，你的实验室环境没有正确设置。我们现在可以测试攻击者的网站了。将浏览器指向User</a> VM上的以下URL，然后你应该能够看到攻击者的网站。请在你的实验报告中提供一个截图。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030173.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181030846.png"></p>
-<p>攻击者网站的内容如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181031002.png"></p>
-<p>说明实验配置搭建成功。</p>
-<h3 id="4-2-在物联网设备上进行攻击"><a href="#4-2-在物联网设备上进行攻击" class="headerlink" title="4.2 在物联网设备上进行攻击"></a>4.2 在物联网设备上进行攻击</h3><h4 id="4-2-1-理解同源策略保护机制"><a href="#4-2-1-理解同源策略保护机制" class="headerlink" title="4.2.1 理解同源策略保护机制"></a>4.2.1 理解同源策略保护机制</h4><p>在本任务中，我们将做一些实验来了解实现的同源策略保护浏览器。点击第二页和第三页的按钮，描述你的观察。哪个页面可以成功设定恒温器的温度?请解释原因。要查找原因，请单击下面的菜单序列从Firefox。将出现一个控制台窗口，其中显示错误消息(如果有的话)。提示:原因与浏览器强制的同源策略有关。请解释为什么这个政策会导致一个失败的页面。</p>
-<p>首先在<a href="http://www.seediot32.com/change">http://www.seedIoT32.com/change</a> 网站中点击按钮，可以发现温度被成功修改，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181032825.png"></p>
-<p>利用浏览器中的工具，可以观察到下列报文：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181032446.png"></p>
-<p>可以观察到他们都有正确的password，并且报文的来源ip地址与物联网设备的ip地址相同。</p>
-<p>然后在攻击者的网站<a href="http://www.attacker32.com/change">http://www.attacker32.com/change</a> 中点击按钮，发现该设备的温度并不会发生改变，并且利用火狐浏览器中的工具，可以捕获到以下的报错内容。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181033240.png"></p>
-<p>可以观察到GET报文中报错cross-origin request blocked</p>
-<p>Reason: CORS header ‘Access-Control-Allow-Origin’ missing 经过查询可以得知原因在于对于跨站请求的响应缺少必须的Access-Control-Allow-Origin报头，而该报头用于确定当前站点源内的操作是否可以访问目的网站。这便是同源策略进行保护的原理所在。</p>
-<h4 id="4-2-2-打破同源策略保护机制"><a href="#4-2-2-打破同源策略保护机制" class="headerlink" title="4.2.2 打破同源策略保护机制"></a>4.2.2 打破同源策略保护机制</h4><p>从前面的任务来看，从攻击者的页面设置恒温器的温度似乎是不可能的到浏览器的同源策略保护。这项任务的目的就是要摧毁这种保护，所以我们可以从这一页设定温度。打击原产地保护的主要思路来自于政策的实施是基于主机名，而不是IP地址，所以只要我们在URL，我们遵守SOP政策，但这并不意味着我们被限制与<a href="http://www.attacker32.com/">www.attacker32.com</a> web服务器。在用户的浏览器向<a href="http://www.attacker32.com发送请求之前，它首先需要知道IP地址:www.attacker32.com。一个DNS请求将从用户的机器发出。如果IP地址没有缓存到本地DNS服务器，DNS请求最终将被发送attacker32.com的名称服务器，由攻击者控制。因此，攻击者可以决定在响应中放入什么。">www.attacker32.com发送请求之前，它首先需要知道IP地址:www.attacker32.com。一个DNS请求将从用户的机器发出。如果IP地址没有缓存到本地DNS服务器，DNS请求最终将被发送attacker32.com的名称服务器，由攻击者控制。因此，攻击者可以决定在响应中放入什么。</a></p>
-<p>攻击步骤如下：</p>
-<p>Step1：修改JavaScript代码</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181035604.png"></p>
-<p>成功修改后，重新打开攻击者的页面，并且点击按钮，发现仍然报错，如下所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181035646.png"></p>
-<p>原因在于未定义password。</p>
-<p>Step2：进行DNS重新绑定</p>
-<p>我们的JavaScript代码将请求发送到<a href="http://www.attacker32.com,也就是说,请求将返回到攻击者的web服务器.这不是我们想要的;我们想要请求到物联网服务器.这可以通过dns重绑定技术实现.我们首先绘制映射www.attacker32.com到攻击者的web服务器的ip地址,这样用户就可以获得实际的页面从http//www.attacker32.com/change%E3%80%82%E5%9C%A8%E7%82%B9%E5%87%BB%E9%A1%B5%E9%9D%A2%E4%B8%8A%E7%9A%84%E6%8C%89%E9%92%AE%E4%B9%8B%E5%89%8D%EF%BC%8C%E6%88%91%E4%BB%AC%E8%A6%81%E9%87%8D%E6%96%B0%E6%98%A0%E5%B0%84">www.attacker32.com，也就是说，请求将返回到攻击者的web服务器。这不是我们想要的;我们想要请求到物联网服务器。这可以通过DNS重绑定技术实现。我们首先绘制映射www.attacker32.com到攻击者的web服务器的IP地址，这样用户就可以获得实际的页面从http://www.attacker32.com/change。在点击页面上的按钮之前，我们要重新映射</a></p>
-<p>将<a href="http://www.attacker32.com主机名设置为物联网服务器的ip地址,因此该请求由按钮将转到物联网服务器.这正是我们想要的./">www.attacker32.com主机名设置为物联网服务器的IP地址，因此该请求由按钮将转到物联网服务器。这正是我们想要的。</a></p>
-<p>根据实验手册中的指导，我们可以进行如下攻击：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037963.png"></p>
-<p>首先在攻击者的域名服务器上修改默认的TTL响应时间，应该设置一个较小的值，然后将www的DNS解析绑定为物联网设备的IP地址</p>
-<p>然后清除本地DNS的缓存</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037255.png"></p>
-<p>此处重新绑定DNS时，应该是在打开攻击者页面，点击按钮之前，否则攻击就会失败。</p>
-<p>然后再攻击者页面中点击按钮，可以观察到如下内容：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037029.png"></p>
-<p>可以发现攻击者所发送的报文中有正确的password，其报文也成功被物联网设备所接收，修改其温度为99℃。</p>
-<p>在物联网设备的页面也可以观察到其温度被修改，并且来自于攻击者网站的请求报文。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181037955.png"></p>
-<p>攻击成功</p>
-<h4 id="4-2-3-自动进行攻击"><a href="#4-2-3-自动进行攻击" class="headerlink" title="4.2.3 自动进行攻击"></a>4.2.3 自动进行攻击</h4><p>在前面的任务中，用户必须单击按钮将温度设置为危险的高值。显然，用户不太可能这么做。在这个任务中，我们需要自动完成。我们有已经为此创建了一个网页将此页面加载到User VM后，应该能够看到一个带有计时器的页面从10降到0。一旦它达到0，该页上的JavaScript代码将发送设置温度请求<a href="http://www.attacker32.com,然后将计时器值重置为10.学生需要使用dns重绑定技术,所以一旦计时器达到0,恒温器的温度被设置为88摄氏度./">http://www.attacker32.com，然后将计时器值重置为10。学生需要使用DNS重绑定技术，所以一旦计时器达到0，恒温器的温度被设置为88摄氏度。</a></p>
-<p>攻击过程同上，使用DNS重新绑定的方法，需要在页面的计时器数到0的时候进行重新绑定，即可在该页面实现其自动攻击</p>
-<p>如下图所示：</p>
-<p>攻击者的页面内容发生改变，证明其已经连接到了物联网设备</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181038265.png"></p>
-<p>在物联网设备的页面，可以观察到其不断收到来自于攻击者网站的请求，使其温度修改到88℃，证明攻击成功。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181038880.png"></p>
+<h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p>
+<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p>
+<p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p>
+<h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p>
+<h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p>
+<p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p>
+<p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p>
+<p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p>
+<p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p>
+<h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p>
+<p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p>
+<p>条件操作码：对条件进行判断，产生一个布尔结果。</p>
+<h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure>
+<p>计算2+3的和并且判断其是否等于5</p>
+<p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p>
+<h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p>
+<p>锁定脚本</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+<p>解锁脚本</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure>
+
+
+<p>组合后的验证脚本</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ]]></content>
-      <categories>
-        <category>软件安全</category>
-      </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
   </entry>
   <entry>
     <title>SQL injection Lab</title>
@@ -468,166 +513,6 @@
 <p>证明防御措施的部署是成功的。</p>
 <h3 id="2-5-思考题"><a href="#2-5-思考题" class="headerlink" title="2.5 思考题"></a>2.5 思考题</h3><p>假设数据库只存储 password 和 eid 两列的 SHA256 值。使用下面 SQL 语句与数据库交互，其中$passwd 和 $eid 变量的值由用户提供。这个程序是否存在 SQL 注入问题？如果没有，请解释原因；如果有，请给出构造范例。</p>
 <p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
-]]></content>
-      <categories>
-        <category>软件安全</category>
-      </categories>
-      <tags>
-        <tag>seedlab2.0</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Scripts</title>
-    <url>/2022/11/11/Scripts/</url>
-    <content><![CDATA[<h1 id="Scripts"><a href="#Scripts" class="headerlink" title="Scripts"></a>Scripts</h1><h2 id="定义："><a href="#定义：" class="headerlink" title="定义："></a>定义：</h2><p>比特币交易脚本语言    一种类似Forth（1960s的编程语言）的逆波兰表达式的基于堆栈的执行语句</p>
-<span id="more"></span>
-<h2 id="用途："><a href="#用途：" class="headerlink" title="用途："></a>用途：</h2><p>用该脚本语言编写在UTXO上的锁定脚本和解锁脚本         当一笔比特币交易被验证时，每一个输入值中的解锁脚本与其对应的锁定脚本同时执行，用以确定这笔交易是否满足支付条件          该语言被设计为在执行范围上有限制，类似于嵌入式装置。处于其安全特性用于验证可编程货币</p>
-<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><h3 id="1-图灵非完备性-turing-incompleteness"><a href="#1-图灵非完备性-turing-incompleteness" class="headerlink" title="1.图灵非完备性 turing incompleteness"></a>1.图灵非完备性 turing incompleteness</h3><p>scripts 有许多操作码，除了有条件的流控制以外，没有循环或复杂的流控制能力 确保了其图灵非完备性，脚本有限的复杂性和可预见的执行次数  </p>
-<p>必要性：该限制确保了该语言不会被创造无限循环类似的逻辑炸弹，从而被攻击者植入在交易中，引起对于比特币网络的DOS攻击。防止交易验证机制被作为漏洞利用</p>
-<h3 id="2-无状态验证"><a href="#2-无状态验证" class="headerlink" title="2.无状态验证"></a>2.无状态验证</h3><p>比特币脚本语言是无状态的，脚本在执行前后不会被保存。因此执行脚本的所有信息都包含在脚本中，因而脚本在任何系统上的执行方式都是相同的。一个人验证了脚本，就可以确保在比特币网络中的所有其他系统也验证了这个脚本，因此一个有效的交易对于所有人都是有效的。这种对于结果的可预见性保障了比特币系统的良好性质。</p>
-<h2 id="脚本构建"><a href="#脚本构建" class="headerlink" title="脚本构建"></a>脚本构建</h2><p>比特币交易引擎依赖于两种脚本进行验证交易</p>
-<p>锁定脚本：放置在输出上的花费条件——指定了今后花费这笔输出必须要满足的条件。   锁定脚本也被叫做 scriptPubKey，因为它其中包含一个公钥或者是比特币地址。</p>
-<p>解锁脚本：一个解决或者是满足被锁定脚本在一个输出上所设定的花费条件的脚本，它将允许输出被消费。是每一笔比特币交易输入的一部分，包含由用户输入的私钥生成的数字签名 ScriptSig </p>
-<p>验证过程：每一个比特币验证节点通过同时执行以上两个脚本来验证一笔交易     每个输入包含一个解锁脚本并且指向先前存在的UTXO。验证软件将会复制解锁脚本，检索输入所用的UTXO并且从这个UTXO上复制锁定脚本。然后依次执行解锁脚本和锁定脚本，若满足条件，则输入是有效的。 UTXO永久记录在区块链中，只有满足输出条件的有效交易才可以将其是做花费用掉并且从 UTXO set中删除。</p>
-<p><img src="C:\Users\19577\AppData\Roaming\Typora\typora-user-images\image-20221109151633839.png" alt="image-20221109151633839"></p>
-<h2 id="脚本执行栈"><a href="#脚本执行栈" class="headerlink" title="脚本执行栈"></a>脚本执行栈</h2><p>比特币脚本语言使用了栈这种数据结构。</p>
-<p>脚本语言通过从左到右处理每一个项目来执行脚本    数据被压入栈中，操作码从栈中取出一个或者多个参数，运算他们之后可能将结果再压入栈中。</p>
-<p>条件操作码：对条件进行判断，产生一个布尔结果。</p>
-<h2 id="简单的脚本"><a href="#简单的脚本" class="headerlink" title="简单的脚本"></a>简单的脚本</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">2 3 OP_ADD 5 OP_EQUAL   <span class="literal">true</span> </span><br></pre></td></tr></table></figure>
-<p>计算2+3的和并且判断其是否等于5</p>
-<p>输入解锁脚本即为 2   锁定脚本为3 OP_ADD 5 OP_EQUAL 代入可得正确解</p>
-<h2 id="分开执行解锁脚本和锁定脚本"><a href="#分开执行解锁脚本和锁定脚本" class="headerlink" title="分开执行解锁脚本和锁定脚本"></a>分开执行解锁脚本和锁定脚本</h2><p>2010发现存在允许异常解锁脚本推送数据入栈并且污染锁定脚本的漏洞。当前版本两个脚本随着栈的传递分开执行  首先执行解锁脚本，在执行过程中没有报错，在主函数栈中复制并执行锁定脚本，判断结果是否为true</p>
-<p>锁定脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-<p>解锁脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt;</span><br></pre></td></tr></table></figure>
-
-
-<p>组合后的验证脚本</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;Cafe Signature&gt; &lt;Cafe Public Key&gt; OP_DUP OP_HASH160 &lt;Cafe Public Key Hash&gt; OP_EQUALVERIFY OP_CHECKSIG</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-  </entry>
-  <entry>
-    <title>Environment Variable and Set-UID</title>
-    <url>/2023/09/14/Setuid/</url>
-    <content><![CDATA[<h1 id="环境变量与setuid实验"><a href="#环境变量与setuid实验" class="headerlink" title="环境变量与setuid实验"></a>环境变量与setuid实验</h1><h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让你理解环境变量是如何影响程序和系统的行为的。环境变量是存储在进程中的一系列动态命名的值，可以影响计算机上进程的行为方式。自从1979 年Unix 引入环境变量以来，大多数操作系统也开始采用环境变量。尽管环境变量会影响程序的行为，但是它是如何产生影响的，许多程序员并不真正理解。因此，如果一个程序利用了环境变量但是程序员不清楚它的运用，就可能会导致程序漏洞。</p>
-<span id="more"></span>
-<p>在本实验中，你将理解环境变量是如何工作，子进程是如何继承父进程的环境变量的，以及环境变量如何影响系统&#x2F;程序的行为的。我们还会特别了解环境变量是如何影响Set-UID 特权程序的行为的。本实验涵盖以下主题:</p>
-<p>1. 环境变量</p>
-<p>2. Set-UID 程序</p>
-<p>3. 安全地调用外部程序</p>
-<p>4. 权限泄漏</p>
-<p>5. 动态装载器&#x2F;链接器</p>
-<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：配置环境变量"><a href="#2-1-Task-1：配置环境变量" class="headerlink" title="2.1 Task 1：配置环境变量"></a>2.1 Task 1：配置环境变量</h3><p>本任务中，我们学习设置和删除环境变量的指令。我们用Bash 来完成。用户使用的默认的shell 设置在文件&#x2F;etc&#x2F;passwd 中（每一项的最后一个字段）。你可以用chsh 命令来修改shell 程序（本实验无需修改）。请完成以下任务：</p>
-<p>• 使用printenv 或者env 指令来打印环境变量。如果你对某个特定的环境变量感兴趣，比如PWD， 你可以用指令“printenv PWD”或者“env | grep PWD”。</p>
-<p>我们可以打印全部环境变量以及PWD如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140936255.png"></p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140937831.png"></p>
-<p>• 使用export 和unset 来设置或者取消环境变量。注意: 这两个指令不是单独的程序；它们是两个Bash 的内部指令（即，你不能在Bash 外调用它们噢）</p>
-<p>设置一个新的环境变量然后取消 MYENV，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942383.png"></p>
-<h3 id="2-2-Task-2-从父进程向子进程传递环境变量"><a href="#2-2-Task-2-从父进程向子进程传递环境变量" class="headerlink" title="2.2 Task 2: 从父进程向子进程传递环境变量"></a>2.2 Task 2: 从父进程向子进程传递环境变量</h3><p>本任务中，我们研究子进程是如何继承父进程的环境变量的。Unix 操作系统中，fork() 系统调用会复制发起调用的进程，创建一个新进程。新进程称作子进程，被复制的进程称作父进程。然而，有些东西是没有被子进程继承的（在命令行中输入指令man fork，可以查看fork() 的指南）。在本任务中，我们想要知道子进程是否继承了父进程的环境变量。</p>
-<p>Step1：编译并运行 myprintenv.c 文件，将输出保存到一个文件中</p>
-<p>Step2：注释掉子进程的语句，取消注释父进程printenv()语句，再次编译并运行代码，将结果保存在另一个文件中。</p>
-<p>两次的运行输出结果如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942584.png"></p>
-<p>Step3：使用diff命令比较两个文件的差异，描述你得出的结论。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943286.png"></p>
-<p>可以观察到两个文件只有文件名不同，其余环境变量均相同，说明在Linux中子进程继承了父进程除名字外的所有环境变量。</p>
-<h3 id="2-3-Task3：环境变量与execve"><a href="#2-3-Task3：环境变量与execve" class="headerlink" title="2.3 Task3：环境变量与execve()"></a>2.3 Task3：环境变量与execve()</h3><p>本任务中，我们研究通过execve() 运行一个新程序，环境变量是如何受影响的。函数execve() 调用系统调用来加载新命令并执行它；这个函数永远不会返回。没有创建新进程；相反，调用进程的代码段、数据段、bss 段和栈被加载的程序覆盖。本质上，execve() 在调用进程中运行了新程序。我们对环境变量发生了什么感兴趣；它们会被新程序自动继承吗？</p>
-<p>Step1：编译并运行给出程序，描述观察。如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943684.png"></p>
-<p>可以看到该程序编译运行后没有打印任何内容</p>
-<p>Step2：修改execve()的调用内容，重新编译并运行程序，描述观察。如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944354.png"></p>
-<p>可以观察到该程序会输出打印当前文件下的所有环境变量。</p>
-<p>Step3：请就新程序如何获得其环境变量得出你的结论。</p>
-<p>首先对execve()函数进行分析，可以得到其有三个参数如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944722.png"></p>
-<p>其中filename是一个二进制可执行文件，argv是调用程序执行的参数序列，也就是我们要调用程序所需要传入的参数，envp是参数序列作为新程序的环境。</p>
-<p>在第一步中，新程序的环境输入为NULL，表示终止符，并未输入键值对作为环境变量，因而其输出打印的结果为空，而在第二步中将environ作文新程序的环境输入，该指针变量指向包含所有环境变量的一个列表，因而将其赋予新进程即可以打印出当前所有的环境变量。</p>
-<h3 id="2-4-Task-4：环境变量和system"><a href="#2-4-Task-4：环境变量和system" class="headerlink" title="2.4 Task 4：环境变量和system()"></a>2.4 Task 4：环境变量和system()</h3><p>本任务中，我们研究通过system() 运行一个新程序，环境变量是如何受影响的。system() 也是用来执行一个命令的，但是和execve() 直接执行一个命令不同，system() 实际上执行“&#x2F;bin&#x2F;sh -c command”，即它先执行&#x2F;bin&#x2F;sh，然后让shell 执行这个command。</p>
-<p>如果你查阅system() 函数的实现，你会发现它使用execl() 来执行&#x2F;bin&#x2F;sh；execl() 调用execve()，并将环境变量数组传递给它。因此，使用system() 时，调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh。请编译并运行以下程序来验证这一点。</p>
-<p>首先对system函数进行分析，其用于执行shell（Linux&#x2F;Unix系统）命令，只有一个参数command，即命令名。调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh，运行结果如下图，会打印出当前的环境变量</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140945125.png"></p>
-<h3 id="2-5-Task-5：环境变量与Set-UID程序"><a href="#2-5-Task-5：环境变量与Set-UID程序" class="headerlink" title="2.5 Task 5：环境变量与Set-UID程序"></a>2.5 Task 5：环境变量与Set-UID程序</h3><p>Set-UID 是Unix 系统中重要的安全机制。当Set-UID 程序执行时，它将获得程序拥有者的权限。如果程序执行者是root，所有执行该程序的人都将以root 权限执行该程序。Set-UID 使得我们可以做许多有趣的事情，但是在执行Set-UID 程序时，会提高执行者的权限，这是有风险的。尽管Set-UID 的行为是由他们的程序逻辑所决定的，而不是用户决定的，用户却可以通过环境变量来修改Set-UID 的行为。为了理解Set-UID 程序是如何被影响的，我们首先弄清楚Set-UID 程序的环境变量是否由用户程序继承而来。</p>
-<p>Step1：编写所给出的程序，打印当前进程的所有环境变量。</p>
-<p>Step2：编译上述程序得到foo，将其所有者更改为root，并使其成为一个Set-UID程序</p>
-<p>Step3：在shell中设置给出的环境变量，这些环境变量是在普通用户的shell 进程中设置的。在你的shell 中运行第2 步中的Set-UID程序。在shell 中键入程序名后，shell 会fork 一个子进程，并使用子进程来运行该程序。请检查你在shell进程（父进程）中设置的所有环境变量是否都进入了Set-UID 子进程。描述你的观察。如果你有惊奇的发现，请描述它们。</p>
-<p>首先编写给出程序，并且将其设置为Set-UID程序，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946892.png"></p>
-<p>然后查看所给出变量是否存在，并且利用export命令设置环境变量如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946056.png"></p>
-<p>可以观察到在shell中本来只有PATH存在。</p>
-<p>在子进程中查看环境变量，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947096.png"></p>
-<p>可以看到PATH和MYENV环境变量被继承，而LD_LIBRARY_PATH并未被继承。</p>
-<h3 id="2-6-Task6：PATH环境变量和Set-UID程序"><a href="#2-6-Task6：PATH环境变量和Set-UID程序" class="headerlink" title="2.6 Task6：PATH环境变量和Set-UID程序"></a>2.6 Task6：PATH环境变量和Set-UID程序</h3><p>由于调用了shell 程序，在Set-UID 程序中调用system() 是非常危险的。这是因为shell 程序的实际行为会受到环境变量的影响，例如PATH 环境变量；这些环境变量由用户提供，可能是恶意的。通过更改这些变量，恶意用户可以控制Set-UID 程序的行为。</p>
-<p>利用所给出的程序实现攻击步骤如下所示：</p>
-<p>首先编写该程序，并且执行，发现该程序可以打印当前目录下的文件，结果如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947368.png"></p>
-<p>修改当前目录到PATH环境变量的首部，然后将&#x2F;bin&#x2F;cal文件复制到当前目录下，并且命名为ls，重新执行命令ls，可以发现其作用被修改。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948525.png"></p>
-<p>其次再将所编写的程序设置为Set-UID程序</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948908.png"></p>
-<p>重新执行task6程序，可以观察到其实在执行cal命令，原因在于PATH环境变量的首部被修改为了当前目录，而在调用system函数执行命令的时候，会在PATH环境变量中的目录按顺序进行查找是否有当前命令，因而可以实现攻击。</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948220.png"></p>
-<p>如果不是将cal而是把zsh复制到当前目录中，便可以成功得到当前系统的超级用户特权如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949623.png"></p>
-<p>与此同时打印当前的id信息如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949871.png"></p>
-<p>可以观察到当前执行实在seed用户下的，并未以root权限运行，根据手册中的提示，关掉保护策略后，重复上述攻击，可以观察到结果如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949332.png"></p>
-<p>可以看到euid&#x3D;0，当前代码是以root程序运行的。</p>
-<h3 id="2-7-Task7：LD-PRELOAD环境变量和Set-UID程序"><a href="#2-7-Task7：LD-PRELOAD环境变量和Set-UID程序" class="headerlink" title="2.7 Task7：LD_PRELOAD环境变量和Set-UID程序"></a>2.7 Task7：LD_PRELOAD环境变量和Set-UID程序</h3><p>在这个任务中，我们研究Set-UID 程序如何处理某些环境变量，包括LD_PRELOAD、LD_LIBRARY_PATH和其他LD_* 如何影响动态加载器&#x2F;链接器的行为。动态加载器&#x2F;链接器是操作系统(OS) 的一部分，它加载（从持久性存储到RAM）并链接可执行文件在运行时所需的共享库。</p>
-<p>在Linux 中，ld.so 或ld-linux.so 是动态加载器&#x2F;链接器（用于不同类型的二进制文件）。在影响其行为的环境变量中，本实验关注LD_LIBRARY_PATH 和LD_PRELOAD。在Linux 中，LD_LIBRARY_PATH 是一组以冒号分隔的目录，应首先在其中搜索库，然后是标准目录集。LD_PRELOAD 指定了要在所有其他库之前加载的附加的用户指定的共享库的列表。在这个任务中，我们将只研究LD_PRELOAD。</p>
-<p>Step1：按照实验手册指导构建动态链接库</p>
-<p>Step2：在不同条件下运行myprog，观察发生现象。</p>
-<p>Case1：普通程序，普通用户执行，可以看到程序正常运行：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950807.png"></p>
-<p>case2：set-uid特权程序，普通用户执行，停顿后并未调用库函数：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950868.png"></p>
-<p>case3：set-uid特权程序，在root下重新设置LD_PRELOAD环境变量，并执行，可以观察到程序正常运行：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950677.png"></p>
-<p>case4：使myprog 为一个Set-UIDUser1 程序（User1 是程序的所有者，是另一个用户账户），在另一个用户账户下重新加LD_PRELOAD 环境变量，并执行它,新建用户并将该myprog修改为Set-UIDUser1 程序，执行后如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140951249.png"></p>
-<p>Step3：原因解释，在step2中执行每种情况的同时打印每一次当前状态下的LD_PRELOAD 环境变量，即可观察到原因</p>
-<p>当一个正常程序的时候，子进程会继承这个环境变量；当他是一个SETUID程序的时候，子进程没有继承该环境变量；所有者是user1，即使有环境变量也不可以调用，我们可以得出这种继承策略是一种很好的保护策略。</p>
-<h3 id="2-8-Task8：使用system-和execve-调用外部程序的对比"><a href="#2-8-Task8：使用system-和execve-调用外部程序的对比" class="headerlink" title="2.8 Task8：使用system()和execve()调用外部程序的对比"></a>2.8 Task8：使用system()和execve()调用外部程序的对比</h3><p>尽管system() 和execve() 都可以被用于执行新的程序，但是system() 在高特权态下更加危险，比如Set-UID 程序。在前面的任务里，我们看到了PATH 环境变量是如何影响system() 的行为的，因为该变量会影响shell 的工作。execve() 则没有这个问题，因为它不调用shell。除了环境变量，调用shell还有另外危险的结果。</p>
-<p>Step1：编译所给出程序，使其成为set-uid程序，进行攻击如下：</p>
-<p>首先编译并修改后，运行该程序，可以看到该进程会利用cat打印出文件内容</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954057.png"></p>
-<p>然后我们尝试打印&#x2F;etc&#x2F;shadow，属于root权限下才可以读的文件，发现不允许：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954885.png"></p>
-<p>关掉系统的保护策略后重新读取，发现可以成功读取，如下图：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955377.png"></p>
-<p>由于程序种调用了system函数，在传递参数的时候没有将代码和数据进行分离，因而可以利用构造参数，使前者作为函数参数后者作为命令执行，进行得到系统超级权限，如下：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955212.png"></p>
-<p>得到root权限后便可以随意删除没有写权限的文件，因而bob可以损害系统的完整性。</p>
-<h3 id="2-9-Task9：权限泄露"><a href="#2-9-Task9：权限泄露" class="headerlink" title="2.9 Task9：权限泄露"></a>2.9 Task9：权限泄露</h3><p>为了遵循最小权限原则，Set-UID 程序如果不再需要这种权限，它会永久地放弃root 权限。此外，有时程序需要将其控制权交给用户，在这种情况下，root 权限必须被撤销。setuid() 系统调用可以用来撤销权限。根据手册，setuid() 设置调用进程的有效用户ID。如果调用者的有效UID 是root，真实的UID和保存的set-user-id 也被设置。因此，如果一个有效UID 为0 的Set-UID 程序调用setuid(n)，则该进程将成为正常进程，其所有的UID 都设置为n。</p>
-<p>当撤销权限的时候，最常见的错误就是权限泄露。该进程可能在它仍然享有特权时已经获得了一些特权功能。当特权降级时，如果程序没有清理这些功能，则它们仍然可以由非特权进程访问。换句话说，虽然进程的有效用户ID 变为非特权，但是该进程仍具有特权，因为它具有特权能力。编译以下程序，将其所有者更改为root，并使其成为Set-UID 程序。以普通用户身份运行程序。你能利用这个程序中的权限泄漏漏洞吗？目标是以普通用户身份写入&#x2F;etc&#x2F;zzz 文件。</p>
-<p>攻击步骤如下：</p>
-<p>首先对所给出的漏洞程序进行编译，并且修改为setuid程序</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955034.png"></p>
-<p>然后尝试对&#x2F;etc&#x2F;zzz文件进行写入，发现没有权限，原因在于，当前状态下，该程序的euid已经修改为了普通用户而非root权限</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956755.png"></p>
-<p>但是由于当前该程序仍然在执行，而且在程序中打开了文件后，并未进行合法的关闭与退出，因而我们可以根据所打印出的文件描述符fd进行文件写入，如下图所示：</p>
-<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956822.png"></p>
-<p>可以看到攻击成功，将自己的文本写入了zzz文件中，针对于这种攻击，修补方法便是销毁文件描述符，即关闭文件。</p>
 ]]></content>
       <categories>
         <category>软件安全</category>
@@ -850,6 +735,121 @@
 <p>该机制仅适用于启用了粘滞位的目录，像 &#x2F;tmp 或 &#x2F;var&#x2F;tmp 这样的粘性位目录。 因此攻击者可以利用其他目录中的竞争条件并获得访问权限。</p>
 <h3 id="2-4-思考题"><a href="#2-4-思考题" class="headerlink" title="2.4 思考题"></a>2.4 思考题</h3><p>最小权限原则可用于有效防御课程中讨论过的竞争条件攻击。我们可以使用相同的原理来阻止缓冲区溢出攻击吗？为什么？即在执行有缺陷的函数之前，我们禁用 root 权限；在函数返回后，我们重新启用特权。</p>
 <p>答：仍然存在 SQL 注入问题。原因在于参数是可以拼接的， 可以在 eid 一项中输入如下内容： 008,256)’and 1&#x3D;1 # Passwd 中输入如下内容： 123,256)’and 1&#x3D;1 # 都可以成功实现 SQL 注入攻击</p>
+]]></content>
+      <categories>
+        <category>软件安全</category>
+      </categories>
+      <tags>
+        <tag>seedlab2.0</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Environment Variable and Set-UID</title>
+    <url>/2022/11/12/Setuid/</url>
+    <content><![CDATA[<h1 id="环境变量与setuid实验"><a href="#环境变量与setuid实验" class="headerlink" title="环境变量与setuid实验"></a>环境变量与setuid实验</h1><h2 id="一-实验目的"><a href="#一-实验目的" class="headerlink" title="一.实验目的"></a>一.实验目的</h2><p>本实验的学习目标是让你理解环境变量是如何影响程序和系统的行为的。环境变量是存储在进程中的一系列动态命名的值，可以影响计算机上进程的行为方式。自从1979 年Unix 引入环境变量以来，大多数操作系统也开始采用环境变量。尽管环境变量会影响程序的行为，但是它是如何产生影响的，许多程序员并不真正理解。因此，如果一个程序利用了环境变量但是程序员不清楚它的运用，就可能会导致程序漏洞。</p>
+<span id="more"></span>
+<p>在本实验中，你将理解环境变量是如何工作，子进程是如何继承父进程的环境变量的，以及环境变量如何影响系统&#x2F;程序的行为的。我们还会特别了解环境变量是如何影响Set-UID 特权程序的行为的。本实验涵盖以下主题:</p>
+<p>1. 环境变量</p>
+<p>2. Set-UID 程序</p>
+<p>3. 安全地调用外部程序</p>
+<p>4. 权限泄漏</p>
+<p>5. 动态装载器&#x2F;链接器</p>
+<h2 id="二-实验步骤与结果"><a href="#二-实验步骤与结果" class="headerlink" title="二.实验步骤与结果"></a>二.实验步骤与结果</h2><h3 id="2-1-Task-1：配置环境变量"><a href="#2-1-Task-1：配置环境变量" class="headerlink" title="2.1 Task 1：配置环境变量"></a>2.1 Task 1：配置环境变量</h3><p>本任务中，我们学习设置和删除环境变量的指令。我们用Bash 来完成。用户使用的默认的shell 设置在文件&#x2F;etc&#x2F;passwd 中（每一项的最后一个字段）。你可以用chsh 命令来修改shell 程序（本实验无需修改）。请完成以下任务：</p>
+<p>• 使用printenv 或者env 指令来打印环境变量。如果你对某个特定的环境变量感兴趣，比如PWD， 你可以用指令“printenv PWD”或者“env | grep PWD”。</p>
+<p>我们可以打印全部环境变量以及PWD如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140936255.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140937831.png"></p>
+<p>• 使用export 和unset 来设置或者取消环境变量。注意: 这两个指令不是单独的程序；它们是两个Bash 的内部指令（即，你不能在Bash 外调用它们噢）</p>
+<p>设置一个新的环境变量然后取消 MYENV，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942383.png"></p>
+<h3 id="2-2-Task-2-从父进程向子进程传递环境变量"><a href="#2-2-Task-2-从父进程向子进程传递环境变量" class="headerlink" title="2.2 Task 2: 从父进程向子进程传递环境变量"></a>2.2 Task 2: 从父进程向子进程传递环境变量</h3><p>本任务中，我们研究子进程是如何继承父进程的环境变量的。Unix 操作系统中，fork() 系统调用会复制发起调用的进程，创建一个新进程。新进程称作子进程，被复制的进程称作父进程。然而，有些东西是没有被子进程继承的（在命令行中输入指令man fork，可以查看fork() 的指南）。在本任务中，我们想要知道子进程是否继承了父进程的环境变量。</p>
+<p>Step1：编译并运行 myprintenv.c 文件，将输出保存到一个文件中</p>
+<p>Step2：注释掉子进程的语句，取消注释父进程printenv()语句，再次编译并运行代码，将结果保存在另一个文件中。</p>
+<p>两次的运行输出结果如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140942584.png"></p>
+<p>Step3：使用diff命令比较两个文件的差异，描述你得出的结论。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943286.png"></p>
+<p>可以观察到两个文件只有文件名不同，其余环境变量均相同，说明在Linux中子进程继承了父进程除名字外的所有环境变量。</p>
+<h3 id="2-3-Task3：环境变量与execve"><a href="#2-3-Task3：环境变量与execve" class="headerlink" title="2.3 Task3：环境变量与execve()"></a>2.3 Task3：环境变量与execve()</h3><p>本任务中，我们研究通过execve() 运行一个新程序，环境变量是如何受影响的。函数execve() 调用系统调用来加载新命令并执行它；这个函数永远不会返回。没有创建新进程；相反，调用进程的代码段、数据段、bss 段和栈被加载的程序覆盖。本质上，execve() 在调用进程中运行了新程序。我们对环境变量发生了什么感兴趣；它们会被新程序自动继承吗？</p>
+<p>Step1：编译并运行给出程序，描述观察。如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140943684.png"></p>
+<p>可以看到该程序编译运行后没有打印任何内容</p>
+<p>Step2：修改execve()的调用内容，重新编译并运行程序，描述观察。如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944354.png"></p>
+<p>可以观察到该程序会输出打印当前文件下的所有环境变量。</p>
+<p>Step3：请就新程序如何获得其环境变量得出你的结论。</p>
+<p>首先对execve()函数进行分析，可以得到其有三个参数如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140944722.png"></p>
+<p>其中filename是一个二进制可执行文件，argv是调用程序执行的参数序列，也就是我们要调用程序所需要传入的参数，envp是参数序列作为新程序的环境。</p>
+<p>在第一步中，新程序的环境输入为NULL，表示终止符，并未输入键值对作为环境变量，因而其输出打印的结果为空，而在第二步中将environ作文新程序的环境输入，该指针变量指向包含所有环境变量的一个列表，因而将其赋予新进程即可以打印出当前所有的环境变量。</p>
+<h3 id="2-4-Task-4：环境变量和system"><a href="#2-4-Task-4：环境变量和system" class="headerlink" title="2.4 Task 4：环境变量和system()"></a>2.4 Task 4：环境变量和system()</h3><p>本任务中，我们研究通过system() 运行一个新程序，环境变量是如何受影响的。system() 也是用来执行一个命令的，但是和execve() 直接执行一个命令不同，system() 实际上执行“&#x2F;bin&#x2F;sh -c command”，即它先执行&#x2F;bin&#x2F;sh，然后让shell 执行这个command。</p>
+<p>如果你查阅system() 函数的实现，你会发现它使用execl() 来执行&#x2F;bin&#x2F;sh；execl() 调用execve()，并将环境变量数组传递给它。因此，使用system() 时，调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh。请编译并运行以下程序来验证这一点。</p>
+<p>首先对system函数进行分析，其用于执行shell（Linux&#x2F;Unix系统）命令，只有一个参数command，即命令名。调用进程的环境变量会传递给新程序&#x2F;bin&#x2F;sh，运行结果如下图，会打印出当前的环境变量</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140945125.png"></p>
+<h3 id="2-5-Task-5：环境变量与Set-UID程序"><a href="#2-5-Task-5：环境变量与Set-UID程序" class="headerlink" title="2.5 Task 5：环境变量与Set-UID程序"></a>2.5 Task 5：环境变量与Set-UID程序</h3><p>Set-UID 是Unix 系统中重要的安全机制。当Set-UID 程序执行时，它将获得程序拥有者的权限。如果程序执行者是root，所有执行该程序的人都将以root 权限执行该程序。Set-UID 使得我们可以做许多有趣的事情，但是在执行Set-UID 程序时，会提高执行者的权限，这是有风险的。尽管Set-UID 的行为是由他们的程序逻辑所决定的，而不是用户决定的，用户却可以通过环境变量来修改Set-UID 的行为。为了理解Set-UID 程序是如何被影响的，我们首先弄清楚Set-UID 程序的环境变量是否由用户程序继承而来。</p>
+<p>Step1：编写所给出的程序，打印当前进程的所有环境变量。</p>
+<p>Step2：编译上述程序得到foo，将其所有者更改为root，并使其成为一个Set-UID程序</p>
+<p>Step3：在shell中设置给出的环境变量，这些环境变量是在普通用户的shell 进程中设置的。在你的shell 中运行第2 步中的Set-UID程序。在shell 中键入程序名后，shell 会fork 一个子进程，并使用子进程来运行该程序。请检查你在shell进程（父进程）中设置的所有环境变量是否都进入了Set-UID 子进程。描述你的观察。如果你有惊奇的发现，请描述它们。</p>
+<p>首先编写给出程序，并且将其设置为Set-UID程序，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946892.png"></p>
+<p>然后查看所给出变量是否存在，并且利用export命令设置环境变量如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140946056.png"></p>
+<p>可以观察到在shell中本来只有PATH存在。</p>
+<p>在子进程中查看环境变量，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947096.png"></p>
+<p>可以看到PATH和MYENV环境变量被继承，而LD_LIBRARY_PATH并未被继承。</p>
+<h3 id="2-6-Task6：PATH环境变量和Set-UID程序"><a href="#2-6-Task6：PATH环境变量和Set-UID程序" class="headerlink" title="2.6 Task6：PATH环境变量和Set-UID程序"></a>2.6 Task6：PATH环境变量和Set-UID程序</h3><p>由于调用了shell 程序，在Set-UID 程序中调用system() 是非常危险的。这是因为shell 程序的实际行为会受到环境变量的影响，例如PATH 环境变量；这些环境变量由用户提供，可能是恶意的。通过更改这些变量，恶意用户可以控制Set-UID 程序的行为。</p>
+<p>利用所给出的程序实现攻击步骤如下所示：</p>
+<p>首先编写该程序，并且执行，发现该程序可以打印当前目录下的文件，结果如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140947368.png"></p>
+<p>修改当前目录到PATH环境变量的首部，然后将&#x2F;bin&#x2F;cal文件复制到当前目录下，并且命名为ls，重新执行命令ls，可以发现其作用被修改。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948525.png"></p>
+<p>其次再将所编写的程序设置为Set-UID程序</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948908.png"></p>
+<p>重新执行task6程序，可以观察到其实在执行cal命令，原因在于PATH环境变量的首部被修改为了当前目录，而在调用system函数执行命令的时候，会在PATH环境变量中的目录按顺序进行查找是否有当前命令，因而可以实现攻击。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140948220.png"></p>
+<p>如果不是将cal而是把zsh复制到当前目录中，便可以成功得到当前系统的超级用户特权如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949623.png"></p>
+<p>与此同时打印当前的id信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949871.png"></p>
+<p>可以观察到当前执行实在seed用户下的，并未以root权限运行，根据手册中的提示，关掉保护策略后，重复上述攻击，可以观察到结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140949332.png"></p>
+<p>可以看到euid&#x3D;0，当前代码是以root程序运行的。</p>
+<h3 id="2-7-Task7：LD-PRELOAD环境变量和Set-UID程序"><a href="#2-7-Task7：LD-PRELOAD环境变量和Set-UID程序" class="headerlink" title="2.7 Task7：LD_PRELOAD环境变量和Set-UID程序"></a>2.7 Task7：LD_PRELOAD环境变量和Set-UID程序</h3><p>在这个任务中，我们研究Set-UID 程序如何处理某些环境变量，包括LD_PRELOAD、LD_LIBRARY_PATH和其他LD_* 如何影响动态加载器&#x2F;链接器的行为。动态加载器&#x2F;链接器是操作系统(OS) 的一部分，它加载（从持久性存储到RAM）并链接可执行文件在运行时所需的共享库。</p>
+<p>在Linux 中，ld.so 或ld-linux.so 是动态加载器&#x2F;链接器（用于不同类型的二进制文件）。在影响其行为的环境变量中，本实验关注LD_LIBRARY_PATH 和LD_PRELOAD。在Linux 中，LD_LIBRARY_PATH 是一组以冒号分隔的目录，应首先在其中搜索库，然后是标准目录集。LD_PRELOAD 指定了要在所有其他库之前加载的附加的用户指定的共享库的列表。在这个任务中，我们将只研究LD_PRELOAD。</p>
+<p>Step1：按照实验手册指导构建动态链接库</p>
+<p>Step2：在不同条件下运行myprog，观察发生现象。</p>
+<p>Case1：普通程序，普通用户执行，可以看到程序正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950807.png"></p>
+<p>case2：set-uid特权程序，普通用户执行，停顿后并未调用库函数：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950868.png"></p>
+<p>case3：set-uid特权程序，在root下重新设置LD_PRELOAD环境变量，并执行，可以观察到程序正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140950677.png"></p>
+<p>case4：使myprog 为一个Set-UIDUser1 程序（User1 是程序的所有者，是另一个用户账户），在另一个用户账户下重新加LD_PRELOAD 环境变量，并执行它,新建用户并将该myprog修改为Set-UIDUser1 程序，执行后如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140951249.png"></p>
+<p>Step3：原因解释，在step2中执行每种情况的同时打印每一次当前状态下的LD_PRELOAD 环境变量，即可观察到原因</p>
+<p>当一个正常程序的时候，子进程会继承这个环境变量；当他是一个SETUID程序的时候，子进程没有继承该环境变量；所有者是user1，即使有环境变量也不可以调用，我们可以得出这种继承策略是一种很好的保护策略。</p>
+<h3 id="2-8-Task8：使用system-和execve-调用外部程序的对比"><a href="#2-8-Task8：使用system-和execve-调用外部程序的对比" class="headerlink" title="2.8 Task8：使用system()和execve()调用外部程序的对比"></a>2.8 Task8：使用system()和execve()调用外部程序的对比</h3><p>尽管system() 和execve() 都可以被用于执行新的程序，但是system() 在高特权态下更加危险，比如Set-UID 程序。在前面的任务里，我们看到了PATH 环境变量是如何影响system() 的行为的，因为该变量会影响shell 的工作。execve() 则没有这个问题，因为它不调用shell。除了环境变量，调用shell还有另外危险的结果。</p>
+<p>Step1：编译所给出程序，使其成为set-uid程序，进行攻击如下：</p>
+<p>首先编译并修改后，运行该程序，可以看到该进程会利用cat打印出文件内容</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954057.png"></p>
+<p>然后我们尝试打印&#x2F;etc&#x2F;shadow，属于root权限下才可以读的文件，发现不允许：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140954885.png"></p>
+<p>关掉系统的保护策略后重新读取，发现可以成功读取，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955377.png"></p>
+<p>由于程序种调用了system函数，在传递参数的时候没有将代码和数据进行分离，因而可以利用构造参数，使前者作为函数参数后者作为命令执行，进行得到系统超级权限，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955212.png"></p>
+<p>得到root权限后便可以随意删除没有写权限的文件，因而bob可以损害系统的完整性。</p>
+<h3 id="2-9-Task9：权限泄露"><a href="#2-9-Task9：权限泄露" class="headerlink" title="2.9 Task9：权限泄露"></a>2.9 Task9：权限泄露</h3><p>为了遵循最小权限原则，Set-UID 程序如果不再需要这种权限，它会永久地放弃root 权限。此外，有时程序需要将其控制权交给用户，在这种情况下，root 权限必须被撤销。setuid() 系统调用可以用来撤销权限。根据手册，setuid() 设置调用进程的有效用户ID。如果调用者的有效UID 是root，真实的UID和保存的set-user-id 也被设置。因此，如果一个有效UID 为0 的Set-UID 程序调用setuid(n)，则该进程将成为正常进程，其所有的UID 都设置为n。</p>
+<p>当撤销权限的时候，最常见的错误就是权限泄露。该进程可能在它仍然享有特权时已经获得了一些特权功能。当特权降级时，如果程序没有清理这些功能，则它们仍然可以由非特权进程访问。换句话说，虽然进程的有效用户ID 变为非特权，但是该进程仍具有特权，因为它具有特权能力。编译以下程序，将其所有者更改为root，并使其成为Set-UID 程序。以普通用户身份运行程序。你能利用这个程序中的权限泄漏漏洞吗？目标是以普通用户身份写入&#x2F;etc&#x2F;zzz 文件。</p>
+<p>攻击步骤如下：</p>
+<p>首先对所给出的漏洞程序进行编译，并且修改为setuid程序</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140955034.png"></p>
+<p>然后尝试对&#x2F;etc&#x2F;zzz文件进行写入，发现没有权限，原因在于，当前状态下，该程序的euid已经修改为了普通用户而非root权限</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956755.png"></p>
+<p>但是由于当前该程序仍然在执行，而且在程序中打开了文件后，并未进行合法的关闭与退出，因而我们可以根据所打印出的文件描述符fd进行文件写入，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309140956822.png"></p>
+<p>可以看到攻击成功，将自己的文本写入了zzz文件中，针对于这种攻击，修补方法便是销毁文件描述符，即关闭文件。</p>
 ]]></content>
       <categories>
         <category>软件安全</category>
