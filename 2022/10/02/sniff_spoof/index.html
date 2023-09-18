@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一.实验目标本实验的目标有两个方面：学习使用这些工具(Wireshark,Tcpdump,Netwox,Scapy)和了解这些工具背后的技术。对于第二个任务，将编写简单的嗅探器和欺骗程序，并获得深入了解这些程序的技术方面。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PACKET SPOFFING AND SNIFFING PROJECT">
+<meta property="og:url" content="https://www.mrdothing.com/2022/10/02/sniff_spoof/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="一.实验目标本实验的目标有两个方面：学习使用这些工具(Wireshark,Tcpdump,Netwox,Scapy)和了解这些工具背后的技术。对于第二个任务，将编写简单的嗅探器和欺骗程序，并获得深入了解这些程序的技术方面。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180928374.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180929019.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180929023.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930609.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930385.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930502.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931164.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931117.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931600.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180932040.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180932464.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180933091.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180933482.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180935811.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180936659.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180936121.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180937097.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180937901.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940071.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940582.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940700.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180941177.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180942823.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180942271.png">
+<meta property="article:published_time" content="2022-10-02T14:11:12.000Z">
+<meta property="article:modified_time" content="2023-09-18T02:00:50.547Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180928374.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2022/10/02/sniff_spoof/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>PACKET SPOFFING AND SNIFFING PROJECT | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/10/02/sniff_spoof/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PACKET SPOFFING AND SNIFFING PROJECT
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-10-02 22:11:12" itemprop="dateCreated datePublished" datetime="2022-10-02T22:11:12+08:00">2022-10-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-18 10:00:50" itemprop="dateModified" datetime="2023-09-18T10:00:50+08:00">2023-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">网络安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>本实验的目标有两个方面：学习使用这些工具(Wireshark,Tcpdump,Netwox,Scapy)和了解这些工具背后的技术。对于第二个任务，将编写简单的嗅探器和欺骗程序，并获得深入了解这些程序的技术方面。</p>
+<span id="more"></span>
+<p>本实验涵盖以下主题：</p>
+<p>• 嗅探和欺骗的工作原理</p>
+<p>• 使用pcap库和Scapy进行数据包嗅探</p>
+<p>• 使用原始套接字和Scapy进行数据包欺骗</p>
+<p>• 使用Scapy操作数据包</p>
+<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><p>Sniffing就是一种能将本地网卡状态设成‘混杂’状态的模式，当网卡处于这种“混杂”方式时，该网卡具备“广播地址”，它对遇到的每一个帧都产生一个硬件中断以便提醒操作系统处理流经该物理媒体上的每一个报文包。（绝大多数的网卡具备置成混杂模式的能力）</p>
+<p>一般来说，sniffing和poofing会联合起来使用。当攻击者嗅探到关键信息时，通常会使用poofing技术来构造数据包来劫持会话或者去获取更多信息，通常会造成很大的危害。Poofing技术就是攻击者自己构造数据包的ip&#x2F;tcp数据包帧头部数据来达到自己的目的。</p>
+<p>本次实验就是基于以上原理，在linux下模拟整个过程。</p>
+<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu12.04。</p>
+<p>2．Wireshark等常用捕包工具。</p>
+<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-Lab-Task-Set-1-Using-Tools-to-Sniff-and-Spoof-Packets"><a href="#4-1-Lab-Task-Set-1-Using-Tools-to-Sniff-and-Spoof-Packets" class="headerlink" title="4.1 Lab Task Set 1: Using Tools to Sniff and Spoof Packets"></a>4.1 Lab Task Set 1: Using Tools to Sniff and Spoof Packets</h3><h4 id="4-1-1-Task-1-1-Sniffing-Packets"><a href="#4-1-1-Task-1-1-Sniffing-Packets" class="headerlink" title="4.1.1 Task 1.1: Sniffing Packets"></a>4.1.1 Task 1.1: Sniffing Packets</h4><p>Task 1.1A 上述程序嗅探数据包。对于每个捕获的数据包，回调函数打印 pkt（）将被调用;此函数将打印出有关数据包的一些信息。运行程序根权限，并证明您确实可以捕获数据包。之后，再次运行该程序，但不使用根权限;描述并解释您的观察结果。</p>
+<p>运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180928374.png"></p>
+<p>运行sniff时，在主机A中ping主机B可以截取到如上数据包</p>
+<p>如果关掉root在用户状态下运行，会得到如下报错：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180929019.png"></p>
+<p>解释：普通用户没用权限执行sniff程序。</p>
+<p>Task 1.1B. 通常，当我们嗅探数据包时，我们只对某些类型的数据包感兴趣。我们可以做到通过在嗅探中设置过滤器。斯卡皮的过滤器使用BPF（伯克利数据包过滤器）语法;您可以找到来自互联网的 BPF 手册。请设置以下过滤器并再次演示您的嗅探器程序（每个过滤器应单独设置）：</p>
+<p>仅仅捕获ICMP数据包（Task 1.1A中已经实现）</p>
+<p>捕获来自于特定IP地址的TCP数据包并且目的端口号为23</p>
+<p>首先在过滤器中对过滤规则进行更改如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180929023.png"></p>
+<p>然后了解到23端口作用如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930609.png"></p>
+<p>可以在主机A中执行telnet 10.9.0.6 命令，并且执行sniff程序得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930385.png"></p>
+<p>捕获来自于指定子网的数据包</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180930502.png"></p>
+<p>设置过滤器规则如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931164.png"></p>
+<p>捕获到数据包如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931117.png"></p>
+<h4 id="4-1-2-Task-1-2-Spoofing-ICMP-Packets"><a href="#4-1-2-Task-1-2-Spoofing-ICMP-Packets" class="headerlink" title="4.1.2 Task 1.2: Spoofing ICMP Packets"></a>4.1.2 Task 1.2: Spoofing ICMP Packets</h4><p>在attacker主机中利用虚拟机本地网卡enps03发送伪造数据包，并且利用wireshark进行数据包的截获得到如下结果，可以看到伪造成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180931600.png"></p>
+<h4 id="4-1-3-Task-1-3-Traceroute"><a href="#4-1-3-Task-1-3-Traceroute" class="headerlink" title="4.1.3 Task 1.3: Traceroute"></a>4.1.3 Task 1.3: Traceroute</h4><p>攻击者主机中对ping baidu.com 进行定位计算机和目标计算机之间的所有路由器。分别修改程序中的ttl为3，4，5可以得到如下运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180932040.png"></p>
+<h4 id="4-1-4-Sniffing-and-then-Spoofing"><a href="#4-1-4-Sniffing-and-then-Spoofing" class="headerlink" title="4.1.4 Sniffing and-then Spoofing"></a>4.1.4 Sniffing and-then Spoofing</h4><p>单独在主机B中ping 8.8.8.8 可以观察到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180932464.png"></p>
+<p>利用Scapy编写好伪造程序后在攻击者主机中进行运行，同时再次利用主机B进行ping 8.8.8.8 的命令，可以得到如下运行结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180933091.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180933482.png"></p>
+<p>可以发现在主机B中，只发送了3个ping请求报文，但是却收到了6个响应报文，并且在攻击者主机中嗅探中，可以发现每次嗅探到一个请求报文，就会伪造一份响应报文，证明伪造成功。</p>
+<h3 id="4-2-Lab-Task-Set-2-Writing-Programs-to-Sniff-and-Spoof-Packets"><a href="#4-2-Lab-Task-Set-2-Writing-Programs-to-Sniff-and-Spoof-Packets" class="headerlink" title="4.2 Lab Task Set 2: Writing Programs to Sniff and Spoof Packets"></a>4.2 Lab Task Set 2: Writing Programs to Sniff and Spoof Packets</h3><h4 id="4-2-1-Writing-Packet-Sniffing-Program"><a href="#4-2-1-Writing-Packet-Sniffing-Program" class="headerlink" title="4.2.1 Writing Packet Sniffing Program"></a>4.2.1 Writing Packet Sniffing Program</h4><p>Task 2.1A: Understanding How a Sniffer Works</p>
+<p>运行结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180935811.png"></p>
+<p>问题回答：</p>
+<p>A1：首先调用pcap对指定的enps03网卡进行监听，然后在过滤器中设置过滤规则，最后进行数据包的捕获。</p>
+<p>A2：嗅探数据报涉及到隐私安全的问题，如果任何用户都可以执行这一操作，便可以通过嗅探到的数据进行分析，从而获取他人隐私，显然是不安全的。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180936659.png"></p>
+<p>A3： 打开混在模式可以监听网段下其他网卡发送的数据包，如果关闭就只能够监听到本机的数据包。</p>
+<p>Task 2.1B: Writing Filters</p>
+<p>捕获两个特定主机间的icmp数据包</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180936121.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180937097.png"></p>
+<p>捕获目的端口为10-100的tcp数据包</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180937901.png"></p>
+<p>Task 2.1C: Sniffing Passwords</p>
+<p>在攻击者主机中执行嗅探程序，同时在主机A中执行telnet 10.9.0.6 的命令，在此过程中需要输入用户名和密码，通过嗅探程序可以截获并且打印数据包，从而得到并破解用户的密码。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940071.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940582.png"></p>
+<p>在截获过程中，观察到login后面得到的数据为sseeeedd，password后面得到的数据为dees，而主机本身的用户名为seed，密码为dees，证明截获到了正确的数据包，对用户名和密码捕获成功。</p>
+<h4 id="4-2-2-Spoofing"><a href="#4-2-2-Spoofing" class="headerlink" title="4.2.2 Spoofing"></a>4.2.2 Spoofing</h4><p>执行伪造程序，并且利用wireshark进行抓包，可以成功捕获到数据包，证明伪造数据包发送成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180940700.png"></p>
+<p>问题回答：</p>
+<p>A4：可以随机设置报文头中的报文长度，但需要保证向socket发送的原始报文是正确的长度，否则可能会导致发送出的报文检验和不匹配从而无法收到回显报文。</p>
+<p>A5：必须计算检验和，如按照默认的0x00，会导致报文在终点服务器检验不通过，从而被丢弃导致伪造失败。</p>
+<p>A6：没有权限的用户不可以执行数据包的截获，发送等行为。</p>
+<h4 id="4-2-3-Sniff-and-then-Spoof"><a href="#4-2-3-Sniff-and-then-Spoof" class="headerlink" title="4.2.3 Sniff and then Spoof"></a>4.2.3 Sniff and then Spoof</h4><p>首先在主机A上进行ping google,com ，发现无法连通，并且没有响应数据包</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180941177.png"></p>
+<p>然后在攻击者主机中执行嗅探和伪造程序，再一次在主机A中执行ping google.com命令，可以得到如下运行结果：</p>
+<p>可以观察到在主机A中可以成功收到icmp响应数据包，说明嗅探和伪造成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180942823.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309180942271.png"></p>
+<h2 id="五-附件"><a href="#五-附件" class="headerlink" title="五.附件"></a>五.附件</h2><p>Task1.1</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line">num = <span class="number">0</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">print_pkt</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">global</span> num</span><br><span class="line">    num += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n==================packet:&#123;&#125;===================\n&quot;</span>.<span class="keyword">for</span></span><br><span class="line">    mat(num))</span><br><span class="line">    pkt.show()</span><br><span class="line">    pkt = sniff(iface = <span class="string">&#x27;br-4ceb30c2d898&#x27;</span>,<span class="built_in">filter</span>=<span class="string">&#x27;src net 10.0.0.0/16&#x27;</span>,prn=print_pkt)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task1.2</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line">    a =IP()</span><br><span class="line">    a.dst = <span class="string">&#x27;1.2.3.4&#x27;</span></span><br><span class="line">    b = ICMP()</span><br><span class="line">    p = a/b</span><br><span class="line">    ls(a)</span><br><span class="line">    send(p,iface = <span class="string">&#x27;enp0s3&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task1.3</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line">a= IP()</span><br><span class="line">a.dst=<span class="string">&#x27;baidu.com&#x27;</span></span><br><span class="line">a.ttl =<span class="number">15</span></span><br><span class="line">b= ICMP()</span><br><span class="line"><span class="comment"># send(a/b)</span></span><br><span class="line">a = sr1(a/b)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Source:&quot;</span>,a.src)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task1.4</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_pkt</span>(<span class="params">pkt</span>):</span><br><span class="line"><span class="comment"># sniff and print out icmp echo request packet</span></span><br><span class="line">     <span class="keyword">if</span> ICMP <span class="keyword">in</span> pkt <span class="keyword">and</span> pkt[ICMP].<span class="built_in">type</span> == <span class="number">8</span>:</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Original Packet.........&quot;</span>)</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Source IP : &quot;</span>, pkt[IP].src)</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Destination IP :&quot;</span>, pkt[IP].dst)</span><br><span class="line">         <span class="comment"># spoof an icmp echo reply packet</span></span><br><span class="line">         <span class="comment"># swap srcip and dstip</span></span><br><span class="line">         ip = IP(src=pkt[IP].dst, dst=pkt[IP].src, ihl=pkt[IP].ihl)</span><br><span class="line">         icmp = ICMP(<span class="built_in">type</span>=<span class="number">0</span>, <span class="built_in">id</span>=pkt[ICMP].<span class="built_in">id</span>, seq=pkt[ICMP].seq)</span><br><span class="line">         data = pkt[Raw].load</span><br><span class="line">         newpkt = ip/icmp/data</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Spoofed Packet.........&quot;</span>)</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Source IP : &quot;</span>, newpkt[IP].src)</span><br><span class="line">         <span class="built_in">print</span>(<span class="string">&quot;Destination IP :&quot;</span>, newpkt[IP].dst)</span><br><span class="line">         send(newpkt, verbose=<span class="number">0</span>)</span><br><span class="line">pkt = sniff(iface = <span class="string">&#x27;vetha6b71be&#x27;</span>,<span class="built_in">filter</span>=<span class="built_in">filter</span>, prn=spoof_pkt)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task2.1</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pcap.h&gt;</span></span></span><br><span class="line"><span class="type">void</span> <span class="title function_">got_packet</span><span class="params">(u_char *args, <span class="type">const</span> <span class="keyword">struct</span> pcap_pkthdr *header,<span class="type">const</span> u_char *packet)</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="built_in">printf</span>(<span class="string">&quot;Got a packet\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">pcap_t</span> *handle;</span><br><span class="line"> <span class="type">char</span> errbuf[PCAP_ERRBUF_SIZE];</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">bpf_program</span> <span class="title">fp</span>;</span></span><br><span class="line"> <span class="type">char</span> filter_exp[] = <span class="string">&quot;icmp&quot;</span>;</span><br><span class="line"> bpf_u_int32 net;</span><br><span class="line"> <span class="comment">// Step 1: Open live pcap session on NIC with name enp0s3</span></span><br><span class="line"> handle = pcap_open_live(<span class="string">&quot;enp0s3&quot;</span>, BUFSIZ, <span class="number">1</span>, <span class="number">1000</span>, errbuf);</span><br><span class="line"> <span class="comment">// Step 2: Compile filter_exp into BPF psuedo-code</span></span><br><span class="line"> pcap_compile(handle, &amp;fp, filter_exp, <span class="number">0</span>, net);</span><br><span class="line"> <span class="keyword">if</span> (pcap_setfilter(handle, &amp;fp) !=<span class="number">0</span>) &#123;</span><br><span class="line">     pcap_perror(handle, <span class="string">&quot;Error:&quot;</span>);</span><br><span class="line">     <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="comment">// Step 3: Capture packets</span></span><br><span class="line"> pcap_loop(handle, <span class="number">-1</span>, got_packet, <span class="literal">NULL</span>);</span><br><span class="line"> pcap_close(handle); <span class="comment">//Close the handle</span></span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task2.2</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="comment">/* Ethernet header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ethheader</span> &#123;</span></span><br><span class="line">    u_char ether_dhost[<span class="number">6</span>]; <span class="comment">/* destination host address */</span></span><br><span class="line">    u_char ether_shost[<span class="number">6</span>]; <span class="comment">/* source host address */</span></span><br><span class="line">    u_short ether_type; <span class="comment">/* IP? ARP? RARP? etc */</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* IP Header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ipheader</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> iph_ihl:<span class="number">4</span>, <span class="comment">//IP header length</span></span><br><span class="line">    iph_ver:<span class="number">4</span>; <span class="comment">//IP version</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> iph_tos; <span class="comment">//Type of service</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> iph_len; <span class="comment">//IP Packet length (data + header)</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> iph_ident; <span class="comment">//Identification</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> iph_flag:<span class="number">3</span>, <span class="comment">//Fragmentation flags</span></span><br><span class="line">    iph_offset:<span class="number">13</span>; <span class="comment">//Flags offset</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> iph_ttl; <span class="comment">//Time to Live</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> iph_protocol; <span class="comment">//Protocol type</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> iph_chksum; <span class="comment">//IP datagram checksum</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">iph_sourceip</span>;</span> <span class="comment">//Source IP address</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">iph_destip</span>;</span> <span class="comment">//Destination IP address</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* ICMP Header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">icmpheader</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> icmp_type; <span class="comment">// ICMP message type</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> icmp_code; <span class="comment">// Error code</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> icmp_chksum; <span class="comment">//Checksum for ICMP Header and data</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> icmp_id; <span class="comment">//Used for identifying request</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> icmp_seq; <span class="comment">//Sequence number</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">udpheader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">u_int16_t</span> udp_sport; <span class="comment">/* source port */</span></span><br><span class="line">    <span class="type">u_int16_t</span> udp_dport; <span class="comment">/* destination port */</span></span><br><span class="line">    <span class="type">u_int16_t</span> udp_ulen; <span class="comment">/* udp length */</span></span><br><span class="line">    <span class="type">u_int16_t</span> udp_sum; <span class="comment">/* udp checksum */</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* TCP Header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tcpheader</span> &#123;</span></span><br><span class="line">    u_short tcp_sport; <span class="comment">/* source port */</span></span><br><span class="line">    u_short tcp_dport; <span class="comment">/* destination port */</span></span><br><span class="line">    u_int tcp_seq; <span class="comment">/* sequence number */</span></span><br><span class="line">    u_int tcp_ack; <span class="comment">/* acknowledgement number */</span></span><br><span class="line">    u_char tcp_offx2; <span class="comment">/* data offset, rsvd */</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_OFF(th) (((th)-&gt;tcp_offx2 &amp; 0xf0) &gt;&gt; 4)</span></span><br><span class="line">    u_char tcp_flags;</span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_FIN 0x01</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_SYN 0x02</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_RST 0x04</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_PUSH 0x08</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_ACK 0x10</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_URG 0x20</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_ECE 0x40</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_CWR 0x80</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_FLAGS</span></span><br><span class="line">    (TH_FIN|TH_SYN|TH_RST|TH_ACK|TH_URG|TH_ECE|TH_CWR)</span><br><span class="line">    u_short tcp_win; <span class="comment">/* window */</span></span><br><span class="line">    u_short tcp_sum; <span class="comment">/* checksum */</span></span><br><span class="line">    u_short tcp_urp; <span class="comment">/* urgent pointer */</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* Psuedo TCP header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pseudo_tcp</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> saddr, daddr;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> mbz;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> ptcl;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> tcpl;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">tcpheader</span> <span class="title">tcp</span>;</span></span><br><span class="line">    <span class="type">char</span> payload[<span class="number">1500</span>];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">short</span> <span class="title function_">in_cksum</span> <span class="params">(<span class="type">unsigned</span> <span class="type">short</span> *buf, <span class="type">int</span> length)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">send_raw_ip_packet</span><span class="params">(<span class="keyword">struct</span> ipheader* ip)</span>;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">short</span> <span class="title function_">in_cksum</span> <span class="params">(<span class="type">unsigned</span> <span class="type">short</span> *buf, <span class="type">int</span> length)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> *w = buf;</span><br><span class="line">    <span class="type">int</span> nleft = length;</span><br><span class="line">    <span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> temp=<span class="number">0</span>;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The algorithm uses a 32 bit accumulator (sum), adds</span></span><br><span class="line"><span class="comment"> * sequential 16 bit words to it, and at the end, folds back all</span></span><br><span class="line"><span class="comment"> * the carry bits from the top 16 bits into the lower 16 bits.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">    <span class="keyword">while</span> (nleft &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        sum += *w++;</span><br><span class="line">        nleft -= <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/* treat the odd byte at the end, if any */</span></span><br><span class="line">    <span class="keyword">if</span> (nleft == <span class="number">1</span>) &#123;</span><br><span class="line">        *(u_char *)(&amp;temp) = *(u_char *)w ;</span><br><span class="line">        sum += temp;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/* add back carry outs from top 16 bits to low 16 bits */</span></span><br><span class="line">    sum = (sum &gt;&gt; <span class="number">16</span>) + (sum &amp; <span class="number">0xffff</span>); <span class="comment">// add hi 16 to low 16</span></span><br><span class="line">    sum += (sum &gt;&gt; <span class="number">16</span>); <span class="comment">// add carry</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="type">unsigned</span> <span class="type">short</span>)(~sum);</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">send_raw_ip_packet</span><span class="params">(<span class="keyword">struct</span> ipheader* ip)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">dest_info</span>;</span></span><br><span class="line">    <span class="type">int</span> enable = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// Step 1: Create a raw network socket.</span></span><br><span class="line">    <span class="type">int</span> sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);</span><br><span class="line">    <span class="comment">// Step 2: Set socket option.</span></span><br><span class="line">    setsockopt(sock, IPPROTO_IP, IP_HDRINCL,</span><br><span class="line">               &amp;enable, <span class="keyword">sizeof</span>(enable));</span><br><span class="line">    <span class="comment">// Step 3: Provide needed information about destination.</span></span><br><span class="line">    dest_info.sin_family = AF_INET;</span><br><span class="line">    dest_info.sin_addr = ip-&gt;iph_destip;</span><br><span class="line">    <span class="comment">// Step 4: Send the packet out.</span></span><br><span class="line">    sendto(sock, ip, ntohs(ip-&gt;iph_len), <span class="number">0</span>,</span><br><span class="line">           (<span class="keyword">struct</span> sockaddr *)&amp;dest_info, <span class="keyword">sizeof</span>(dest_info));</span><br><span class="line">    close(sock);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/******************************************************************</span></span><br><span class="line"><span class="comment"> Spoof an ICMP echo request using an arbitrary source IP Address</span></span><br><span class="line"><span class="comment">*******************************************************************/</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">char</span> buffer[<span class="number">1500</span>];</span><br><span class="line">    <span class="built_in">memset</span>(buffer, <span class="number">0</span>, <span class="number">1500</span>);</span><br><span class="line">    <span class="comment">/*********************************************************</span></span><br><span class="line"><span class="comment"> Step 1: Fill in the ICMP header.</span></span><br><span class="line"><span class="comment"> ********************************************************/</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">icmpheader</span> *<span class="title">icmp</span> =</span> (<span class="keyword">struct</span> icmpheader *)</span><br><span class="line">        (buffer + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> ipheader));</span><br><span class="line">    icmp-&gt;icmp_type = <span class="number">8</span>; <span class="comment">//ICMP Type: 8 is request, 0 is reply.</span></span><br><span class="line">    <span class="comment">// Calculate the checksum for integrity</span></span><br><span class="line">    icmp-&gt;icmp_chksum = <span class="number">0</span>;</span><br><span class="line">    icmp-&gt;icmp_chksum = in_cksum((<span class="type">unsigned</span> <span class="type">short</span> *)icmp,</span><br><span class="line">                                 <span class="keyword">sizeof</span>(<span class="keyword">struct</span> icmpheader));</span><br><span class="line">    <span class="comment">/*********************************************************</span></span><br><span class="line"><span class="comment"> Step 2: Fill in the IP header.</span></span><br><span class="line"><span class="comment"> ********************************************************/</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ipheader</span> *<span class="title">ip</span> =</span> (<span class="keyword">struct</span> ipheader *) buffer;</span><br><span class="line">    ip-&gt;iph_ver = <span class="number">4</span>;</span><br><span class="line">    ip-&gt;iph_ihl = <span class="number">5</span>;</span><br><span class="line">    ip-&gt;iph_ttl = <span class="number">20</span>;</span><br><span class="line">    ip-&gt;iph_sourceip.s_addr = inet_addr(<span class="string">&quot;10.9.0.5&quot;</span>);</span><br><span class="line">    ip-&gt;iph_destip.s_addr = inet_addr(<span class="string">&quot;8.8.8.8&quot;</span>);</span><br><span class="line">    ip-&gt;iph_protocol = IPPROTO_ICMP;</span><br><span class="line">    ip-&gt;iph_len = htons(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> ipheader) +<span class="keyword">sizeof</span>(<span class="keyword">struct</span> icmpheader));</span><br><span class="line">    <span class="comment">/*********************************************************</span></span><br><span class="line"><span class="comment"> Step 3: Finally, send the spoofed packet</span></span><br><span class="line"><span class="comment"> ********************************************************/</span></span><br><span class="line">    send_raw_ip_packet (ip);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task2.3</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> APP_NAME <span class="string">&quot;sniffex&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> APP_DESC <span class="string">&quot;sniffer example using libcap&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> APP_COPYRIGHT <span class="string">&quot;COPY&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> APP_DISCLAIMER <span class="string">&quot;NO WARNNING&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pcap.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ctype.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netdb.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in_systm.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/ip_icmp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SNAP_LEN 1518</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIZE_ETHERNET 14</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ETHER_ADDR_LEN 6</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sniff_ethernet</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    u_char ether_dhost[ETHER_ADDR_LEN];</span><br><span class="line">    u_char ether_shost[ETHER_ADDR_LEN];</span><br><span class="line">    u_short ether_type;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sniff_ip</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    u_char ip_vhl;</span><br><span class="line">    u_char ip_tos;</span><br><span class="line">    u_short ip_len;</span><br><span class="line">    u_short ip_id;</span><br><span class="line">    u_short ip_off;</span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> IP_RF 0x8000</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> IP_DF 0x4000</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> IP_MF 0x2000</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> IP_OFFMASK 0x1ffff</span></span><br><span class="line">    u_char ip_ttl;</span><br><span class="line">    u_char ip_p;</span><br><span class="line">    u_char ip_sum;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">ip_src</span>,<span class="title">ip_dst</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IP_HL(ip) (((ip)-&gt;ip_vhl) &amp; 0x0f)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IP_V(ip) (((ip)-&gt;ip_vhl) &gt;&gt;4)</span></span><br><span class="line"><span class="keyword">typedef</span> u_int tcp_seq;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sniff_tcp</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    u_short th_sport;</span><br><span class="line">    u_short th_dport;</span><br><span class="line">    tcp_seq th_seq;</span><br><span class="line">    tcp_seq th_ack;</span><br><span class="line">    u_char th_offx2;</span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_OFF(th) (((th)-&gt;th_offx2 &amp; 0xf0) &gt;&gt;4 )</span></span><br><span class="line">    u_char th_flags;</span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_FIN 0x01</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_SYN 0x02</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_RST 0x04</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_PUSH 0x08</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_ACK 0x10</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_URG 0x20</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_ECE 0x40</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_CWR 0x80</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> TH_FLAGS</span></span><br><span class="line">    (TH_FIN|TH_SYN|TH_RST|TH_ACK|TH_URG|TH_ECE|TH_CWR)</span><br><span class="line">    u_short th_win;</span><br><span class="line">    u_short th_sum;</span><br><span class="line">    u_short th_urp;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sniff_icmp</span> &#123;</span></span><br><span class="line">    u_char icmp_type;</span><br><span class="line">    u_char icmp_code;</span><br><span class="line">    u_short icmp_chksum;</span><br><span class="line">    u_short icmp_n;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">void</span> <span class="title function_">got_packet</span><span class="params">(u_char *args,<span class="type">const</span> <span class="keyword">struct</span> pcap_pkthdr *header,<span class="type">const</span> u_char *packet)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_payload</span><span class="params">(<span class="type">const</span> u_char *payload ,<span class="type">int</span> len)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_hex_ascill_line</span><span class="params">(<span class="type">const</span> u_char *payload,<span class="type">int</span> len,<span class="type">int</span> offset)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_app_banner</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_app_usage</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_app_banner</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s - %s\n&quot;</span>,APP_NAME,APP_DESC);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>,APP_COPYRIGHT);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>,APP_DISCLAIMER);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_app_usage</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Usage: %s [interface]\n&quot;</span>,APP_NAME);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;/n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Options:\n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; interface listen on &lt;interface&gt; for packets. \n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_hex_ascill_line</span><span class="params">(<span class="type">const</span> u_char *payload,<span class="type">int</span> len,<span class="type">int</span> offset)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="type">int</span> gap;</span><br><span class="line">    <span class="type">const</span> u_char *ch;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%05d &quot;</span>,offset);</span><br><span class="line">    ch = payload;</span><br><span class="line">    <span class="keyword">for</span> (i=<span class="number">0</span>;i&lt;len;i++)&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%02x &quot;</span>,*ch);</span><br><span class="line">        ch++;</span><br><span class="line">        <span class="keyword">if</span>(i==<span class="number">7</span>)&#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len&lt;<span class="number">8</span>)&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (len&lt;<span class="number">16</span>)&#123;</span><br><span class="line">        gap = <span class="number">16</span>-len;</span><br><span class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>;i&lt;gap;i++)&#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">    ch =payload;</span><br><span class="line">    <span class="keyword">for</span> (i=<span class="number">0</span>;i&lt;len;i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">isprint</span>(*ch))</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;%c&quot;</span>,*ch);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;.&quot;</span>);</span><br><span class="line">        ch++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">print_payload</span><span class="params">(<span class="type">const</span> u_char *payload ,<span class="type">int</span> len)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> len_rem = len;</span><br><span class="line">    <span class="type">int</span> line_width = <span class="number">16</span>;</span><br><span class="line">    <span class="type">int</span> line_len;</span><br><span class="line">    <span class="type">int</span> offset=<span class="number">0</span>;</span><br><span class="line">    <span class="type">const</span> u_char *ch = payload;</span><br><span class="line">    <span class="keyword">if</span> (len&lt;=<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(len &lt;=line_width)</span><br><span class="line">    &#123;</span><br><span class="line">        print_hex_ascill_line(ch,len,offset);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> ( ; ; )&#123;</span><br><span class="line">        line_len = line_width % len_rem;</span><br><span class="line">        print_hex_ascill_line(ch,line_len,offset);</span><br><span class="line">        len_rem = len_rem - line_len;</span><br><span class="line">        ch = ch+ line_len;</span><br><span class="line">        offset = offset + line_width;</span><br><span class="line">        <span class="keyword">if</span>(len_rem &lt;= line_width)&#123;</span><br><span class="line">            print_hex_ascill_line(ch,len_rem,offset);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">send_icmpreply</span><span class="params">(u_char *packet)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sniff_ip</span> *<span class="title">old_ip_header</span>;</span></span><br><span class="line">    old_ip_header = (<span class="keyword">struct</span> sniff_ip *)(packet + SIZE_ETHERNET);</span><br><span class="line">    <span class="type">int</span> ip_len = ntohs(old_ip_header-&gt;ip_len);</span><br><span class="line">    <span class="type">char</span> buf[ip_len];</span><br><span class="line">    bzero(buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">    <span class="built_in">memcpy</span>(buf,(packet + SIZE_ETHERNET),<span class="keyword">sizeof</span>(buf));</span><br><span class="line">    <span class="type">char</span> *ptr = buf;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sniff_ip</span> *<span class="title">ip_header</span> =</span> (<span class="keyword">struct</span> sniff_ip*)(ptr);</span><br><span class="line">    <span class="type">int</span> size_ip_header = IP_HL(ip_header)*<span class="number">4</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sniff_icmp</span> *<span class="title">icmp_header</span>;</span></span><br><span class="line">    icmp_header = (<span class="keyword">struct</span> sniff_icmp*)(packet +size_ip_header);</span><br><span class="line">    icmp_header-&gt;icmp_type = <span class="number">8</span>;</span><br><span class="line">    icmp_header-&gt;icmp_chksum = <span class="number">0</span>;</span><br><span class="line">    icmp_header-&gt;icmp_n =<span class="number">0</span> ;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">tempAddress</span> =</span> ip_header-&gt;ip_dst;</span><br><span class="line">    ip_header-&gt;ip_dst = ip_header-&gt;ip_src;</span><br><span class="line">    ip_header-&gt;ip_src = tempAddress;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">dst</span>;</span></span><br><span class="line">    dst.sin_family = AF_INET;</span><br><span class="line">    inet_pton(AF_INET,inet_ntoa(ip_header-&gt;ip_dst),&amp;dst.sin_addr.s_addr);</span><br><span class="line">    dst.sin_port = htons(<span class="number">0</span>);</span><br><span class="line">    icmp_header-&gt;icmp_n ++ ;</span><br><span class="line">    <span class="type">int</span> one = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> s;</span><br><span class="line">    s = socket(AF_INET,SOCK_RAW,IPPROTO_RAW);</span><br><span class="line">    setsockopt(s,IPPROTO_IP,IP_HDRINCL,&amp;one,<span class="keyword">sizeof</span>(one));</span><br><span class="line">    sendto(s,buf,<span class="keyword">sizeof</span>(buf),<span class="number">0</span>,(<span class="keyword">struct</span> sockaddr *)&amp;dst ,<span class="keyword">sizeof</span>(dst));</span><br><span class="line">    close(s);</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">got_packet</span><span class="params">(u_char *args,<span class="type">const</span> <span class="keyword">struct</span> pcap_pkthdr *header,<span class="type">const</span> u_char *packet)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> count = <span class="number">1</span>;</span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sniff_ethernet</span> *<span class="title">ethernet</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sniff_ip</span> *<span class="title">ip</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sniff_tcp</span> *<span class="title">tcp</span>;</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *payload;</span><br><span class="line">    <span class="type">int</span> size_ip;</span><br><span class="line">    <span class="type">int</span> size_tcp;</span><br><span class="line">    <span class="type">int</span> size_payload;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n Packet number %d: \n&quot;</span>,count);</span><br><span class="line">    count++;</span><br><span class="line">    ethernet = (<span class="keyword">struct</span> sniff_ethernet*)(packet);</span><br><span class="line">    ip = (<span class="keyword">struct</span> sniff_ip*)(packet + SIZE_ETHERNET);</span><br><span class="line">    size_ip = IP_HL(ip)*<span class="number">4</span>;</span><br><span class="line">    <span class="keyword">if</span> (size_ip&lt;<span class="number">20</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot; *Invalid IP header length : %u bytes \n&quot;</span>,size_ip);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; From: %s\n&quot;</span>, inet_ntoa(ip-&gt;ip_src));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; To: %s\n&quot;</span>, inet_ntoa(ip-&gt;ip_dst));</span><br><span class="line">    <span class="keyword">switch</span>(ip-&gt;ip_p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_TCP:</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; Protocol: TCP\n&quot;</span>)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_UDP:</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; Protocol: UDP\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_ICMP:</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; Protocol: ICMP\n&quot;</span>);</span><br><span class="line">            send_icmpreply(packet);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot; Protocol: others\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    tcp = (<span class="keyword">struct</span> sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);</span><br><span class="line">    size_tcp = TH_OFF(tcp)*<span class="number">4</span>;</span><br><span class="line">    <span class="keyword">if</span> (size_tcp &lt; <span class="number">20</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot; *Invalid TCP header length : %u bytes \n&quot;</span>,size_tcp);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; Src port: %d\n&quot;</span>,ntohs(tcp-&gt;th_sport));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot; Dst port: %d\n&quot;</span>,ntohs(tcp-&gt;th_dport));</span><br><span class="line">    payload = (u_char*)(packet + SIZE_ETHERNET +size_ip + size_tcp);</span><br><span class="line">    size_payload = ntohs(ip-&gt;ip_len) - size_ip - size_tcp;</span><br><span class="line">    <span class="keyword">if</span> ( size_payload &gt;<span class="number">0</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot; Payload (%d bytes):\n&quot;</span>,size_payload);</span><br><span class="line">        print_payload(payload,size_payload);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> *dev = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="type">char</span> errbuf[PCAP_ERRBUF_SIZE];</span><br><span class="line">    <span class="type">pcap_t</span> *handle;</span><br><span class="line">    <span class="type">char</span> filter_exp[] = <span class="string">&quot;icmp&quot;</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">bpf_program</span> <span class="title">fp</span>;</span></span><br><span class="line">    bpf_u_int32 mask;</span><br><span class="line">    bpf_u_int32 net;</span><br><span class="line">    <span class="type">int</span> num_packets = <span class="number">100</span>;</span><br><span class="line">    print_app_banner();</span><br><span class="line">    <span class="keyword">if</span>(argc == <span class="number">2</span> )&#123;</span><br><span class="line">        dev = argv[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (argc &gt; <span class="number">2</span>)&#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;error:unrecongnized command_line options\n\n&quot;</span> );</span><br><span class="line">        print_app_usage();</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        dev = pcap_lookupdev(errbuf);</span><br><span class="line">        <span class="keyword">if</span>(dev = <span class="literal">NULL</span>)&#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;Couldn&#x27;t find default device: %s\n&quot;</span>,errbuf);</span><br><span class="line">            <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(pcap_lookupnet(dev,&amp;net,&amp;mask,errbuf) == <span class="number">-1</span>)&#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;Couldn&#x27;t get netmask for device %s: %s\n&quot;</span>,dev,errbuf);</span><br><span class="line">        net = <span class="number">0</span>;</span><br><span class="line">        mask = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Device: %s\n&quot;</span>,dev);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Number of packets: %d\n&quot;</span>,num_packets);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Filter expression: %s\n&quot;</span>,filter_exp);</span><br><span class="line">    handle = pcap_open_live(dev,SNAP_LEN,<span class="number">1</span>,<span class="number">1000</span>,errbuf);</span><br><span class="line">    <span class="keyword">if</span>(handle == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;Couldn&#x27;t open device %s : %s\n&quot;</span>,dev,errbuf);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(pcap_datalink(handle) != DLT_EN10MB)&#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;%s is not an Ethernet\n&quot;</span>,dev);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(pcap_compile(handle,&amp;fp,filter_exp,<span class="number">0</span>,net) == <span class="number">-1</span>)&#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;Couldn&#x27;t parse filter %s : %s\n&quot;</span>,filter_exp,pcap_geterr(handle));</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pcap_setfilter(handle,&amp;fp) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">&quot;Couldn&#x27;t install filter %s : %s\n&quot;</span>,filter_exp,pcap_geterr(handle));</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">    pcap_loop(handle,num_packets,got_packet,<span class="literal">NULL</span>);</span><br><span class="line">    pcap_freecode(&amp;fp);</span><br><span class="line">    pcap_close(handle);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n Capture complete. \n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/20/SQLinjection/" rel="next" title="SQL injection Lab">
+      SQL injection Lab <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">一.实验目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二.实验原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E5%AE%9E%E9%AA%8C%E5%99%A8%E6%9D%90"><span class="nav-number">3.</span> <span class="nav-text">三.实验器材</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E5%8F%8A%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">四.实验步骤及运行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Lab-Task-Set-1-Using-Tools-to-Sniff-and-Spoof-Packets"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Lab Task Set 1: Using Tools to Sniff and Spoof Packets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-Task-1-1-Sniffing-Packets"><span class="nav-number">4.1.1.</span> <span class="nav-text">4.1.1 Task 1.1: Sniffing Packets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-Task-1-2-Spoofing-ICMP-Packets"><span class="nav-number">4.1.2.</span> <span class="nav-text">4.1.2 Task 1.2: Spoofing ICMP Packets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-3-Task-1-3-Traceroute"><span class="nav-number">4.1.3.</span> <span class="nav-text">4.1.3 Task 1.3: Traceroute</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-4-Sniffing-and-then-Spoofing"><span class="nav-number">4.1.4.</span> <span class="nav-text">4.1.4 Sniffing and-then Spoofing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Lab-Task-Set-2-Writing-Programs-to-Sniff-and-Spoof-Packets"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Lab Task Set 2: Writing Programs to Sniff and Spoof Packets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-Writing-Packet-Sniffing-Program"><span class="nav-number">4.2.1.</span> <span class="nav-text">4.2.1 Writing Packet Sniffing Program</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-2-Spoofing"><span class="nav-number">4.2.2.</span> <span class="nav-text">4.2.2 Spoofing</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-3-Sniff-and-then-Spoof"><span class="nav-number">4.2.3.</span> <span class="nav-text">4.2.3 Sniff and then Spoof</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94-%E9%99%84%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">五.附件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

