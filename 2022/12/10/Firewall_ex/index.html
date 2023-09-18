@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一.实验目标本实验的学习目标有两个:了解防火墙如何工作，并建立一个简单的防火墙对于一个网络。学生们将首先实现一个简单的无状态包过滤防火墙，它检查数据包，并根据防火墙规则决定是否丢弃或转发数据包。通过这个实现任务，让学生了解防火墙的基本工作原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Firewall Exploration Lab">
+<meta property="og:url" content="https://www.mrdothing.com/2022/12/10/Firewall_ex/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="一.实验目标本实验的学习目标有两个:了解防火墙如何工作，并建立一个简单的防火墙对于一个网络。学生们将首先实现一个简单的无状态包过滤防火墙，它检查数据包，并根据防火墙规则决定是否丢弃或转发数据包。通过这个实现任务，让学生了解防火墙的基本工作原理。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741261.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741767.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741259.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742735.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742970.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742894.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742024.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743232.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743722.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743355.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743845.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743516.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744418.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744866.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744655.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744126.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744490.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181747662.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748565.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748597.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748482.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749042.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749404.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749019.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749315.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750831.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750864.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750202.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181751693.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181751828.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752682.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752466.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752781.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752410.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753557.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753177.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753979.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753388.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754334.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754020.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754673.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754864.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754167.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755131.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755709.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755376.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756792.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756152.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756076.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756127.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756704.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757353.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757908.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757454.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757713.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758340.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758674.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758064.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758348.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181759934.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181759705.png">
+<meta property="article:published_time" content="2022-12-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-09-18T10:44:33.776Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741261.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2022/12/10/Firewall_ex/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Firewall Exploration Lab | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2022/12/10/Firewall_ex/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Firewall Exploration Lab
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-12-10 00:00:00" itemprop="dateCreated datePublished" datetime="2022-12-10T00:00:00+08:00">2022-12-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-18 18:44:33" itemprop="dateModified" datetime="2023-09-18T18:44:33+08:00">2023-09-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">网络安全</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-实验目标"><a href="#一-实验目标" class="headerlink" title="一.实验目标"></a>一.实验目标</h2><p>本实验的学习目标有两个:了解防火墙如何工作，并建立一个简单的防火墙对于一个网络。学生们将首先实现一个简单的无状态包过滤防火墙，它检查数据包，并根据防火墙规则决定是否丢弃或转发数据包。通过这个实现任务，让学生了解防火墙的基本工作原理。</p>
+<span id="more"></span>
+<p>实际上，Linux已经有一个内置的防火墙，也是基于netfilter的。这个防火墙叫做iptables。学生将得到一个简单的网络拓扑，并被要求使用iptables进行设置防火墙规则保护网络。学生们还将接触到其他一些有趣的应用iptables。本实验涵盖以下主题:</p>
+<p>•防火墙</p>
+<p>•Netfilter</p>
+<p>•可加载的内核模块</p>
+<p>•使用iptables设置防火墙规则</p>
+<p>•iptables的各种应用</p>
+<h2 id="二-实验原理"><a href="#二-实验原理" class="headerlink" title="二.实验原理"></a>二.实验原理</h2><h3 id="2-1-防火墙"><a href="#2-1-防火墙" class="headerlink" title="2.1 防火墙"></a>2.1 防火墙</h3><p>在计算机领域中，防火墙是一种网络安全系统，它根据预定的安全规则监视和控制进出的网络流量。防火墙通常在可信网络和不可信网络(如Internet)之间建立一个屏障。</p>
+<h3 id="2-2-netfilter"><a href="#2-2-netfilter" class="headerlink" title="2.2 netfilter"></a>2.2 netfilter</h3><p>Netfilter是Linux内核提供的一个框架，允许以定制处理程序的形式实现各种与网络相关的操作。Netfilter提供了包过滤、网络地址转换和端口转换的各种功能和操作，提供了在网络中定向数据包和禁止数据包到达网络中的敏感位置所需的功能。</p>
+<p>Netfilter表示Linux内核中的一组钩子，允许特定的内核模块向内核的网络堆栈注册回调函数。这些函数通常以过滤和修改规则的形式应用于流量，在网络堆栈中对每个遍历各自钩子的数据包调用。</p>
+<h3 id="2-3-iptables"><a href="#2-3-iptables" class="headerlink" title="2.3 iptables"></a>2.3 iptables</h3><p>iptables是一个用户空间实用程序，允许系统管理员配置Linux内核防火墙的IP包过滤规则，实现为不同的Netfilter模块。过滤器被组织在不同的表中，其中包含如何处理网络流量数据包的规则链。不同的协议目前使用不同的内核模块和程序;iptables适用于IPv4, ip6tables适用于IPv6, arptables适用于ARP, ebtables适用于以太网帧。</p>
+<h3 id="2-4-拓扑搭建"><a href="#2-4-拓扑搭建" class="headerlink" title="2.4 拓扑搭建"></a>2.4 拓扑搭建</h3><p>在这个实验室里，我们需要使用多台机器。它们的设置如图1所示。我们将使用容器设置这个实验环境:</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741261.png"></p>
+<h2 id="三-实验器材"><a href="#三-实验器材" class="headerlink" title="三.实验器材"></a>三.实验器材</h2><p>1．Ubuntu20.04。</p>
+<p>2．Docker.</p>
+<h2 id="四-实验步骤及运行结果"><a href="#四-实验步骤及运行结果" class="headerlink" title="四.实验步骤及运行结果"></a>四.实验步骤及运行结果</h2><h3 id="4-1-Task-1-Implementing-a-Simple-Firewall"><a href="#4-1-Task-1-Implementing-a-Simple-Firewall" class="headerlink" title="4.1 Task 1: Implementing a Simple Firewall"></a>4.1 Task 1: Implementing a Simple Firewall</h3><p>在这个任务中，我们将实现一个简单的包过滤类型的防火墙，它检查每个传入的和并执行管理员设置的防火墙策略。</p>
+<h4 id="4-1-1-Task-1-A-Implement-a-Simple-Kernel-Module"><a href="#4-1-1-Task-1-A-Implement-a-Simple-Kernel-Module" class="headerlink" title="4.1.1 Task 1.A: Implement a Simple Kernel Module"></a>4.1.1 Task 1.A: Implement a Simple Kernel Module</h4><p>LKM允许我们在运行时向内核添加一个新模块。这个新模块使我们能够扩展内核的功能，而不需要重新构建内核，甚至不需要重新启动计算机。防火墙的包过滤部分可以实现为LKM。在这个任务中，我们将熟悉LKM。</p>
+<p>首先使用make命令对 kernel_module 中的文件进行编译如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741767.png"></p>
+<p>在该目录下，使用lsmod命令即可查看当前所生成的module 如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181741259.png"></p>
+<p>使用dmesg -w命令进行监听：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742735.png"></p>
+<p>使用 insmod 命令，插入 hello.ko 如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742970.png"></p>
+<p>使用rmmod命令移除 hello这个module，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742894.png"></p>
+<p>在使用dmesg监听的窗口可以观察内核中的输出结果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181742024.png"></p>
+<h4 id="4-1-2-Task-1-B-Implement-a-Simple-Firewall-Using-Netfilter"><a href="#4-1-2-Task-1-B-Implement-a-Simple-Firewall-Using-Netfilter" class="headerlink" title="4.1.2 Task 1.B: Implement a Simple Firewall Using Netfilter"></a>4.1.2 Task 1.B: Implement a Simple Firewall Using Netfilter</h4><p>本任务中需要使用LKM和Netfilter实现包过滤模块。这个模块将从数据结构中获取防火墙策略，并使用这些策略来决定数据包是否应该被挡。</p>
+<p>实现两个更多的钩子，以达到以下目的:(1)防止其他计算机ping(2)防止其他计算机telnet到虚拟机。请实施两种不同的挂钩函数，但是将它们注册到同一个netfilter钩子。</p>
+<p>首先利用dig去产生UDP包发送给8.8.8.8，可以发现其正常发送，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743232.png"></p>
+<p>编译packet_filter中的文件并且插入seedfilter.ko，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743722.png"></p>
+<p>在dmesg所监听的窗口中，可以观察到过滤文件被成功注册：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743355.png"></p>
+<p>然后重新使用dig命令发送UDP包给8.8.8.8，观察到发送超时，服务不可达：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743845.png"></p>
+<p>同时在监听窗口，可以观察到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181743516.png"></p>
+<p>说明由当前主机发送8.8.8.8的UDP包均被丢弃，说明过滤规则生效。</p>
+<p>移除当前的过滤器，把hook函数都添加到代码中后，重新编译并且添加module，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744418.png"></p>
+<p>重新使用dig @8.8.8.8 <a href="http://www.example.com命令发送UDP包，可以在dmesg的监听窗口观察到如下内容：">www.example.com命令发送UDP包，可以在dmesg的监听窗口观察到如下内容：</a></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744866.png"></p>
+<p>从中可以发现，POST_ROUTING,PRE_ROUTING在当前主机给8.8.8.8发送UDP数据包的时候被调用，而LOCAL_IN,LOCAL_OUT在8.8.8.8给当前主机发送响应UDP的时候被调用。</p>
+<p>经过查询可以得到NF_INET_FORWARD函数的主要功能是查路由，决定数据包是输入到本地还是转发，因此可以推断得知其在发送给路由器的时候被调用。</p>
+<p>移除当前的过滤器，在HOST-A主机中尝试ping命令和telnet命令与当前主机建立连接，发现均可以成功响应，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744655.png"></p>
+<p>修改代码添加过滤规则后重新编译，并且添加模块，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744126.png"></p>
+<p>HOST-A主机中，重新向当前主机发送ping和telnet，均失败：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181744490.png"></p>
+<p>与此同时，在dmesg所监听的窗口中，可以观察到如下内容：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181747662.png"></p>
+<p>说明，当前发送给当前主机的ping响应和建立telnet连接的tcp包均被丢弃，设置的过滤规则成功生效。</p>
+<h3 id="4-2-Task-2-Experimenting-with-Stateless-Firewall-Rules"><a href="#4-2-Task-2-Experimenting-with-Stateless-Firewall-Rules" class="headerlink" title="4.2 Task 2: Experimenting with Stateless Firewall Rules"></a>4.2 Task 2: Experimenting with Stateless Firewall Rules</h3><p>在前面的任务中，我们有机会使用netfilter构建一个简单的防火墙。实际上,Linux已经有内置防火墙，也是基于netfilter的。这个防火墙叫做iptables。从技术上讲,防火墙的内核部分实现被称为Xtables，而iptables是一个用户空间程序配置防火墙。然而，iptables通常用于指内核部分实现还有用户空间程序。</p>
+<h4 id="4-2-1-Task-2-A-Protecting-the-Router"><a href="#4-2-1-Task-2-A-Protecting-the-Router" class="headerlink" title="4.2.1 Task 2.A: Protecting the Router"></a>4.2.1 Task 2.A: Protecting the Router</h4><p>在这个任务中，我们将设置规则来阻止外部机器访问路由器机器，ping除外。</p>
+<p>根据实验所搭建的网络拓扑我们可以得知，路由器拥有两个IP地址，分别用于与其内网 192.168.60.00&#x2F;24和外网10.9.0.0&#x2F;24 进行通信。</p>
+<p>在设置防火墙规则前，我们在host-a主机中，可以与路由器进行ping和telnet连接，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748565.png"></p>
+<p>然后依次执行实验手册中所给出的四个指令：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748597.png"></p>
+<p>查看iptables中过滤表中的规则：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181748482.png"></p>
+<p>重新在host-a主机中与路由器进行ping和telnet连接，如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749042.png"></p>
+<p>发现ping可以成功，而telnet连接建立失败，说明所设置的防火墙过滤规则成功将外部机器所访问路由器的方式限制为了ping。原因在于所设置的规则，只允许路由器的输入为icmp echo-request类型的报文和输出为icmp echo-reply类型的报文被接收，其他报文均丢弃。</p>
+<h4 id="4-2-2-Task-2-B-Protecting-the-Internal-Network"><a href="#4-2-2-Task-2-B-Protecting-the-Internal-Network" class="headerlink" title="4.2.2 Task 2.B: Protecting the Internal Network"></a>4.2.2 Task 2.B: Protecting the Internal Network</h4><p>在这个任务中，我们想要实现一个防火墙来保护内部网络。更具体地说，我们需要对ICMP报文流量进行如下限制:</p>
+<p>1. 外部主机无法ping通内部主机。</p>
+<p>2. 外部主机可以ping通路由器。</p>
+<p>3.内部主机可以ping外部主机。</p>
+<p>4. 内部网络和外部网络之间的所有其他数据包都应该被阻止</p>
+<p>实验步骤如下：</p>
+<p>首先清空路由器中之前所设置的规则，然后重新在过滤表中设置规则如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749404.png"></p>
+<p>解释说明，只允许eth1进行转发进来的icmp响应请求报文，只允许eth0进来的进行转发icmp响应回复报文，而响应请求报文均被丢弃，其他报文均不允许被转发。其中eth1所对应ip为内网，而eth1所对应ip为外网。</p>
+<p>在host-a主机中，分别ping 路由器和host-1，以及与host-1建立telnet连接，可以观察到如下现象：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749019.png"></p>
+<p>1主机中分别尝试ping host-a和telnet host-a，现象如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181749315.png"></p>
+<p>解释：</p>
+<p>在外部主机中，可以成功ping路由器，但不可以与内部主机进行ping以及telnet连接，；在内部主机中，可以成功ping外部主机，但不能与外部主机建立telnet连接，符合任务中的要求。</p>
+<h4 id="4-2-3-Task-2-C-Protecting-Internal-Servers"><a href="#4-2-3-Task-2-C-Protecting-Internal-Servers" class="headerlink" title="4.2.3 Task 2.C: Protecting Internal Servers"></a>4.2.3 Task 2.C: Protecting Internal Servers</h4><p>在这个任务中，我们希望保护内部网络(192.168.60.0&#x2F;24)内的TCP服务器。更多的</p>
+<p>具体来说，我们要实现以下目标。</p>
+<p>1. 所有内部主机都运行一个telnet服务器(监听端口23)。外部主机只能访问telnet服务器位于192.168.60.5，而不是其他内部主机</p>
+<p>2. 外部主机无法访问其他内部服务器。</p>
+<p>3.内部主机可以访问所有内部服务器。</p>
+<p>4. 内部主机无法访问外部服务器。</p>
+<p>实验步骤：</p>
+<p>首先进行检查如下：</p>
+<p>在host-a中分别与内网中的三台主机建立telnet连接，发现均可以成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750831.png"></p>
+<p>在host-1中与外部主机建立telnet连接，也可以成功。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750864.png"></p>
+<p>修改过滤表中的规则如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181750202.png"></p>
+<p>让所有从外部进来并且访问目的主机为host-1的 23端口的tcp报文被接收，让所有来自于内网host-1并且源端口为23的tcp报文被接受，其余报文均被丢弃</p>
+<p>修改规则后，重新在各种主机中尝试建立telnet连接如下：</p>
+<p>在host-1中，可以成功与内网中的其他主机以及外网主机建立连接：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181751693.png"></p>
+<p>在host-a中，只可以与内网中host-1建立连接：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181751828.png"></p>
+<p>在host2中，可以与内网中的其他主机建立连接，但不可以与外网主机建立连接：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752682.png"></p>
+<p>尝试在主机a中采用其他的连接方式：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752466.png"></p>
+<p>发现在主机1中不会收到信息。</p>
+<p>因此证明符合任务中所给出的规则。</p>
+<h3 id="4-3-Task-3-Connection-Tracking-and-Stateful-Firewall"><a href="#4-3-Task-3-Connection-Tracking-and-Stateful-Firewall" class="headerlink" title="4.3 Task 3: Connection Tracking and Stateful Firewall"></a>4.3 Task 3: Connection Tracking and Stateful Firewall</h3><h4 id="4-3-1-Task-3-A-Experiment-with-the-Connection-Tracking"><a href="#4-3-1-Task-3-A-Experiment-with-the-Connection-Tracking" class="headerlink" title="4.3.1 Task 3.A: Experiment with the Connection Tracking"></a>4.3.1 Task 3.A: Experiment with the Connection Tracking</h4><p>为了支持有状态防火墙，我们需要能够跟踪连接。这是通过内核内部的conntrack机制实现的。在本次任务中，我们将进行与该模块相关的实验，并熟悉连接跟踪制。在我们的实验中，我们将检查连接跟踪路由器容器的信息。可以使用以下命令来成：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752781.png"></p>
+<p>本任务的目标是通过一系列实验来帮助学生理解这种跟踪机制中的连接概念，特别是对于ICMP和UDP协议，因为与TCP不同，它们没有连接。请进行以下实验。对于每个实验，请描述你的观察结果，并附上解释。</p>
+<p>ICMP实验，</p>
+<p>在主机A中向主机1发送icmp报文如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181752410.png"></p>
+<p>然后在路由器中可以查看到信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753557.png"></p>
+<p>可以观察到其中所保存的icmp信息会在一段时间后消失，其具体保留时间内，可以在路由器中的如下文件中得知：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753177.png"></p>
+<p>可以发现其保留时间为30s</p>
+<p>UDP实验：</p>
+<p>在主机A和主机1中利用nc建立一个udp链接如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753979.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181753388.png"></p>
+<p>然后在路由器中可以观察到如下记录，及其保留时间：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754334.png"></p>
+<p>可以得知udp报文在路由器中的保留时间为30s</p>
+<p>TCP实验：</p>
+<p>在主机A和主机1中建立TCP连接如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754020.png"></p>
+<p>在路由器中可以观察到所保存的TCP报文信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754673.png"></p>
+<p>保留时间如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754864.png"></p>
+<p>建立连接时会保留432000s，断开连接后，路由器中信息如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181754167.png"></p>
+<p>可以观察到，断开连接后路由器中保留的信息会等待120s</p>
+<h4 id="4-3-2-Task-3-B-Setting-Up-a-Stateful-Firewall"><a href="#4-3-2-Task-3-B-Setting-Up-a-Stateful-Firewall" class="headerlink" title="4.3.2 Task 3.B: Setting Up a Stateful Firewall"></a>4.3.2 Task 3.B: Setting Up a Stateful Firewall</h4><p>请在Task 2.C中重写防火墙规则，但这一次，我们将添加一条允许内部主机访问任何外部服务器(这在任务2.C中不允许)。</p>
+<p>在路由器的容器中修改防火墙规则如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755131.png"></p>
+<p>然后再局域网中对所修改的规则及其作用进行验证如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755709.png"></p>
+<p>外部主机只能连接主机1：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181755376.png"></p>
+<p>内网主机可以连接内网主机以及外网主机：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756792.png"></p>
+<p>如果采用nc来在主机A和主机1中建立连接，可以观察到如下现象：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756152.png"></p>
+<p>如果是TCP报文会被丢弃，但UDP报文则可以发送与接收</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756076.png"></p>
+<p>另一种实现的过滤规则如下：</p>
+<p>通过测试同样可以，得到相同的效果</p>
+<h3 id="4-4-Task-4-Limiting-Network-Traffic"><a href="#4-4-Task-4-Limiting-Network-Traffic" class="headerlink" title="4.4 Task 4: Limiting Network Traffic"></a>4.4 Task 4: Limiting Network Traffic</h3><p>除了阻断数据包外，我们还可以限制可以通过防火墙的数据包数量。这可以使用iptables的limit模块来完成。在这个任务中，我们将使用这个模块来限制如何操作。请在路由器上运行以下命令，然后从10.9.0.5 ping 192.168.60.5。描述你的观察。请在有和没有第二条规则的情况下进行实验，然后解释第二条规则是否需要，以及为什么</p>
+<p>首先根据实验手册设置过滤规则如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756127.png"></p>
+<p>从主机A ping 主机1：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181756704.png"></p>
+<p>可以发现icmp报文的发送被限制了，一部分报文被丢弃</p>
+<p>如果去掉第二条规则，就会得到如下结果：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757353.png"></p>
+<p>Icmp报文的转发并不会被限制</p>
+<p>原因在于第一条规则设置了来自于主机A流量的限制是允许接收这么多，如果不设置第二条规则，来自于主机A的流量仍然会全部接收并转发，因此要利用第二条规则使其他来自于主机A的流量全部被丢弃，才能够真正的限制流量的转发。</p>
+<h3 id="4-5-Task-5-Load-Balancing"><a href="#4-5-Task-5-Load-Balancing" class="headerlink" title="4.5 Task 5: Load Balancing"></a>4.5 Task 5: Load Balancing</h3><p>首先在三台主机中均打开如下服务：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757908.png"></p>
+<p><strong>Using the nth mode (round-robin).</strong></p>
+<p>在路由器中设置对于目的主机为主机1的报文限制如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757454.png"></p>
+<p>同理设置对于对于主机2和主机3的报文限制分别为every2 packet0 和every1 packe0 ，即可对收到的报文均分，得到如下结果：</p>
+<p>当从主机A向路由器不断发送报文时，在三台主机中接收到的效果如下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181757713.png"></p>
+<p>在主机1中可以接收到每3个报文中的第一个报文：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758340.png"></p>
+<p>在主机2中可以接收到每三个报文中的第二个报文：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758674.png"></p>
+<p>在主机3中可以接收到每三个报文中的第三个报文</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758064.png"></p>
+<p><strong>Using the random mode.</strong></p>
+<p>在路由其中设置如下规则：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181758348.png"></p>
+<p>其原理是通过得到的概率来进行报文的均分，分别讲三台主机得到报文的概率设置为1，0.5，和1&#x2F;3即可以让每三个报文中的一个报文发给概率为1的主机，而其他两个报文根据概率分配给剩下两台主机，效果如下：</p>
+<p>首先在主机A中向路由器发送六个UDP报文</p>
+<p>如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181759934.png"></p>
+<p>后在监听的三台主机中观察如下现象：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309181759705.png"></p>
+<p>可以观察到报文被均分发送到三个主机。</p>
+<h2 id="五-附件"><a href="#五-附件" class="headerlink" title="五. 附件"></a>五. 附件</h2><h3 id="5-1-Task-1-A—Hello-c"><a href="#5-1-Task-1-A—Hello-c" class="headerlink" title="5.1 Task 1.A—Hello.c"></a>5.1 Task 1.A—Hello.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">initialization</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Hello World!\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">cleanup</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Bye-bye World!.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line">module_init(initialization);</span><br><span class="line">module_exit(cleanup);</span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-2-Task1-B—SeedBlock-c"><a href="#5-2-Task1-B—SeedBlock-c" class="headerlink" title="5.2 Task1.B—SeedBlock.c"></a>5.2 Task1.B—SeedBlock.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter_ipv4.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/tcp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/udp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/icmp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/if_ether.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/inet.h&gt;</span></span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">nf_hook_ops</span> <span class="title">hook1</span>,<span class="title">hook2</span>,<span class="title">hook3</span>,<span class="title">hook4</span>;</span></span><br><span class="line"><span class="comment">// block ping to 10.9.0.1</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">blockICMP</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                       <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">icmphdr</span> *<span class="title">icmph</span>;</span></span><br><span class="line">    <span class="comment">// u16 port = 53; // icmp no port</span></span><br><span class="line">    <span class="type">char</span> ip[<span class="number">16</span>] = <span class="string">&quot;10.9.0.1&quot;</span>;</span><br><span class="line">    u32 ip_addr;</span><br><span class="line">    <span class="keyword">if</span> (!skb) <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    <span class="comment">// Convert the IPv4 address from dotted decimal to 32-bit binary</span></span><br><span class="line">    in4_pton(ip, <span class="number">-1</span>, (u8 *)&amp;ip_addr, <span class="string">&#x27;\0&#x27;</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (iph-&gt;protocol == IPPROTO_ICMP) &#123;</span><br><span class="line">        icmph = icmp_hdr(skb);</span><br><span class="line">        <span class="keyword">if</span> (iph-&gt;daddr == ip_addr &amp;&amp; icmph-&gt;type == ICMP_ECHO ) &#123;<span class="comment">//&amp;&amp;</span></span><br><span class="line">            ntohs(icmph-&gt;dest) == port)&#123;</span><br><span class="line">                printk(KERN_WARNING <span class="string">&quot;*** Dropping %pI4 (ICMP/ping)&quot;</span>,</span><br><span class="line">                       &amp;(iph-&gt;daddr));</span><br><span class="line">                <span class="keyword">return</span> NF_DROP;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// block telnet to 10.9.0.1</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">blockTelnet</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                             <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">tcphdr</span> *<span class="title">tcph</span>;</span></span><br><span class="line">        u16 port = <span class="number">23</span>; <span class="comment">// telnet</span></span><br><span class="line">        <span class="type">char</span> ip[<span class="number">16</span>] = <span class="string">&quot;10.9.0.1&quot;</span>;</span><br><span class="line">        u32 ip_addr;</span><br><span class="line">        <span class="keyword">if</span> (!skb) <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">        iph = ip_hdr(skb);</span><br><span class="line">        <span class="comment">// Convert the IPv4 address from dotted decimal to 32-bit binary</span></span><br><span class="line">        in4_pton(ip, <span class="number">-1</span>, (u8 *)&amp;ip_addr, <span class="string">&#x27;\0&#x27;</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="keyword">if</span> (iph-&gt;protocol == IPPROTO_TCP) &#123;</span><br><span class="line">            tcph = tcp_hdr(skb);</span><br><span class="line">            <span class="keyword">if</span> (iph-&gt;daddr == ip_addr &amp;&amp; ntohs(tcph-&gt;dest) == port)&#123;</span><br><span class="line">                printk(KERN_WARNING <span class="string">&quot;*** Dropping %pI4 (TCP/telnet), port %d\n&quot;</span>,</span><br><span class="line">                       &amp;(iph-&gt;daddr), port);</span><br><span class="line">                <span class="keyword">return</span> NF_DROP;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// block udp to 8.8.8.8</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">blockUDP</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                          <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">udphdr</span> *<span class="title">udph</span>;</span></span><br><span class="line">        u16 port = <span class="number">53</span>; <span class="comment">// DNS</span></span><br><span class="line">        <span class="type">char</span> ip[<span class="number">16</span>] = <span class="string">&quot;8.8.8.8&quot;</span>;</span><br><span class="line">        u32 ip_addr;</span><br><span class="line">        <span class="keyword">if</span> (!skb) <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">        iph = ip_hdr(skb);</span><br><span class="line">        <span class="comment">// Convert the IPv4 address from dotted decimal to 32-bit binary</span></span><br><span class="line">        in4_pton(ip, <span class="number">-1</span>, (u8 *)&amp;ip_addr, <span class="string">&#x27;\0&#x27;</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="keyword">if</span> (iph-&gt;protocol == IPPROTO_UDP) &#123;</span><br><span class="line">            udph = udp_hdr(skb);</span><br><span class="line">            <span class="keyword">if</span> (iph-&gt;daddr == ip_addr &amp;&amp; ntohs(udph-&gt;dest) == port)&#123;</span><br><span class="line">                printk(KERN_WARNING <span class="string">&quot;*** Dropping %pI4 (UDP), port %d\n&quot;</span>,</span><br><span class="line">                       &amp;(iph-&gt;daddr), port);</span><br><span class="line">                <span class="keyword">return</span> NF_DROP;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">printInfo</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                           <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">        <span class="type">char</span> *hook;</span><br><span class="line">        <span class="type">char</span> *protocol;</span><br><span class="line">        <span class="keyword">switch</span> (state-&gt;hook)&#123;</span><br><span class="line">            <span class="keyword">case</span> NF_INET_LOCAL_IN: hook = <span class="string">&quot;LOCAL_IN&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> NF_INET_LOCAL_OUT: hook = <span class="string">&quot;LOCAL_OUT&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> NF_INET_PRE_ROUTING: hook = <span class="string">&quot;PRE_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> NF_INET_POST_ROUTING: hook = <span class="string">&quot;POST_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> NF_INET_FORWARD: hook = <span class="string">&quot;FORWARD&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>: hook = <span class="string">&quot;IMPOSSIBLE&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        printk(KERN_INFO <span class="string">&quot;*** %s\n&quot;</span>, hook); <span class="comment">// Print out the hook info</span></span><br><span class="line">        iph = ip_hdr(skb);</span><br><span class="line">        <span class="keyword">switch</span> (iph-&gt;protocol)&#123;</span><br><span class="line">            <span class="keyword">case</span> IPPROTO_UDP: protocol = <span class="string">&quot;UDP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> IPPROTO_TCP: protocol = <span class="string">&quot;TCP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> IPPROTO_ICMP: protocol = <span class="string">&quot;ICMP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>: protocol = <span class="string">&quot;OTHER&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Print out the IP addresses and protocol</span></span><br><span class="line">        printk(KERN_INFO <span class="string">&quot; %pI4 --&gt; %pI4 (%s)\n&quot;</span>,</span><br><span class="line">               &amp;(iph-&gt;saddr), &amp;(iph-&gt;daddr), protocol);</span><br><span class="line">        <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> <span class="title function_">registerFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">        printk(KERN_INFO <span class="string">&quot;seedBlock:Registering filters.\n&quot;</span>);</span><br><span class="line">        hook1.hook = printInfo;</span><br><span class="line">        hook1.hooknum = NF_INET_LOCAL_OUT;</span><br><span class="line">        hook1.pf = PF_INET;</span><br><span class="line">        hook1.priority = NF_IP_PRI_FIRST;</span><br><span class="line">        nf_register_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line">        hook2.hook = blockUDP;</span><br><span class="line">        hook2.hooknum = NF_INET_POST_ROUTING;</span><br><span class="line">        hook2.pf = PF_INET;</span><br><span class="line">        hook2.priority = NF_IP_PRI_FIRST;</span><br><span class="line">        nf_register_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line"></span><br><span class="line">        hook3.hook = blockICMP;</span><br><span class="line">        hook3.hooknum = NF_INET_PRE_ROUTING;</span><br><span class="line">        hook3.pf = PF_INET;</span><br><span class="line">        hook3.priority = NF_IP_PRI_FIRST;</span><br><span class="line">        nf_register_net_hook(&amp;init_net, &amp;hook3);</span><br><span class="line"></span><br><span class="line">        hook4.hook = blockTelnet;</span><br><span class="line">        hook4.hooknum = NF_INET_PRE_ROUTING;</span><br><span class="line">        hook4.pf = PF_INET;</span><br><span class="line">        hook4.priority = NF_IP_PRI_FIRST;</span><br><span class="line">        nf_register_net_hook(&amp;init_net, &amp;hook4);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">void</span> <span class="title function_">removeFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">        printk(KERN_INFO <span class="string">&quot;seedBlock:The filters are being removed.\n&quot;</span>);</span><br><span class="line">        nf_unregister_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line">        nf_unregister_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line">        nf_unregister_net_hook(&amp;init_net, &amp;hook3);</span><br><span class="line">        nf_unregister_net_hook(&amp;init_net, &amp;hook4);</span><br><span class="line">    &#125;</span><br><span class="line">    module_init(registerFilter);</span><br><span class="line">    module_exit(removeFilter);</span><br><span class="line">    MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-3-Task1-B—SeedFilter-c"><a href="#5-3-Task1-B—SeedFilter-c" class="headerlink" title="5.3 Task1.B—SeedFilter.c"></a>5.3 Task1.B—SeedFilter.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter_ipv4.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/tcp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/udp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/icmp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/if_ether.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/inet.h&gt;</span></span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">nf_hook_ops</span> <span class="title">hook1</span>, <span class="title">hook2</span>;</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">blockUDP</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                      <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">udphdr</span> *<span class="title">udph</span>;</span></span><br><span class="line">    u16 port = <span class="number">53</span>; <span class="comment">// DNS</span></span><br><span class="line">    <span class="type">char</span> ip[<span class="number">16</span>] = <span class="string">&quot;8.8.8.8&quot;</span>;</span><br><span class="line">    u32 ip_addr;</span><br><span class="line">    <span class="keyword">if</span> (!skb) <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    <span class="comment">// Convert the IPv4 address from dotted decimal to 32-bit binary</span></span><br><span class="line">    in4_pton(ip, <span class="number">-1</span>, (u8 *)&amp;ip_addr, <span class="string">&#x27;\0&#x27;</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (iph-&gt;protocol == IPPROTO_UDP) &#123;</span><br><span class="line">        udph = udp_hdr(skb);</span><br><span class="line">        <span class="keyword">if</span> (iph-&gt;daddr == ip_addr &amp;&amp; ntohs(udph-&gt;dest) == port)&#123;</span><br><span class="line">            printk(KERN_WARNING <span class="string">&quot;*** Dropping %pI4 (UDP), port %d\n&quot;</span>,</span><br><span class="line">                   &amp;(iph-&gt;daddr), port);</span><br><span class="line">            <span class="keyword">return</span> NF_DROP;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">printInfo</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                       <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="type">char</span> *hook;</span><br><span class="line">    <span class="type">char</span> *protocol;</span><br><span class="line">    <span class="keyword">switch</span> (state-&gt;hook)&#123;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_LOCAL_IN: hook = <span class="string">&quot;LOCAL_IN&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_LOCAL_OUT: hook = <span class="string">&quot;LOCAL_OUT&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_PRE_ROUTING: hook = <span class="string">&quot;PRE_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_POST_ROUTING: hook = <span class="string">&quot;POST_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_FORWARD: hook = <span class="string">&quot;FORWARD&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: hook = <span class="string">&quot;IMPOSSIBLE&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;*** %s\n&quot;</span>, hook); <span class="comment">// Print out the hook info</span></span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    <span class="keyword">switch</span> (iph-&gt;protocol)&#123;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_UDP: protocol = <span class="string">&quot;UDP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_TCP: protocol = <span class="string">&quot;TCP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_ICMP: protocol = <span class="string">&quot;ICMP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: protocol = <span class="string">&quot;OTHER&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Print out the IP addresses and protocol</span></span><br><span class="line">    printk(KERN_INFO <span class="string">&quot; %pI4 --&gt; %pI4 (%s)\n&quot;</span>,</span><br><span class="line">           &amp;(iph-&gt;saddr), &amp;(iph-&gt;daddr), protocol);</span><br><span class="line">    <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">registerFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Registering filters.\n&quot;</span>);</span><br><span class="line">    hook1.hook = printInfo;</span><br><span class="line">    hook1.hooknum = NF_INET_LOCAL_OUT;</span><br><span class="line">    hook1.pf = PF_INET;</span><br><span class="line">    hook1.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line">    hook2.hook = blockUDP;</span><br><span class="line">    hook2.hooknum = NF_INET_POST_ROUTING;</span><br><span class="line">    hook2.pf = PF_INET;</span><br><span class="line">    hook2.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">removeFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;The filters are being removed.\n&quot;</span>);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line">&#125;</span><br><span class="line">module_init(registerFilter);</span><br><span class="line">module_exit(removeFilter);</span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-4-Task1-B—SeedPrint-c"><a href="#5-4-Task1-B—SeedPrint-c" class="headerlink" title="5.4 Task1.B—SeedPrint.c"></a>5.4 Task1.B—SeedPrint.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/netfilter_ipv4.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/tcp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/udp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/icmp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/if_ether.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/inet.h&gt;</span></span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">nf_hook_ops</span> <span class="title">hook1</span>, <span class="title">hook2</span>,<span class="title">hook3</span>,<span class="title">hook4</span>,<span class="title">hook5</span>;</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">blockUDP</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                      <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">udphdr</span> *<span class="title">udph</span>;</span></span><br><span class="line">    u16 port = <span class="number">53</span>; <span class="comment">// DNS</span></span><br><span class="line">    <span class="type">char</span> ip[<span class="number">16</span>] = <span class="string">&quot;8.8.8.8&quot;</span>;</span><br><span class="line">    u32 ip_addr;</span><br><span class="line">    <span class="keyword">if</span> (!skb) <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    <span class="comment">// Convert the IPv4 address from dotted decimal to 32-bit binary</span></span><br><span class="line">    in4_pton(ip, <span class="number">-1</span>, (u8 *)&amp;ip_addr, <span class="string">&#x27;\0&#x27;</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (iph-&gt;protocol == IPPROTO_UDP) &#123;</span><br><span class="line">        udph = udp_hdr(skb);</span><br><span class="line">        <span class="keyword">if</span> (iph-&gt;daddr == ip_addr &amp;&amp; ntohs(udph-&gt;dest) == port)&#123;</span><br><span class="line">            printk(KERN_WARNING <span class="string">&quot;*** Dropping %pI4 (UDP), port %d\n&quot;</span>,</span><br><span class="line">                   &amp;(iph-&gt;daddr), port);</span><br><span class="line">            <span class="keyword">return</span> NF_DROP;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">printInfo</span><span class="params">(<span class="type">void</span> *priv, <span class="keyword">struct</span> sk_buff *skb,</span></span><br><span class="line"><span class="params">                       <span class="type">const</span> <span class="keyword">struct</span> nf_hook_state *state)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="type">char</span> *hook;</span><br><span class="line">    <span class="type">char</span> *protocol;</span><br><span class="line">    <span class="keyword">switch</span> (state-&gt;hook)&#123;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_LOCAL_IN: hook = <span class="string">&quot;LOCAL_IN&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_LOCAL_OUT: hook = <span class="string">&quot;LOCAL_OUT&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_PRE_ROUTING: hook = <span class="string">&quot;PRE_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_POST_ROUTING: hook = <span class="string">&quot;POST_ROUTING&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NF_INET_FORWARD: hook = <span class="string">&quot;FORWARD&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: hook = <span class="string">&quot;IMPOSSIBLE&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;*** %s\n&quot;</span>, hook); <span class="comment">// Print out the hook info</span></span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    <span class="keyword">switch</span> (iph-&gt;protocol)&#123;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_UDP: protocol = <span class="string">&quot;UDP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_TCP: protocol = <span class="string">&quot;TCP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IPPROTO_ICMP: protocol = <span class="string">&quot;ICMP&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>: protocol = <span class="string">&quot;OTHER&quot;</span>; <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Print out the IP addresses and protocol</span></span><br><span class="line">    printk(KERN_INFO <span class="string">&quot; %pI4 --&gt; %pI4 (%s)\n&quot;</span>,</span><br><span class="line">           &amp;(iph-&gt;saddr), &amp;(iph-&gt;daddr), protocol);</span><br><span class="line">    <span class="keyword">return</span> NF_ACCEPT;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">registerFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;seedPrint:Registering filters.\n&quot;</span>);</span><br><span class="line">    <span class="comment">// NF_INET_PRE_ROUTING</span></span><br><span class="line">    hook1.hook = printInfo;</span><br><span class="line">    hook1.hooknum = NF_INET_PRE_ROUTING;</span><br><span class="line">    hook1.pf = PF_INET;</span><br><span class="line">    hook1.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// NF_INET_LOCAL_IN</span></span><br><span class="line">    hook2.hook = printInfo;</span><br><span class="line">    hook2.hooknum = NF_INET_LOCAL_IN;</span><br><span class="line">    hook2.pf = PF_INET;</span><br><span class="line">    hook2.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// NF_INET_FORWARD</span></span><br><span class="line">    hook3.hook = printInfo;</span><br><span class="line">    hook3.hooknum = NF_INET_FORWARD;</span><br><span class="line">    hook3.pf = PF_INET;</span><br><span class="line">    hook3.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook3);</span><br><span class="line">    <span class="comment">// NF_INET_LOCAL_OUT</span></span><br><span class="line">    hook4.hook = printInfo;</span><br><span class="line">    hook4.hooknum = NF_INET_LOCAL_OUT;</span><br><span class="line">    hook4.pf = PF_INET;</span><br><span class="line">    hook4.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook4);</span><br><span class="line">    <span class="comment">// NF_INET_POST_ROUTING</span></span><br><span class="line">    hook5.hook = printInfo;</span><br><span class="line">    hook5.hooknum = NF_INET_POST_ROUTING;</span><br><span class="line">    hook5.pf = PF_INET;</span><br><span class="line">    hook5.priority = NF_IP_PRI_FIRST;</span><br><span class="line">    nf_register_net_hook(&amp;init_net, &amp;hook5);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">void</span> <span class="title function_">removeFilter</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;seedPrint:The filters are being removed.\n&quot;</span>);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook1);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook2);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook3);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook4);</span><br><span class="line">    nf_unregister_net_hook(&amp;init_net, &amp;hook5);</span><br><span class="line">&#125;</span><br><span class="line">module_init(registerFilter);</span><br><span class="line">module_exit(removeFilter);</span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/04/DNS_rebind/" rel="prev" title="DNS Rebinding Attack Lab">
+      <i class="fa fa-chevron-left"></i> DNS Rebinding Attack Lab
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/12/14/Pseudo-random%20Number/" rel="next" title="伪随机数生成 Lab">
+      伪随机数生成 Lab <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">一.实验目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二.实验原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E9%98%B2%E7%81%AB%E5%A2%99"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 防火墙</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-netfilter"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 netfilter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-iptables"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 iptables</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E6%8B%93%E6%89%91%E6%90%AD%E5%BB%BA"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 拓扑搭建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E5%AE%9E%E9%AA%8C%E5%99%A8%E6%9D%90"><span class="nav-number">3.</span> <span class="nav-text">三.实验器材</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4%E5%8F%8A%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">四.实验步骤及运行结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Task-1-Implementing-a-Simple-Firewall"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 Task 1: Implementing a Simple Firewall</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-Task-1-A-Implement-a-Simple-Kernel-Module"><span class="nav-number">4.1.1.</span> <span class="nav-text">4.1.1 Task 1.A: Implement a Simple Kernel Module</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-Task-1-B-Implement-a-Simple-Firewall-Using-Netfilter"><span class="nav-number">4.1.2.</span> <span class="nav-text">4.1.2 Task 1.B: Implement a Simple Firewall Using Netfilter</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Task-2-Experimenting-with-Stateless-Firewall-Rules"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 Task 2: Experimenting with Stateless Firewall Rules</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-Task-2-A-Protecting-the-Router"><span class="nav-number">4.2.1.</span> <span class="nav-text">4.2.1 Task 2.A: Protecting the Router</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-2-Task-2-B-Protecting-the-Internal-Network"><span class="nav-number">4.2.2.</span> <span class="nav-text">4.2.2 Task 2.B: Protecting the Internal Network</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-3-Task-2-C-Protecting-Internal-Servers"><span class="nav-number">4.2.3.</span> <span class="nav-text">4.2.3 Task 2.C: Protecting Internal Servers</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Task-3-Connection-Tracking-and-Stateful-Firewall"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 Task 3: Connection Tracking and Stateful Firewall</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-1-Task-3-A-Experiment-with-the-Connection-Tracking"><span class="nav-number">4.3.1.</span> <span class="nav-text">4.3.1 Task 3.A: Experiment with the Connection Tracking</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-2-Task-3-B-Setting-Up-a-Stateful-Firewall"><span class="nav-number">4.3.2.</span> <span class="nav-text">4.3.2 Task 3.B: Setting Up a Stateful Firewall</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-Task-4-Limiting-Network-Traffic"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 Task 4: Limiting Network Traffic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-Task-5-Load-Balancing"><span class="nav-number">4.5.</span> <span class="nav-text">4.5 Task 5: Load Balancing</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94-%E9%99%84%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">五. 附件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Task-1-A%E2%80%94Hello-c"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 Task 1.A—Hello.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-Task1-B%E2%80%94SeedBlock-c"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 Task1.B—SeedBlock.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-Task1-B%E2%80%94SeedFilter-c"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 Task1.B—SeedFilter.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-Task1-B%E2%80%94SeedPrint-c"><span class="nav-number">5.4.</span> <span class="nav-text">5.4 Task1.B—SeedPrint.c</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
