@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fire32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fire16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.mrdothing.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="实验目的重打包（repackaging）攻击是 Android 设备上一种非常常见的攻击类型。在此类攻击中，攻击者修改从应用市场下载的流行 app，对该 app 进行逆向工程，添加一些恶意负载，然后将修改后的 app 上传到应用市场。用户很容易被欺骗，因为很难注意到修改后的 app 和原始 app 之间的区别。一旦安装了修改后的app，里面的恶意代码就可以进行攻击，通常是在后台。例如，2011 年">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android repacking Lab">
+<meta property="og:url" content="https://www.mrdothing.com/2023/05/18/andriod_repacking/index.html">
+<meta property="og:site_name" content="Mr.Dothing">
+<meta property="og:description" content="实验目的重打包（repackaging）攻击是 Android 设备上一种非常常见的攻击类型。在此类攻击中，攻击者修改从应用市场下载的流行 app，对该 app 进行逆向工程，添加一些恶意负载，然后将修改后的 app 上传到应用市场。用户很容易被欺骗，因为很难注意到修改后的 app 和原始 app 之间的区别。一旦安装了修改后的app，里面的恶意代码就可以进行攻击，通常是在后台。例如，2011 年">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848389.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848585.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848720.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849368.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849648.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849275.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849919.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849139.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850785.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850805.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850645.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850522.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190851165.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852602.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852944.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852394.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852086.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853506.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853437.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853238.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853833.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854238.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854619.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854013.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855284.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855310.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855656.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855063.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856936.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856308.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856007.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857973.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857235.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857086.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857491.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857848.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858214.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858819.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858430.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858112.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858885.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190859967.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190859538.png">
+<meta property="article:published_time" content="2023-05-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-09-19T02:20:57.493Z">
+<meta property="article:author" content="Crazyoo">
+<meta property="article:tag" content="seedlab2.0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848389.png">
+
+<link rel="canonical" href="https://www.mrdothing.com/2023/05/18/andriod_repacking/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Android repacking Lab | Mr.Dothing</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Mr.Dothing</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.mrdothing.com/2023/05/18/andriod_repacking/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Crazyoo">
+      <meta itemprop="description" content="You get what you get.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Dothing">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android repacking Lab
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-18 00:00:00" itemprop="dateCreated datePublished" datetime="2023-05-18T00:00:00+08:00">2023-05-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-19 10:20:57" itemprop="dateModified" datetime="2023-09-19T10:20:57+08:00">2023-09-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">逆向工程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="实验目的"><a href="#实验目的" class="headerlink" title="实验目的"></a><strong>实验目的</strong></h2><p>重打包（repackaging）攻击是 Android 设备上一种非常常见的攻击类型。在此类攻击中，攻击者修改从应用市场下载的流行 app，对该 app 进行逆向工程，添加一些恶意负载，然后将修改后的 app 上传到应用市场。用户很容易被欺骗，因为很难注意到修改后的 app 和原始 app 之间的区别。一旦安装了修改后的app，里面的恶意代码就可以进行攻击，通常是在后台。例如，2011 年 3 月，发现 DroidDream 木马已被嵌入 Android 官方市场的 50 多个 app 中，并感染了众多用户。DroidDream 木马利用 Android 中的漏洞获取设备的 root 访问权限。</p>
+<span id="more"></span>
+<p><strong>实验步骤与结果</strong></p>
+<p><strong>实验环境</strong></p>
+<p>Android 虚拟机：</p>
+<p>本次实验需要部署 Android 虚拟机，来测试我们的重新打包攻击。</p>
+<p>Ubuntu 16.04 VM:</p>
+<p>本次实验的实验需基于 SEED Labs 的 Ubuntu 16.04 VM。</p>
+<p>Ubuntu 16.04 VM</p>
+<p>在 SEED 2.0 平台（Ubuntu 20.04 VM）上安装所需要的工具包，部分需安装工具包括：</p>
+<p>$ sudo apt install android-tools-adb</p>
+<p>$ sudo apt install apktool</p>
+<p><strong>说明</strong></p>
+<p>Task 6 中的位置显示页面是基于 Google Map API 实现的，由于众所周知的原因，Google 旗下服务在国内无法正常使用，并且 API Key 可能已经失效，无法显示最终效果。可以使用变通方案（2 选 1）：</p>
+<p>1. 通过 Wireshark 抓包的方式查看从 Android 端发送的包含位置信息（GPS 数据）的数据包。</p>
+<p>2. 将服务器端代码更改为国内地图软件提供的 API（如高德地图 API、百度地图 API 等），实现位置显示页面。代码路径：&#x2F;var&#x2F;www&#x2F;RepackagingAttack。使用此种方式，将提供 Bonus 10 分，需在报告中展示修改后的代码。</p>
+<h2 id="Task-1：获得APK文件并安装"><a href="#Task-1：获得APK文件并安装" class="headerlink" title="Task 1：获得APK文件并安装"></a><strong>Task 1：获得APK文件并安装</strong></h2><p>为发动重打包攻击，我们需要一个宿主APP，对于本次实验，可以自己编写APP或下载一个已有的APP，可以从很多地方下载到各类APP，例如 <a target="_blank" rel="noopener" href="https://apkpure.com/">https://apkpure.com/</a> . 我们这次使用实验平台提供的APK文件。 (文件名为 RepackagingLab.apk)</p>
+<p>我们通过Ubuntu VM的adb工具来安装宿主APP：首先需要通过Android VM的ifconfig命令找到Android VM的IP地址，</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848389.png"></p>
+<p>随后通过以下命令安装APP：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848585.png"></p>
+<h2 id="Task-2：APP反汇编"><a href="#Task-2：APP反汇编" class="headerlink" title="Task 2：APP反汇编"></a><strong>Task 2：APP反汇编</strong></h2><p>为了在该APP中实现重打包攻击，我们需要对APP做一些修改，由于APK文件中包含人类不易读的Dalvik 字节码 (dex 格式)，因此直接修改APK文件虽然可行但并不容易。我们需要将字节码转换为可读的形式。对于Dalvik字节码，最普遍的可读格式是Smali。</p>
+<p>本次实验，我们需要使用APKtool来反汇编dex码至Smali码。APKtool是一个在解构和重构APP时非常有用的工具。我们通过一下命令实现：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190848720.png"></p>
+<p>APK文件其实就是个包含class.dex (编译的java源码, 叫做 Dalvik字节码) resources.arsc (源文件), AndroidManifest.xml等文件的ZIP文件。APKtools首先对APK文件解压缩，并对内容进行解码，对于源文件，没有大量修改的地方. 对于Dalvik字节码classes.dex, 它会被解码成smali code, APKTool 会把处理过的文件放置到一个和APK文件同名的文件夹中（它会自己创建）经过反汇编后的APK文件大体框架如图：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849368.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849648.png"></p>
+<p>文件夹包含 XML源文件, AndroidManifest, 源代码等。XML文件和AndroidManifest 文件通常可读且与原先真正的源文件相似。反汇编的smali代码被放置在smali文件夹. 通常,一个smali 文件包含给一个java类提供的代码。</p>
+<h2 id="Task-3：注入恶意代码"><a href="#Task-3：注入恶意代码" class="headerlink" title="Task 3：注入恶意代码"></a><strong>Task 3：注入恶意代码</strong></h2><p>在这个例子中，我们在宿主app的smali文件中注入恶意代码。虽然有很多种，但通常由两种方法：在原有的smali文件中修改，这需要修改smali文件的执行逻辑；或者更简单地，直接向app文件中加入新组件。该组件是和源app独立的，因此不会影响app执行逻辑。</p>
+<p>在Android文件中，有四种组件：activity，service，broadcast receiver，content provider。前两种在app种最常用。我们可以向app中添加任意组件，但最关键的问题是应当找到一种方法使得用户不会察觉。最简单的方法是使用broadcast receiver，这种方式通过系统发送broadcast来触发。我们可以写一个 broadcast receiver 来监听这些broadcast, 使得攻击代码能在这些事件发生并发送broadcast时自动触发。</p>
+<p>写一个broadcast receiver非常简单。实验也提供了现成的smali代码。Java代码如图所示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849275.png"></p>
+<p>上述恶意代码如果被触发，将会删除联系人。代码通过broadcast receiver实现。当被broadcast触发时，会调用onReceive()方法，里面包含了恶意代码。上述代码主要过程是通过与联系人app交互，通过content provider来删除所有联系人。在代码里, ContentResolver用于接触到手机中的联系人。 为了获得联系人列表， 一个查询请求被发送到联系人APP的content provider. 所有的联系人记录都将通过Cursor object 来返回。 随后app会将联系人逐个删除。</p>
+<p>我们需要将攻击代码放置在smali&#x2F;com文件夹中：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849919.png"></p>
+<p>但是还没完，因为我们尚未告知系统何时调用broadcast receiver。我们需要将broadcast receiver注册至系统中。这通过在AndroidManifest.xml添加几行代码实现。为了能读写联系人，我们需要在该文件中请求两个权限：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190849139.png"></p>
+<p>在第2行和第3行，我们添加了两个权限的请求，分别是允许应用读取联系人，允许应用修改联系人。注意，这两行需要添加在&lt;application&gt;外，在&lt;manifest&gt;内。同时我们需要将broadcast receiver和TIME_SET绑定，这样每次修改时间，恶意代码就会触发。这一段需要写在&lt;activity&gt;标签内。</p>
+<h2 id="Task-4：将带有恶意代码的app文件重打包"><a href="#Task-4：将带有恶意代码的app文件重打包" class="headerlink" title="Task 4：将带有恶意代码的app文件重打包"></a><strong>Task 4：将带有恶意代码的app文件重打包</strong></h2><p>在代码注入完成之后，我们需要做的就是将各种文件打包至一起，组合成一个新的apk文件。包含两步：</p>
+<p><strong>Step1 重构APK:</strong> 通过APKtool重新生成APK文件，新的文件将会保存至文件夹下的\dist目录下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850785.png"></p>
+<p><strong>Step2 对APK文件签名:</strong> Android需要所有的app在发布之前必须经过数字签名和证书，签名和证书用于帮助Android检测app文件编写者。为保证安全，证书需要由签发机构（CA）提供。通常由CA获取证书非常麻烦，因此Android允许开发者使用自己的私钥对证书签名。这种自签名的目的是为了能让app在android上运行，而非保证安全性。本次实验我们使用自签名证书：</p>
+<ol>
+<li>通过keytool指令生成公钥和私钥：</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850805.png"></p>
+<ol start="2">
+<li>使用jarsigner，利用第一步生成的私钥来为apk签名：</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850645.png"></p>
+<blockquote>
+<p>jarsigner 会让用户输入口令来让用户访问生成的keystore。随后会利用密钥（由名称”mykeys”来识别）来对APK签名。</p>
+</blockquote>
+<h2 id="Task-5：安装重打包APP并执行恶意代码"><a href="#Task-5：安装重打包APP并执行恶意代码" class="headerlink" title="Task 5：安装重打包APP并执行恶意代码"></a><strong>Task 5：安装重打包APP并执行恶意代码</strong></h2><p>如果我们在之前已经安装过APP，我们需要先卸载，否则我们无法安装：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190850522.png"></p>
+<p>卸载完毕再安装新的app，如果不卸载会导致新app与旧app签名不符：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190851165.png"></p>
+<p>卸载干净后可以成功安装</p>
+<p>在攻击前，我们需要给予应用相应的权限：</p>
+<p>Settings -&gt; Apps -&gt; Repackaging Lab -&gt; Permissions -&gt; toggle contacts on</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852602.png"></p>
+<p>我们只需要运行依次恶意程序，并添加几个联系人：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852944.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852394.png"></p>
+<p>然后我们修改时间：</p>
+<blockquote>
+<p>Settings -&gt; Date and Time -&gt; Set time</p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190852086.png"></p>
+<p>接下来就会发现联系人被清空，攻击成功：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853506.png"></p>
+<h2 id="Task-6：使用重打包攻击定位用户位置"><a href="#Task-6：使用重打包攻击定位用户位置" class="headerlink" title="Task 6：使用重打包攻击定位用户位置"></a><strong>Task 6：使用重打包攻击定位用户位置</strong></h2><p><strong>Step 1. 安装 mock locations</strong> 在安卓设备上，我们可以通过GPS硬件获得位置信息. 但是我们的虚拟机没有安卓硬件,Android OS提供了模拟位置供应用使用。 我们需要做的是写一个模拟位置应用，并让Android VM使用该APP的位置而不是GPS硬件。我们已经在 Android VM 上安装了这个APP， 这个APP模拟了６个位置，随机选一个位置，默认情况下是在巴黎：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853437.png"></p>
+<p><strong>Step 2: Configuring DNS</strong>　恶意代码会发送用户的位置信息至SEED虚拟机服务器的 <a target="_blank" rel="noopener" href="http://www.repackagingattacklab.com.我们使用/">www.repackagingattacklab.com.我们使用</a> SEEDUbuntu VM 作为服务器。因此我们需要对虚拟机IP地址和URL做映射。最简单的办法是在Android VM的&#x2F;system&#x2F;etc&#x2F;hosts 文件添加映射关系：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853238.png"></p>
+<p><strong>Step 3: Repackaging and installing the victim app.</strong> 我们重复1到5步来构建新的APK文件。唯一不同的是，我们这次使用一套新的Smali代码。一共三个代码：MaliciousCode.smali, SendData$1.smali和SendData.smali. 将他们放置在smali&#x2F;com&#x2F;mobiseed&#x2F;repackaging路径下：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190853833.png"></p>
+<blockquote>
+<p>我们还需要修改 AndroidManifest.xml, 因为这次的恶意代码需要不同的权限。为了获取位置信息并访问互联网，我们需要三个权限：</p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854238.png"></p>
+<p>随后我们重打包apk文件、生成自签名证书并重新安装，首先是重打包生成apk：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854619.png"></p>
+<p>再进行自签名：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190854013.png"></p>
+<p>最后安装至Android VM中。</p>
+<p><strong>Step 4: Enabling the permission on the Android VM</strong> 因为通过应用商店安装app时，会主动询问是否开启位置信息权限，但由于我们使用adb安装，因此默认不会开启权限。我们需要手动开启：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855284.png"></p>
+<p>Step 5: Triggering the attacking code. 现在我们已经准备好攻击。但是国内无法使用Google地图API以及Google提供的jquery CDN。因此我们选择使用百度提供的地图API和jQuery CDN。</p>
+<p>首先注册成为百度地图开发者：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855310.png"></p>
+<p>然后查看&#x2F;var&#x2F;www&#x2F;RepackagingAttack下的文件，包含index.html, location.php和map.json：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855656.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190855063.png"></p>
+<p>Location.php利用GET请求来获取应用发送的位置信息，并写入map.json。请求格式：<a target="_blank" rel="noopener" href="http://www.repackagingattacklab.com/location.php?lat=xxx&amp;lng=xxx">http://www.repackagingattacklab.com/location.php?lat=xxx&amp;lng=xxx</a></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856936.png"></p>
+<p>以及index.html用于展示位置：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856308.png"></p>
+<p>第一个js是调用的Google的jquery CDN，国内无法使用，第二个为Google地图API以及返回时执行initmap函数。同样无法使用。在initmap函数内，首先从map.json利用jquery的getJSON读取经纬度并保存。随后生成地图并将地图中心定位至经纬度位置。下方test函数用于划线，在用户经过其他位置后，其利用jquery将经纬度信息保存至数组，并会在地图上画出折线。</p>
+<p>我们要做的工作是把jQuery CDN、GoogleMap API以及API下属的诸如Google.maps.map、Google.maps.marker、Google.maps.polyline改成百度的CDN和API，如BMapGL.Map、BMapGL.Marker和BMapGL.Polyline。</p>
+<p>如图所示，首先我们替换API和CDN，这是一切的基础：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190856007.png"></p>
+<p>其中key是注册百度地图开发者后获得：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857973.png"></p>
+<p>随后修改initmap函数：</p>
+<p>首先获取坐标部分无需改动：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857235.png"></p>
+<p>随后下方我们生成地图，但与Google地图不一样的是，它需要另外的函数来展示地图，以下是生成一个map对象，但不展示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857086.png"></p>
+<p>再次，由于国内使用的坐标系统是GCJ-02坐标系统，这种系统对经纬度进行加密，因此和直接获得的GPS坐标不同，尤其是百度，在GCJ-02的基础上再次加密形成BD09坐标系统，因此我们需要先转换读取的坐标：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857491.png"></p>
+<p>转换完毕之后，用marker标记出用户的位置，并展示地图（centerandzoom）</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190857848.png"></p>
+<p>最后在test函数内修改百度地图坐标的API，并时刻使其位于视野中心：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858214.png"></p>
+<p>总体代码展示：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858819.png"></p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858430.png"></p>
+<p>我们首先查看地图，其位置在巴黎：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858112.png"></p>
+<p>运行模拟位置应用，选择一个地点，这里选上海：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190858885.png"></p>
+<p>然后修改系统时间，次数应该会发送get请求，让php修改json文件。</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190859967.png"></p>
+<p>查看地图，发现位置转移到上海，且在上海和巴黎直接有一条直线：</p>
+<p><img src="https://raw.githubusercontent.com/oooyuanooo/figure/main/D%3A%5CNothing%5Cfigure202309190859538.png"></p>
+<p>可以发现重打包攻击成功，我们成功获取了用户的实时位置，并且获得了其移动的过程。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/seedlab2-0/" rel="tag"># seedlab2.0</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/28/firewall_ev/" rel="prev" title="Firewall Evasion Lab">
+      <i class="fa fa-chevron-left"></i> Firewall Evasion Lab
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">实验目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-1%EF%BC%9A%E8%8E%B7%E5%BE%97APK%E6%96%87%E4%BB%B6%E5%B9%B6%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">Task 1：获得APK文件并安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2%EF%BC%9AAPP%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="nav-number">3.</span> <span class="nav-text">Task 2：APP反汇编</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-3%EF%BC%9A%E6%B3%A8%E5%85%A5%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="nav-number">4.</span> <span class="nav-text">Task 3：注入恶意代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-4%EF%BC%9A%E5%B0%86%E5%B8%A6%E6%9C%89%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E7%9A%84app%E6%96%87%E4%BB%B6%E9%87%8D%E6%89%93%E5%8C%85"><span class="nav-number">5.</span> <span class="nav-text">Task 4：将带有恶意代码的app文件重打包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-5%EF%BC%9A%E5%AE%89%E8%A3%85%E9%87%8D%E6%89%93%E5%8C%85APP%E5%B9%B6%E6%89%A7%E8%A1%8C%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="nav-number">6.</span> <span class="nav-text">Task 5：安装重打包APP并执行恶意代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-6%EF%BC%9A%E4%BD%BF%E7%94%A8%E9%87%8D%E6%89%93%E5%8C%85%E6%94%BB%E5%87%BB%E5%AE%9A%E4%BD%8D%E7%94%A8%E6%88%B7%E4%BD%8D%E7%BD%AE"><span class="nav-number">7.</span> <span class="nav-text">Task 6：使用重打包攻击定位用户位置</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazyoo"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Crazyoo</p>
+  <div class="site-description" itemprop="description">You get what you get.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2022 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazyoo</span>
+</div>
+
+<!--
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div> -->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
